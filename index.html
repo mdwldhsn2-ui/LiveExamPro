@@ -3,316 +3,270 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Universal AI Scanner</title>
+    <title>Modern WebApp</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* --- ১. বেসিক সেটআপ ও ভেরিয়েবল --- */
         :root {
-            --primary-color: #2563eb;
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
+            --primary-color: #6C63FF; /* সুন্দর পার্পল শেড */
+            --secondary-color: #F3F4F6;
+            --text-color: #333;
+            --error-color: #ff4757;
+            --white: #ffffff;
         }
 
-        body {
-            font-family: 'SolaimanLipi', 'Arial', sans-serif;
-            background-color: var(--bg-color);
-            margin: 0;
-            padding: 15px;
-            color: #333;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: var(--secondary-color); overflow-x: hidden; }
 
-        .container {
-            background: var(--card-bg);
-            max-width: 480px;
-            margin: 0 auto;
-            padding: 20px;
-            border-radius: 16px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        /* --- ২. লোডিং স্ক্রিন অ্যানিমেশন --- */
+        #loader {
+            position: fixed;
+            width: 100%;
+            height: 100vh;
+            background: var(--white);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s;
         }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite, pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
 
-        h2 {
-            color: var(--primary-color);
+        /* --- ৩. লগইন স্ক্রিন ডিজাইন --- */
+        #auth-screen {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .auth-card {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             text-align: center;
-            margin-top: 0;
-            font-size: 24px;
+            animation: slideUp 0.8s ease;
         }
-
-        /* Settings Area Style */
-        .settings-box {
-            background-color: #eef2ff;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            border: 1px solid #c7d2fe;
-        }
-
-        .settings-title {
-            font-size: 14px;
-            font-weight: bold;
-            color: #4338ca;
-            margin-bottom: 10px;
-            display: block;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 14px;
-            font-weight: 600;
-            color: #475569;
-        }
-
-        select, input, button {
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .input-group { margin-bottom: 15px; text-align: left; }
+        .input-group input {
             width: 100%;
             padding: 12px;
-            margin-bottom: 15px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 15px;
-            box-sizing: border-box;
+            border: 2px solid #ddd;
+            border-radius: 10px;
             outline: none;
+            transition: 0.3s;
         }
-
-        input:focus, select:focus {
-            border-color: var(--primary-color);
-            ring: 2px solid var(--primary-color);
-        }
-
-        button {
-            background-color: var(--primary-color);
+        .input-group input:focus { border-color: var(--primary-color); }
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary-color);
             color: white;
-            font-weight: bold;
             border: none;
+            border-radius: 10px;
+            font-size: 16px;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: 0.3s;
         }
+        .btn-primary:hover { background: #5a52d5; transform: scale(1.02); }
+        .error-msg { color: var(--error-color); font-size: 0.9rem; margin-top: 10px; display: none; }
 
-        button:active { transform: scale(0.98); }
-        button:disabled { background-color: #94a3b8; }
-
-        /* Preview & Result */
-        #imagePreview {
+        /* --- ৪. হোম পেজ ও স্লাইডার --- */
+        #home-screen { display: none; padding-bottom: 80px; } /* বটম বারের জন্য প্যাডিং */
+        
+        /* স্লাইডার সেকশন */
+        .slider-container {
             width: 100%;
             height: 200px;
-            object-fit: contain;
-            border: 2px dashed #cbd5e1;
-            border-radius: 8px;
-            display: none;
-            margin-bottom: 15px;
-            background: #f1f5f9;
+            overflow: hidden;
+            position: relative;
+            background: #ddd;
+            border-bottom-left-radius: 25px;
+            border-bottom-right-radius: 25px;
         }
-
-        #resultArea {
-            min-height: 150px;
-            padding: 15px;
-            background: #fff;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            white-space: pre-wrap;
-            font-size: 15px;
-            line-height: 1.6;
-        }
-
-        .status {
-            text-align: center;
-            font-size: 14px;
-            color: #64748b;
-            margin: 10px 0;
-            display: none;
+        .slide {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            transition: opacity 1s ease-in-out;
         }
         
-        .download-btn {
-            background-color: #16a34a;
-            margin-top: 15px;
-            display: none;
+        /* ওয়েলকাম কার্ড */
+        .welcome-card {
+            background: var(--white);
+            margin: 20px;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
+
+        /* --- ৫. বটম নেভিগেশন বার (ইউনিক ডিজাইন) --- */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 70px;
+            background: var(--white);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+        }
+        .nav-item {
+            text-align: center;
+            color: #888;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .nav-item i { font-size: 20px; margin-bottom: 5px; display: block; }
+        .nav-item.active { color: var(--primary-color); }
+
+        /* মাঝখানের এক্সাম বাটন (Floating/Circle) */
+        .nav-center {
+            position: relative;
+            top: -25px;
+            background: var(--primary-color);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            box-shadow: 0 10px 15px rgba(108, 99, 255, 0.4);
+            border: 5px solid var(--secondary-color); /* বডি কালারের সাথে মিলিয়ে বর্ডার */
+            transition: transform 0.3s;
+        }
+        .nav-center:active { transform: scale(0.9); }
+        .nav-center i { font-size: 24px; margin: 0; }
+
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>📄 Universal Scanner</h2>
-
-    <div class="settings-box">
-        <span class="settings-title">⚙️ সেটিংস (API Setup)</span>
-        
-        <label>Select Provider</label>
-        <select id="apiProvider" onchange="updateModelPlaceholder()">
-            <option value="gemini">Google Gemini (Recommended)</option>
-            <option value="openai">OpenAI (GPT-4o)</option>
-            <option value="deepseek">DeepSeek AI</option>
-        </select>
-
-        <label>Paste Your API Key</label>
-        <input type="password" id="apiKey" placeholder="Enter Gemini API Key here...">
+    <div id="loader">
+        <div class="spinner"></div>
     </div>
 
-    <label>১. ছবি আপলোড করুন</label>
-    <input type="file" id="imageInput" accept="image/*" onchange="previewImage()">
-    <img id="imagePreview">
+    <section id="auth-screen">
+        <div class="auth-card">
+            <h2 style="margin-bottom: 20px; color: var(--primary-color);">Welcome Back</h2>
+            <div class="input-group">
+                <input type="email" id="email" placeholder="Email Address">
+            </div>
+            <div class="input-group">
+                <input type="password" id="password" placeholder="Password">
+            </div>
+            <button class="btn-primary" onclick="handleLogin()">Login</button>
+            <p id="error-message" class="error-msg">Email or Password Is Wrong</p>
+            <p style="margin-top: 15px; font-size: 12px; color: #666;">Don't have an account? <b>Register</b></p>
+        </div>
+    </section>
 
-    <label>২. টেমপ্লেট স্টাইল</label>
-    <select id="templateType">
-        <option value="Simple Text">সাধারণ টেক্সট (Simple)</option>
-        <option value="Formal Application">অফিসিয়াল দরখাস্ত (Application)</option>
-        <option value="Study Notes">পড়াশোনার নোট (Study Notes)</option>
-        <option value="Table Format">টেবিল বা ছক (Table)</option>
-    </select>
+    <section id="home-screen">
+        <div class="slider-container" id="slider">
+            <img src="https://via.placeholder.com/400x200/6C63FF/ffffff?text=Special+Class+Alert" class="slide" style="opacity: 1;">
+            <img src="https://via.placeholder.com/400x200/ff4757/ffffff?text=New+Model+Test" class="slide" style="opacity: 0;">
+        </div>
 
-    <button onclick="processImage()" id="scanBtn">🔍 স্ক্যান করুন</button>
-    
-    <div class="status" id="statusMsg">AI কাজ করছে... দয়া করে অপেক্ষা করুন ⏳</div>
+        <div class="welcome-card">
+            <h3>Hello, Student! 👋</h3>
+            <p style="color: #666; margin-top: 5px;">আজকের পড়ার রুটিন চেক করেছেন?</p>
+        </div>
 
-    <div id="resultArea" contenteditable="true" placeholder="Result will appear here..."></div>
+        <div style="padding: 20px;">
+            <h4>Recent Updates</h4>
+            <div style="background: white; padding: 15px; border-radius: 10px; margin-top: 10px;">
+                <p>BCS Preliminary Model Test Live Now!</p>
+            </div>
+        </div>
 
-    <button onclick="downloadFile()" class="download-btn" id="downloadBtn">📥 ডাউনলোড (.txt)</button>
-</div>
+        <div class="bottom-nav">
+            <div class="nav-item active">
+                <i class="fas fa-home"></i> Home
+            </div>
+            <div class="nav-item">
+                <i class="fas fa-book"></i> Book
+            </div>
+            
+            <div class="nav-center" onclick="alert('Exam Page Opening...')">
+                <i class="fas fa-pen-alt"></i>
+            </div>
 
-<script>
-    let base64Image = "";
+            <div class="nav-item">
+                <i class="fas fa-star"></i> Review
+            </div>
+            <div class="nav-item">
+                <i class="fas fa-user"></i> Profile
+            </div>
+        </div>
+    </section>
 
-    // Provider অনুযায়ী Model Name সেট করা
-    function updateModelPlaceholder() {
-        const provider = document.getElementById('apiProvider').value;
-        const keyInput = document.getElementById('apiKey');
-        
-        if(provider === 'gemini') {
-            keyInput.placeholder = "Enter Google Gemini API Key...";
-        } else if (provider === 'openai') {
-            keyInput.placeholder = "Enter OpenAI API Key (requires proxy/backend)...";
-        } else if (provider === 'deepseek') {
-            keyInput.placeholder = "Enter DeepSeek API Key...";
-        }
-    }
+    <script>
+        // ১. লোডিং অ্যানিমেশন কন্ট্রোল
+        window.addEventListener("load", () => {
+            setTimeout(() => {
+                const loader = document.getElementById("loader");
+                loader.style.opacity = "0";
+                setTimeout(() => { loader.style.display = "none"; }, 500);
+            }, 2000); // ২ সেকেন্ড দেখাবে
+        });
 
-    function previewImage() {
-        const file = document.getElementById('imageInput').files[0];
-        const preview = document.getElementById('imagePreview');
-        
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = function() {
-                preview.src = reader.result;
-                preview.style.display = "block";
-                base64Image = reader.result.split(',')[1]; // Remove data:image header
+        // ২. লগইন ভ্যালিডেশন
+        function handleLogin() {
+            const email = document.getElementById("email").value;
+            const pass = document.getElementById("password").value;
+            const errorMsg = document.getElementById("error-message");
+
+            // ডামি চেকিং (আপনার লজিক এখানে হবে)
+            if(email === "admin@gmail.com" && pass === "123456") {
+                // সফল হলে লগইন স্ক্রিন হাইড, হোম স্ক্রিন শো
+                document.getElementById("auth-screen").style.display = "none";
+                document.getElementById("home-screen").style.display = "block";
+                
+                // স্লাইডার চালু হবে
+                startSlider();
+            } else {
+                // ভুল হলে এরর মেসেজ
+                errorMsg.style.display = "block";
+                
+                // একটু ভাইব্রেশন এফেক্ট (UX এর জন্য)
+                const card = document.querySelector('.auth-card');
+                card.style.transform = "translateX(10px)";
+                setTimeout(() => card.style.transform = "translateX(-10px)", 100);
+                setTimeout(() => card.style.transform = "translateX(0)", 200);
             }
-            reader.readAsDataURL(file);
-        }
-    }
-
-    async function processImage() {
-        const apiKey = document.getElementById('apiKey').value.trim();
-        const provider = document.getElementById('apiProvider').value;
-        const template = document.getElementById('templateType').value;
-        
-        if (!apiKey) {
-            alert("দয়া করে একটি API Key দিন!");
-            return;
-        }
-        if (!base64Image) {
-            alert("দয়া করে ছবি আপলোড করুন!");
-            return;
         }
 
-        // UI Update
-        const btn = document.getElementById('scanBtn');
-        const status = document.getElementById('statusMsg');
-        const resultDiv = document.getElementById('resultArea');
-        
-        btn.disabled = true;
-        status.style.display = "block";
-        resultDiv.innerText = "";
-        
-        const systemPrompt = `
-            Act as an expert OCR and Document formatter.
-            Task: Extract text from the image perfectly.
-            Language: Bengali and English mix.
-            Format: Output strictly as '${template}'.
-            Correction: Fix spelling errors automatically.
-            Constraint: Do NOT add any conversational text like "Here is the text". Just give the content.
-        `;
-
-        try {
-            let extractedText = "";
-
-            if (provider === 'gemini') {
-                // --- GOOGLE GEMINI LOGIC ---
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-                
-                const response = await fetch(url, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [
-                                { text: systemPrompt },
-                                { inline_data: { mime_type: "image/jpeg", data: base64Image } }
-                            ]
-                        }]
-                    })
-                });
-                
-                const data = await response.json();
-                if(data.error) throw new Error(data.error.message);
-                extractedText = data.candidates[0].content.parts[0].text;
-
-            } else if (provider === 'openai' || provider === 'deepseek') {
-                // --- OPENAI / DEEPSEEK LOGIC ---
-                // Note: These providers usually block browser calls (CORS).
-                // This code follows their standard API format.
-                
-                let apiUrl = provider === 'openai' 
-                    ? "https://api.openai.com/v1/chat/completions" 
-                    : "https://api.deepseek.com/chat/completions";
-                
-                let modelName = provider === 'openai' ? "gpt-4o" : "deepseek-chat";
-
-                const response = await fetch(apiUrl, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${apiKey}`
-                    },
-                    body: JSON.stringify({
-                        model: modelName,
-                        messages: [
-                            { role: "system", content: systemPrompt },
-                            { 
-                                role: "user", 
-                                content: [
-                                    { type: "text", text: "Scan this image." },
-                                    { type: "image_url", image_url: { url: `data:image/jpeg;base64,${base64Image}` } }
-                                ]
-                            }
-                        ],
-                        max_tokens: 2000
-                    })
-                });
-
-                const data = await response.json();
-                if(data.error) throw new Error(data.error.message);
-                extractedText = data.choices[0].message.content;
-            }
-
-            resultDiv.innerText = extractedText;
-            document.getElementById('downloadBtn').style.display = "block";
-
-        } catch (error) {
-            resultDiv.innerText = "Error: " + error.message + "\n\n(টিপস: OpenAI/DeepSeek ব্রাউজার থেকে ব্লক করতে পারে। Gemini ব্যবহার করুন অথবা সঠিক কী দিন।)";
-            console.error(error);
-        } finally {
-            btn.disabled = false;
-            status.style.display = "none";
+        // ৩. সিম্পল ইমেজ স্লাইডার (Admin কন্ট্রোলের জন্য এটি ডাইনামিক করতে হবে)
+        function startSlider() {
+            let slides = document.querySelectorAll(".slide");
+            let current = 0;
+            
+            setInterval(() => {
+                slides[current].style.opacity = "0";
+                current = (current + 1) % slides.length;
+                slides[current].style.opacity = "1";
+            }, 3000); // ৩ সেকেন্ড পর পর চেঞ্জ হবে
         }
-    }
-
-    function downloadFile() {
-        const text = document.getElementById('resultArea').innerText;
-        const blob = new Blob([text], { type: "text/plain" });
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = "scanned_document.txt";
-        a.click();
-    }
-</script>
-
+    </script>
 </body>
 </html>
