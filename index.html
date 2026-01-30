@@ -9,133 +9,75 @@
 
     <style>
         :root {
-            --primary: #4F46E5; /* Theme Color */
+            --primary: #4F46E5;
             --secondary: #818CF8;
             --bg: #F3F4F6;
             --text: #1F2937;
             --white: #ffffff;
             --danger: #EF4444;
+            --success: #10B981;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { background: var(--bg); overflow: hidden; height: 100vh; width: 100vw; }
 
-        /* --- 1. LOADING SCREEN & ANIMATION --- */
+        /* --- LOADING & ANIMATION --- */
         #loading-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--white); z-index: 9999;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
-
         .logo-container { position: relative; height: 100px; width: 300px; text-align: center; }
-        
-        /* Bird Animation */
-        .bird {
-            font-size: 2rem; color: var(--primary); position: absolute;
-            opacity: 0; transform: translate(-100px, -50px);
-        }
+        .bird { font-size: 2rem; color: var(--primary); position: absolute; opacity: 0; }
         .bird.fly { animation: flyIn 2.5s forwards ease-in-out; }
-
         @keyframes flyIn {
             0% { opacity: 0; transform: translate(-150px, -100px) scale(0.5); }
-            50% { opacity: 1; transform: translate(0px, -40px) scale(1); } /* Flying */
-            100% { opacity: 1; transform: translate(0px, -25px) scale(1); } /* Landing on text */
+            50% { opacity: 1; transform: translate(0px, -40px) scale(1); }
+            100% { opacity: 1; transform: translate(0px, -25px) scale(1); }
         }
-
-        /* Text Animation */
-        .app-name span {
-            font-size: 2.5rem; font-weight: 800; color: var(--primary);
-            opacity: 0; display: inline-block; transform: translateY(20px);
-        }
+        .app-name span { font-size: 2.5rem; font-weight: 800; color: var(--primary); opacity: 0; display: inline-block; transform: translateY(20px); }
         .app-name span.show { animation: letterPop 0.5s forwards; }
+        @keyframes letterPop { to { opacity: 1; transform: translateY(0); } }
 
-        @keyframes letterPop {
-            to { opacity: 1; transform: translateY(0); }
-        }
+        /* --- AUTH SCREEN --- */
+        #auth-screen { display: none; position: relative; width: 100%; height: 100%; background: var(--white); overflow: hidden; }
+        .auth-container { display: flex; width: 200%; height: 100%; transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
+        .form-box { width: 50%; height: 100%; padding: 40px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; outline: none; }
+        .btn { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3); }
 
-        /* --- 2. AUTH SCREEN (Swipe Animation) --- */
-        #auth-screen {
-            display: none; position: relative; width: 100%; height: 100%;
-            background: var(--white); overflow: hidden;
-        }
-
-        .auth-container {
-            display: flex; width: 200%; height: 100%; transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-        }
-
-        .form-box {
-            width: 50%; height: 100%; padding: 40px;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-        }
-
-        .form-title { font-size: 2rem; color: var(--primary); margin-bottom: 20px; }
-        input {
-            width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd;
-            border-radius: 10px; outline: none; transition: 0.3s;
-        }
-        input:focus { border-color: var(--primary); }
-        
-        .btn {
-            width: 100%; padding: 15px; background: var(--primary); color: white;
-            border: none; border-radius: 10px; font-weight: bold; cursor: pointer;
-            margin-top: 10px; font-size: 1rem; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
-        }
-        .toggle-text { margin-top: 15px; cursor: pointer; color: var(--secondary); font-size: 0.9rem; }
-
-        /* --- 3. MAIN APP UI --- */
+        /* --- MAIN APP UI --- */
         #main-app { display: none; height: 100%; width: 100%; flex-direction: column; }
-        
-        /* Pages */
-        .page { flex: 1; overflow-y: auto; padding: 20px; display: none; animation: fadeIn 0.5s; }
+        .page { flex: 1; overflow-y: auto; padding: 20px; display: none; animation: fadeIn 0.4s; padding-bottom: 80px; }
         .page.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Welcome Card */
-        .welcome-card {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white; padding: 30px; border-radius: 20px; margin-bottom: 20px;
-            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
-        }
-        
         /* Bottom Navigation */
         .bottom-nav {
-            height: 70px; background: white; display: flex; justify-content: space-around;
-            align-items: center; box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
-            position: relative; z-index: 100;
+            height: 70px; background: white; display: flex; justify-content: space-around; align-items: center;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.05); position: absolute; bottom: 0; width: 100%; z-index: 100;
         }
-        .nav-item {
-            color: #9CA3AF; font-size: 1.2rem; cursor: pointer; transition: 0.3s;
-            display: flex; flex-direction: column; align-items: center;
-        }
-        .nav-item.active { color: var(--primary); }
+        .nav-item { color: #9CA3AF; font-size: 1.2rem; cursor: pointer; display: flex; flex-direction: column; align-items: center; transition: 0.3s; }
+        .nav-item.active { color: var(--primary); transform: translateY(-5px); }
         .nav-item span { font-size: 0.7rem; margin-top: 4px; }
-
-        /* Center Circle Button */
         .nav-center {
-            width: 65px; height: 65px; background: var(--primary); border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            color: white; font-size: 1.5rem; margin-top: -35px;
-            box-shadow: 0 5px 15px rgba(79, 70, 229, 0.5); border: 5px solid var(--bg);
+            width: 60px; height: 60px; background: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            color: white; font-size: 1.5rem; margin-top: -35px; box-shadow: 0 5px 15px rgba(79, 70, 229, 0.5); border: 5px solid var(--bg); transition: 0.3s;
         }
+        .nav-center:active { transform: scale(0.9); }
 
-        /* --- 4. ADMIN PANEL --- */
-        #admin-panel { display: none; background: white; height: 100%; width: 100%; position: absolute; top:0; z-index: 200; overflow-y: auto;}
-        .admin-header { padding: 20px; background: var(--text); color: white; display: flex; justify-content: space-between; align-items: center;}
-        .student-list { padding: 20px; }
-        .student-card {
-            background: #f9fafb; padding: 15px; border-radius: 10px; margin-bottom: 10px;
-            display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--primary);
-        }
-        .action-btn { padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; margin-left: 5px; color: white; border: none;}
-        .btn-ban { background: #F59E0B; }
-        .btn-delete { background: var(--danger); }
+        /* Content Cards */
+        .card { background: white; padding: 15px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
+        .book-item { display: flex; align-items: center; gap: 15px; padding: 10px; border-bottom: 1px solid #eee; }
+        .book-icon { width: 50px; height: 60px; background: var(--secondary); border-radius: 5px; display: flex; justify-content: center; align-items: center; color: white; }
         
-        /* Toast Notification */
-        #toast {
-            visibility: hidden; min-width: 250px; background-color: #333; color: #fff;
-            text-align: center; border-radius: 5px; padding: 16px; position: fixed;
-            z-index: 1000; left: 50%; bottom: 100px; transform: translateX(-50%);
-        }
+        .exam-card { border-left: 5px solid var(--primary); }
+        .review-box textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 10px; resize: none; }
+
+        /* Admin Panel */
+        #admin-panel { display: none; background: white; height: 100%; width: 100%; position: absolute; top:0; z-index: 200; overflow-y: auto;}
+        .student-card { background: #f9fafb; padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--primary); }
+        #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 5px; padding: 16px; position: fixed; z-index: 1000; left: 50%; bottom: 100px; transform: translateX(-50%); }
         #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
         @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 100px; opacity: 1;} }
         @keyframes fadeout { from {bottom: 100px; opacity: 1;} to {bottom: 0; opacity: 0;} }
@@ -147,86 +89,166 @@
     <div id="loading-screen">
         <div class="logo-container">
             <i class="fas fa-dove bird" id="birdIcon"></i>
-            <h1 class="app-name" id="appName">
-                </h1>
+            <h1 class="app-name" id="appName"></h1>
         </div>
     </div>
 
     <div id="auth-screen">
         <div class="auth-container" id="authContainer">
             <div class="form-box">
-                <h2 class="form-title">Login</h2>
+                <h2 style="color:var(--primary); margin-bottom:20px;">Login</h2>
                 <input type="email" id="loginEmail" placeholder="Email Address">
                 <input type="password" id="loginPass" placeholder="Password">
                 <button class="btn" onclick="handleLogin()">Login</button>
-                <p class="toggle-text" onclick="toggleAuth('register')">Don't have an account? <b>Register</b></p>
+                <p style="margin-top:15px; font-size:0.9rem; color:grey;">Don't have an account? <b style="color:var(--primary); cursor:pointer;" onclick="toggleAuth('register')">Register</b></p>
             </div>
             <div class="form-box">
-                <h2 class="form-title">Register</h2>
+                <h2 style="color:var(--primary); margin-bottom:20px;">Register</h2>
                 <input type="text" id="regName" placeholder="Full Name">
                 <input type="email" id="regEmail" placeholder="Email Address">
                 <input type="password" id="regPass" placeholder="Password">
                 <button class="btn" onclick="handleRegister()">Sign Up</button>
-                <p class="toggle-text" onclick="toggleAuth('login')">Already have an account? <b>Login</b></p>
+                <p style="margin-top:15px; font-size:0.9rem; color:grey;">Already have an account? <b style="color:var(--primary); cursor:pointer;" onclick="toggleAuth('login')">Login</b></p>
             </div>
         </div>
     </div>
 
     <div id="main-app">
+        
         <div id="home-page" class="page active">
-            <div class="welcome-card" id="welcomeMsg">
-                <h2>Hello, User!</h2>
-                <p>Welcome back to MENTOR.</p>
+            <div class="card" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white;">
+                <h2 id="welcomeName">Hello!</h2>
+                <p>Welcome to Mentor Academy.</p>
             </div>
-            <h3>Quick Actions</h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
-                <div style="background:white; padding:20px; border-radius:10px; text-align:center;">
-                    <i class="fas fa-book" style="color:var(--primary); font-size:2rem; margin-bottom:10px;"></i>
-                    <p>My Books</p>
+            
+            <h3>Recent Updates</h3>
+            <div class="card">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                    <i class="fas fa-bell" style="color:#F59E0B"></i>
+                    <b>New Exam Added</b>
                 </div>
-                <div style="background:white; padding:20px; border-radius:10px; text-align:center;">
-                    <i class="fas fa-chart-line" style="color:var(--secondary); font-size:2rem; margin-bottom:10px;"></i>
-                    <p>Progress</p>
+                <p style="font-size:0.9rem; color:grey;">Physics Chapter 5 exam is live now.</p>
+            </div>
+            <div class="card">
+                 <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                    <i class="fas fa-book" style="color:var(--primary)"></i>
+                    <b>New Book Available</b>
+                </div>
+                <p style="font-size:0.9rem; color:grey;">Chemistry 2nd Paper PDF uploaded.</p>
+            </div>
+        </div>
+
+        <div id="book-page" class="page">
+            <h3>My Library</h3>
+            <div class="card">
+                <div class="book-item">
+                    <div class="book-icon"><i class="fas fa-atom"></i></div>
+                    <div>
+                        <h4>HSC Physics</h4>
+                        <small style="color:grey">Dr. Shahjahan Tapan</small>
+                    </div>
+                    <i class="fas fa-download" style="margin-left:auto; color:var(--primary);"></i>
+                </div>
+                <div class="book-item">
+                    <div class="book-icon" style="background:#10B981"><i class="fas fa-flask"></i></div>
+                    <div>
+                        <h4>HSC Chemistry</h4>
+                        <small style="color:grey">Hazari Nag</small>
+                    </div>
+                    <i class="fas fa-download" style="margin-left:auto; color:var(--primary);"></i>
+                </div>
+                <div class="book-item" style="border:none;">
+                    <div class="book-icon" style="background:#F59E0B"><i class="fas fa-calculator"></i></div>
+                    <div>
+                        <h4>Higher Math</h4>
+                        <small style="color:grey">Ketab Uddin</small>
+                    </div>
+                    <i class="fas fa-download" style="margin-left:auto; color:var(--primary);"></i>
                 </div>
             </div>
         </div>
 
-        <div id="book-page" class="page"><h2>Library</h2><p>Books will appear here.</p></div>
-        <div id="exam-page" class="page"><h2>Exam Center</h2><p>Running Exams...</p></div>
-        <div id="review-page" class="page"><h2>Reviews</h2><p>Student reviews.</p></div>
-        <div id="profile-page" class="page">
-            <h2>Profile</h2>
-            <div class="welcome-card" style="margin-top:20px; text-align: center;">
-                <i class="fas fa-user-circle" style="font-size: 4rem;"></i>
-                <h3 id="profileName" style="margin-top:10px;">User Name</h3>
-                <p id="profileEmail">user@email.com</p>
+        <div id="exam-page" class="page">
+            <h3>Live Exams</h3>
+            <div class="card exam-card">
+                <div style="display:flex; justify-content:space-between;">
+                    <h4>Biology Daily Quiz</h4>
+                    <span style="background: #fee2e2; color: #ef4444; padding: 2px 8px; border-radius: 5px; font-size: 0.8rem;">Live</span>
+                </div>
+                <p style="font-size:0.8rem; margin:5px 0;">Topic: Cell Division</p>
+                <button class="btn" style="padding:10px; font-size:0.9rem;">Start Exam</button>
             </div>
-            <button class="btn" style="background:#374151; margin-top:20px;" onclick="openAdminPanel()">Admin Panel (Demo)</button>
-            <button class="btn" style="background:var(--danger); margin-top:10px;" onclick="handleLogout()">Logout</button>
+
+            <h3>Upcoming</h3>
+            <div class="card">
+                <h4>Weekly Model Test</h4>
+                <p style="font-size:0.8rem; color:grey;">Friday, 10:00 AM</p>
+            </div>
+        </div>
+
+        <div id="review-page" class="page">
+            <h3>Give Review</h3>
+            <div class="card review-box">
+                <textarea rows="4" placeholder="Write your experience..."></textarea>
+                <div style="margin-top:10px; text-align:right;">
+                    <i class="fas fa-star" style="color:#F59E0B"></i>
+                    <i class="fas fa-star" style="color:#F59E0B"></i>
+                    <i class="fas fa-star" style="color:#F59E0B"></i>
+                    <i class="fas fa-star" style="color:#F59E0B"></i>
+                    <i class="fas fa-star" style="color:#ddd"></i>
+                </div>
+                <button class="btn" onclick="showToast('Review Submitted!')">Submit</button>
+            </div>
+            
+            <h3>Recent Reviews</h3>
+            <div class="card">
+                <b>Rakib Hasan</b>
+                <p style="font-size:0.9rem;">"Best app for HSC preparation."</p>
+                <small style="color:#F59E0B">★★★★★</small>
+            </div>
+        </div>
+
+        <div id="profile-page" class="page">
+            <div style="text-align:center; margin-top:20px;">
+                <div style="width:100px; height:100px; background:#ddd; border-radius:50%; margin:0 auto; display:flex; justify-content:center; align-items:center; font-size:3rem; color:grey;">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h3 id="profileName" style="margin-top:15px;">User Name</h3>
+                <p id="profileEmail" style="color:grey;">user@email.com</p>
+            </div>
+
+            <div id="admin-btn-container" style="display:none; margin-top:20px;">
+                <button class="btn" style="background:#374151;" onclick="openAdminPanel()">
+                    <i class="fas fa-user-shield"></i> Open Admin Panel
+                </button>
+            </div>
+
+            <button class="btn" style="background:var(--danger); margin-top:20px;" onclick="handleLogout()">Logout</button>
         </div>
 
         <div class="bottom-nav">
             <div class="nav-item active" onclick="navTo('home')"><i class="fas fa-home"></i><span>Home</span></div>
             <div class="nav-item" onclick="navTo('book')"><i class="fas fa-book-open"></i><span>Book</span></div>
-            <div class="nav-center" onclick="navTo('exam')"><i class="fas fa-graduation-cap"></i></div> <div class="nav-item" onclick="navTo('review')"><i class="fas fa-star"></i><span>Review</span></div>
+            <div class="nav-center" onclick="navTo('exam')"><i class="fas fa-graduation-cap"></i></div>
+            <div class="nav-item" onclick="navTo('review')"><i class="fas fa-star"></i><span>Review</span></div>
             <div class="nav-item" onclick="navTo('profile')"><i class="fas fa-user"></i><span>Profile</span></div>
         </div>
     </div>
 
     <div id="admin-panel">
-        <div class="admin-header">
-            <h3>Admin Panel</h3>
-            <button onclick="closeAdminPanel()" style="background:none; border:none; color:white; font-size:1.5rem;"><i class="fas fa-times"></i></button>
+        <div style="padding:20px; background:var(--text); color:white; display:flex; justify-content:space-between;">
+            <h3>Admin Dashboard</h3>
+            <i class="fas fa-times" onclick="document.getElementById('admin-panel').style.display='none'" style="cursor:pointer; font-size:1.5rem;"></i>
         </div>
-        <div style="padding: 20px; background: #e5e7eb;">
-            <div style="background:white; padding:15px; border-radius:10px; display:flex; justify-content:space-between;">
-                <h4>Total Students</h4>
-                <h4 style="color:var(--primary)" id="totalStudents">0</h4>
+        <div style="padding:20px;">
+            <div class="card">
+                <h4>Total Students: <span id="totalStudents" style="color:var(--primary)">0</span></h4>
             </div>
-            <input type="text" id="searchBox" placeholder="Search by name..." onkeyup="filterStudents()" style="margin-top: 20px;">
+            <input type="text" id="searchBox" placeholder="Search Student..." onkeyup="filterStudents()" 
+                   style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px; margin-bottom:15px;">
+            
+            <div id="studentListContainer"></div>
         </div>
-        <div class="student-list" id="studentListContainer">
-            </div>
     </div>
 
     <div id="toast">Message</div>
@@ -236,7 +258,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
 
     <script>
-        // --- FIREBASE CONFIGURATION ---
         const firebaseConfig = {
             apiKey: "AIzaSyCRWpnJC1Z3WCNUAyfjhw8KlKyJ03z3G2w",
             authDomain: "mentor-ac742.firebaseapp.com",
@@ -246,36 +267,24 @@
             appId: "1:271805714479:web:efc071e2021db4286db6da",
             measurementId: "G-612FVVNZVK"
         };
-
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // --- 1. ANIMATION LOGIC ---
+        // ADMIN EMAIL CONSTANT
+        const ADMIN_EMAIL = "mdwld2005@gmail.com";
+
+        // 1. ANIMATION & INIT
         document.addEventListener('DOMContentLoaded', () => {
-            const appName = "MENTOR";
+            const name = "MENTOR";
             const container = document.getElementById('appName');
-            const bird = document.getElementById('birdIcon');
-
-            // Create letters
-            appName.split('').forEach((letter, index) => {
-                const span = document.createElement('span');
-                span.textContent = letter;
-                span.style.animationDelay = `${1.5 + (index * 0.1)}s`; // Start after bird flies
-                container.appendChild(span);
+            name.split('').forEach((l, i) => {
+                const s = document.createElement('span'); s.textContent = l;
+                s.style.animationDelay = `${1.5 + (i*0.1)}s`; container.appendChild(s);
             });
+            setTimeout(() => document.getElementById('birdIcon').classList.add('fly'), 100);
+            setTimeout(() => document.querySelectorAll('.app-name span').forEach(s => s.classList.add('show')), 100);
 
-            // Start Animation sequence
-            setTimeout(() => { bird.classList.add('fly'); }, 100);
-            
-            // Show letters logic
-            setTimeout(() => {
-                const letters = document.querySelectorAll('.app-name span');
-                letters.forEach(span => span.classList.add('show'));
-            }, 100);
-
-            // Check Auth State after animation (3.5s total)
             setTimeout(() => {
                 auth.onAuthStateChanged(user => {
                     document.getElementById('loading-screen').style.display = 'none';
@@ -289,163 +298,86 @@
             }, 3500);
         });
 
-        // --- 2. AUTH LOGIC (SWIPE) ---
-        function toggleAuth(type) {
-            const container = document.getElementById('authContainer');
-            if(type === 'register') {
-                container.style.transform = "translateX(-50%)"; // Swipe Left
-            } else {
-                container.style.transform = "translateX(0%)"; // Swipe Right
-            }
-        }
-
-        function showToast(msg) {
-            const x = document.getElementById("toast");
-            x.textContent = msg;
-            x.className = "show";
-            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
-        }
-
-        // Login
-        function handleLogin() {
-            const email = document.getElementById('loginEmail').value;
-            const pass = document.getElementById('loginPass').value;
-
-            auth.signInWithEmailAndPassword(email, pass)
-                .then((userCredential) => {
-                    document.getElementById('auth-screen').style.display = 'none';
-                    document.getElementById('main-app').style.display = 'flex';
-                    loadUserData(userCredential.user);
-                })
-                .catch((error) => {
-                    showToast("Email or Password Is Wrong");
-                });
-        }
-
-        // Register
-        function handleRegister() {
-            const email = document.getElementById('regEmail').value;
-            const pass = document.getElementById('regPass').value;
-            const name = document.getElementById('regName').value;
-
-            if(!email || !pass || !name) { showToast("Please fill all fields"); return; }
-
-            auth.createUserWithEmailAndPassword(email, pass)
-                .then((cred) => {
-                    // Store user in Firestore
-                    return db.collection('students').doc(cred.user.uid).set({
-                        name: name,
-                        email: email,
-                        status: 'active',
-                        joined: new Date()
-                    });
-                })
-                .then(() => {
-                    showToast("Welcome! Account Created.");
-                    document.getElementById('auth-screen').style.display = 'none';
-                    document.getElementById('main-app').style.display = 'flex';
-                    // Need a reload or manual DOM update usually, but Auth listener handles flow
-                })
-                .catch((error) => {
-                    showToast(error.message);
-                });
-        }
-
-        function handleLogout() {
-            auth.signOut().then(() => {
-                location.reload(); // Simple reload to reset state
-            });
-        }
-
+        // 2. USER DATA & ADMIN CHECK
         function loadUserData(user) {
             db.collection('students').doc(user.uid).get().then(doc => {
-                if(doc.exists) {
-                    const data = doc.data();
-                    document.getElementById('welcomeMsg').innerHTML = `<h2>Hello, ${data.name}!</h2><p>Let's start learning.</p>`;
-                    document.getElementById('profileName').innerText = data.name;
-                    document.getElementById('profileEmail').innerText = data.email;
+                const data = doc.exists ? doc.data() : {name: "User", email: user.email};
+                document.getElementById('welcomeName').innerText = `Hello, ${data.name}!`;
+                document.getElementById('profileName').innerText = data.name;
+                document.getElementById('profileEmail').innerText = user.email;
+
+                // CHECK IF ADMIN
+                if(user.email === ADMIN_EMAIL) {
+                    document.getElementById('admin-btn-container').style.display = 'block';
+                } else {
+                    document.getElementById('admin-btn-container').style.display = 'none';
                 }
             });
         }
 
-        // --- 3. NAVIGATION LOGIC ---
-        function navTo(pageId) {
-            // Hide all pages
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            // Remove active from nav items
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            
-            // Show selected
-            document.getElementById(pageId + '-page').classList.add('active');
-            
-            // Highlight icon (except for center button)
-            if(pageId !== 'exam') {
-                event.currentTarget.classList.add('active');
-            }
+        // 3. AUTH (Login/Register)
+        function toggleAuth(t) {
+            document.getElementById('authContainer').style.transform = t==='register' ? "translateX(-50%)" : "translateX(0%)";
+        }
+        function showToast(m) {
+            const x = document.getElementById("toast"); x.textContent = m; x.className = "show";
+            setTimeout(()=>x.className=x.className.replace("show",""), 3000);
         }
 
-        // --- 4. ADMIN PANEL LOGIC ---
+        function handleLogin() {
+            const e = document.getElementById('loginEmail').value, p = document.getElementById('loginPass').value;
+            auth.signInWithEmailAndPassword(e, p).then(c=>loadUserData(c.user)).catch(e=>showToast("Email or Password Is Wrong"));
+        }
+
+        function handleRegister() {
+            const e = document.getElementById('regEmail').value, p = document.getElementById('regPass').value, n = document.getElementById('regName').value;
+            if(!e||!p||!n) return showToast("Empty Fields");
+            auth.createUserWithEmailAndPassword(e, p).then(c => {
+                db.collection('students').doc(c.user.uid).set({name:n, email:e});
+                showToast("Welcome!");
+                // Force reload to update UI correctly for new user
+                setTimeout(() => location.reload(), 1000); 
+            }).catch(e=>showToast(e.message));
+        }
+
+        function handleLogout() { auth.signOut().then(()=>location.reload()); }
+
+        // 4. NAVIGATION
+        function navTo(id) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(id + '-page').classList.add('active');
+            if(id !== 'exam') event.currentTarget.classList.add('active');
+        }
+
+        // 5. ADMIN LOGIC
+        let allStudents = [];
         function openAdminPanel() {
             document.getElementById('admin-panel').style.display = 'block';
-            fetchStudents();
-        }
-
-        function closeAdminPanel() {
-            document.getElementById('admin-panel').style.display = 'none';
-        }
-
-        let allStudents = [];
-
-        function fetchStudents() {
-            const list = document.getElementById('studentListContainer');
-            list.innerHTML = '<p style="text-align:center">Loading...</p>';
-            
-            db.collection('students').get().then((querySnapshot) => {
+            db.collection('students').get().then(snap => {
                 allStudents = [];
-                querySnapshot.forEach((doc) => {
-                    allStudents.push({ id: doc.id, ...doc.data() });
-                });
+                snap.forEach(d => allStudents.push({id:d.id, ...d.data()}));
                 document.getElementById('totalStudents').innerText = allStudents.length;
                 renderStudents(allStudents);
             });
         }
-
-        function renderStudents(students) {
-            const list = document.getElementById('studentListContainer');
-            list.innerHTML = '';
-            
-            students.forEach(student => {
-                const div = document.createElement('div');
-                div.className = 'student-card';
-                div.innerHTML = `
-                    <div>
-                        <strong>${student.name}</strong><br>
-                        <small>${student.email}</small>
-                    </div>
-                    <div>
-                        <button class="action-btn btn-ban" onclick="alert('Ban feature for: ${student.name}')">Ban</button>
-                        <button class="action-btn btn-delete" onclick="deleteStudent('${student.id}')">Del</button>
-                    </div>
-                `;
-                list.appendChild(div);
+        function renderStudents(list) {
+            const con = document.getElementById('studentListContainer'); con.innerHTML = '';
+            list.forEach(s => {
+                con.innerHTML += `
+                <div class="student-card">
+                    <div><b>${s.name}</b><br><small>${s.email}</small></div>
+                    <button onclick="deleteStudent('${s.id}')" style="background:red; color:white; border:none; padding:5px 10px; border-radius:5px;">Del</button>
+                </div>`;
             });
         }
-
         function filterStudents() {
-            const query = document.getElementById('searchBox').value.toLowerCase();
-            const filtered = allStudents.filter(s => s.name.toLowerCase().includes(query));
-            renderStudents(filtered);
+            const q = document.getElementById('searchBox').value.toLowerCase();
+            renderStudents(allStudents.filter(s => s.name.toLowerCase().includes(q)));
         }
-
         function deleteStudent(id) {
-            if(confirm("Are you sure you want to delete this student?")) {
-                db.collection('students').doc(id).delete().then(() => {
-                    showToast("Student Deleted");
-                    fetchStudents(); // Refresh list
-                }).catch(err => showToast("Error deleting"));
-            }
+            if(confirm("Delete student?")) db.collection('students').doc(id).delete().then(()=>openAdminPanel());
         }
-
     </script>
 </body>
 </html>
