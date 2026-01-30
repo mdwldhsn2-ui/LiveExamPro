@@ -153,48 +153,97 @@
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
 
     <script>
-        const firebaseConfig = { apiKey: "AIzaSyCRWpnJC1Z3WCNUAyfjhw8KlKyJ03z3G2w", authDomain: "mentor-ac742.firebaseapp.com", projectId: "mentor-ac742", storageBucket: "mentor-ac742.firebasestorage.app", messagingSenderId: "271805714479", appId: "1:271805714479:web:efc071e2021db4286db6da", measurementId: "G-612FVVNZVK" };
+        // --- FIREBASE CONFIGURATION ---
+        const firebaseConfig = { 
+            apiKey: "AIzaSyCRWpnJC1Z3WCNUAyfjhw8KlKyJ03z3G2w", 
+            authDomain: "mentor-ac742.firebaseapp.com", 
+            projectId: "mentor-ac742", 
+            storageBucket: "mentor-ac742.firebasestorage.app", 
+            messagingSenderId: "271805714479", 
+            appId: "1:271805714479:web:efc071e2021db4286db6da", 
+            measurementId: "G-612FVVNZVK" 
+        };
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
+        
         const ADMIN_EMAIL = "mdwld2005@gmail.com";
-        let isFirstLoad = true;
+        let isFirstLoad = true; // অ্যানিমেশন কন্ট্রোল ফ্ল্যাগ
 
+        // --- 1. INITIALIZATION & ANIMATION ---
         document.addEventListener('DOMContentLoaded', () => {
-            const name = "MENTOR"; const container = document.getElementById('appName');
-            name.split('').forEach((l, i) => { const s = document.createElement('span'); s.textContent = l; s.style.animationDelay = `${1.5 + (i*0.1)}s`; container.appendChild(s); });
+            // Text Animation Setup
+            const name = "MENTOR"; 
+            const container = document.getElementById('appName');
+            name.split('').forEach((l, i) => { 
+                const s = document.createElement('span'); 
+                s.textContent = l; 
+                s.style.animationDelay = `${1.0 + (i*0.1)}s`; // Text comes after 1s
+                container.appendChild(s); 
+            });
+
+            // Start Bird Animation immediately
             setTimeout(() => document.getElementById('birdIcon').classList.add('fly'), 100);
+            
+            // Start Text Animation
             setTimeout(() => document.querySelectorAll('.app-name span').forEach(s => s.classList.add('show')), 100);
 
+            // AUTH LISTENER (With Delay for Animation)
             auth.onAuthStateChanged(user => {
-                document.getElementById('loading-screen').style.display = 'none';
-                if (user) {
-                    document.getElementById('auth-screen').style.display = 'none';
-                    if(isFirstLoad) { showWelcomeSequence(user); isFirstLoad = false; }
-                    else { document.getElementById('main-app').style.display = 'flex'; }
-                    loadUserData(user);
-                } else {
-                    document.getElementById('auth-screen').style.display = 'block';
-                    document.getElementById('main-app').style.display = 'none';
-                    isFirstLoad = true;
-                }
+                // আমরা ৩ সেকেন্ড অপেক্ষা করব অ্যানিমেশন শেষ হওয়ার জন্য
+                setTimeout(() => {
+                    document.getElementById('loading-screen').style.display = 'none'; // Hide Loading Screen
+                    
+                    if (user) {
+                        // User Logged In
+                        document.getElementById('auth-screen').style.display = 'none';
+                        
+                        // Welcome Overlay Animation (Only once per session)
+                        if(isFirstLoad) { 
+                            showWelcomeSequence(user); 
+                            isFirstLoad = false; 
+                        } else { 
+                            document.getElementById('main-app').style.display = 'flex'; 
+                        }
+                        
+                        loadUserData(user);
+                    } else {
+                        // User Not Logged In
+                        document.getElementById('auth-screen').style.display = 'block';
+                        document.getElementById('main-app').style.display = 'none';
+                        isFirstLoad = true;
+                    }
+                }, 3000); // 3000ms = 3 Seconds fixed delay
             });
         });
 
+        // --- 2. WELCOME SEQUENCE ---
         function showWelcomeSequence(user) {
             const overlay = document.getElementById('welcome-overlay');
             const welcomeText = document.getElementById('welcomeOverlayText');
+            
+            // নাম লোড হওয়ার আগে ডিফল্ট মেসেজ
             welcomeText.innerText = "Welcome Back!";
+            
             overlay.style.display = 'flex';
             document.getElementById('main-app').style.display = 'none';
-            setTimeout(() => { overlay.style.display = 'none'; document.getElementById('main-app').style.display = 'flex'; }, 2500);
+            
+            setTimeout(() => { 
+                overlay.style.display = 'none'; 
+                document.getElementById('main-app').style.display = 'flex'; 
+            }, 2500);
         }
 
-        // --- UPDATED LOAD DATA FUNCTION ---
+        // --- 3. LOAD USER DATA ---
         function loadUserData(user) {
             document.getElementById('profileEmail').innerText = user.email;
-            if(user.email === ADMIN_EMAIL) document.getElementById('admin-btn-container').style.display = 'block';
-            else document.getElementById('admin-btn-container').style.display = 'none';
+            
+            // Admin Check
+            if(user.email === ADMIN_EMAIL) {
+                document.getElementById('admin-btn-container').style.display = 'block';
+            } else {
+                document.getElementById('admin-btn-container').style.display = 'none';
+            }
 
             db.collection('students').doc(user.uid).get().then(doc => {
                 if(doc.exists) {
@@ -203,15 +252,15 @@
                     document.getElementById('profileName').innerText = data.name;
                     document.getElementById('welcomeOverlayText').innerText = `Welcome, ${data.name.split(' ')[0]}!`;
                 } else {
+                    // Data missing (Old user or Admin)
                     const tempName = user.email.split('@')[0];
                     document.getElementById('welcomeName').innerText = `Hello, ${tempName}!`;
                     document.getElementById('profileName').innerText = tempName;
-                    document.getElementById('welcomeOverlayText').innerText = `Welcome!`;
                 }
-            }).catch(error => console.error("Data Load Error:", error));
+            }).catch(error => console.log("Data Load Error:", error));
         }
 
-        // --- UPDATED REGISTER FUNCTION (CRITICAL FOR SAVING DATA) ---
+        // --- 4. REGISTER (FIXED) ---
         function handleRegister() {
             const e = document.getElementById('regEmail').value;
             const p = document.getElementById('regPass').value;
@@ -220,50 +269,93 @@
             if(!e||!p||!n) return showToast("Empty Fields");
 
             auth.createUserWithEmailAndPassword(e, p).then(cred => {
-                // ডাটাবেসে ডাটা সেভ করা হচ্ছে
+                // Save to Firestore
                 return db.collection('students').doc(cred.user.uid).set({
                     name: n,
                     email: e,
-                    joined: firebase.firestore.FieldValue.serverTimestamp() // সঠিক টাইম ফরম্যাট
+                    joined: firebase.firestore.FieldValue.serverTimestamp()
                 });
             }).then(() => {
-                showToast("Account & Data Saved!");
+                showToast("Account Created!");
+                // Reload page to start fresh
                 setTimeout(() => location.reload(), 1500); 
             }).catch(error => {
-                console.error("Register Error:", error); // কনসোলে এরর দেখাবে
+                console.error(error);
                 if(error.code === 'permission-denied') {
-                    showToast("Database Permission Denied! Fix Rules.");
+                    showToast("Error: Database Rules Blocked.");
+                    alert("Please enable Firestore Rules in Firebase Console!");
                 } else {
                     showToast(error.message);
                 }
             });
         }
 
+        // --- 5. ADMIN PANEL (FIXED) ---
+        let allStudents = [];
+        
+        function openAdminPanel() {
+            document.getElementById('admin-panel').style.display = 'block';
+            const list = document.getElementById('studentListContainer');
+            list.innerHTML = '<p style="text-align:center; margin-top:20px;">Loading data...</p>';
+
+            db.collection('students').get().then(snap => {
+                allStudents = []; 
+                snap.forEach(d => allStudents.push({id:d.id, ...d.data()}));
+                
+                document.getElementById('totalStudents').innerText = allStudents.length; 
+                
+                if(allStudents.length === 0) {
+                    list.innerHTML = '<p style="text-align:center; color:grey; margin-top:20px;">No students found yet.<br>Try registering a new account.</p>';
+                } else {
+                    renderStudents(allStudents);
+                }
+            }).catch(err => {
+                console.error("Admin Error:", err);
+                list.innerHTML = '<p style="color:red; text-align:center;">Error loading data.<br>Check Console.</p>';
+                if(err.code === 'permission-denied') alert("Admin Access Denied by Database Rules!");
+            });
+        }
+
+        function renderStudents(list) {
+            const con = document.getElementById('studentListContainer'); 
+            con.innerHTML = '';
+            list.forEach(s => { 
+                con.innerHTML += `
+                <div class="student-card">
+                    <div><b>${s.name}</b><br><small>${s.email}</small></div>
+                    <button onclick="deleteStudent('${s.id}')" style="background:var(--danger); color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">Del</button>
+                </div>`; 
+            });
+        }
+
+        function filterStudents() { 
+            const q = document.getElementById('searchBox').value.toLowerCase(); 
+            renderStudents(allStudents.filter(s => s.name.toLowerCase().includes(q))); 
+        }
+
+        function deleteStudent(id) { 
+            if(confirm("Are you sure?")) {
+                db.collection('students').doc(id).delete()
+                    .then(() => {
+                        showToast("Student Deleted");
+                        openAdminPanel(); // Refresh list
+                    })
+                    .catch(err => showToast("Delete Failed"));
+            }
+        }
+
+        // --- HELPER FUNCTIONS ---
         function toggleAuth(t) { document.getElementById('authContainer').style.transform = t==='register' ? "translateX(-50%)" : "translateX(0%)"; }
         function showToast(m) { const x = document.getElementById("toast"); x.textContent = m; x.className = "show"; setTimeout(()=>x.className=x.className.replace("show",""), 3000); }
-        function handleLogin() { const e=document.getElementById('loginEmail').value, p=document.getElementById('loginPass').value; auth.signInWithEmailAndPassword(e, p).catch(e=>showToast("Email or Password Is Wrong")); }
+        function handleLogin() { const e=document.getElementById('loginEmail').value, p=document.getElementById('loginPass').value; auth.signInWithEmailAndPassword(e, p).catch(e=>showToast("Login Failed: Check Email/Pass")); }
         function handleLogout() { auth.signOut().then(()=>location.reload()); }
+        
         function navTo(id) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(id + '-page').classList.add('active');
             if(id !== 'exam') event.currentTarget.classList.add('active');
         }
-
-        let allStudents = [];
-        function openAdminPanel() {
-            document.getElementById('admin-panel').style.display = 'block';
-            db.collection('students').get().then(snap => {
-                allStudents = []; snap.forEach(d => allStudents.push({id:d.id, ...d.data()}));
-                document.getElementById('totalStudents').innerText = allStudents.length; renderStudents(allStudents);
-            }).catch(err => console.error("Admin Load Error:", err));
-        }
-        function renderStudents(list) {
-            const con = document.getElementById('studentListContainer'); con.innerHTML = '';
-            list.forEach(s => { con.innerHTML += `<div class="student-card"><div><b>${s.name}</b><br><small>${s.email}</small></div><button onclick="deleteStudent('${s.id}')" style="background:red; color:white; border:none; padding:5px 10px;">Del</button></div>`; });
-        }
-        function filterStudents() { const q = document.getElementById('searchBox').value.toLowerCase(); renderStudents(allStudents.filter(s => s.name.toLowerCase().includes(q))); }
-        function deleteStudent(id) { if(confirm("Delete?")) db.collection('students').doc(id).delete().then(()=>openAdminPanel()); }
     </script>
 </body>
 </html>
