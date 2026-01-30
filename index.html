@@ -8,80 +8,50 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
     <style>
-        :root {
-            --primary: #4F46E5;
-            --secondary: #818CF8;
-            --bg: #F3F4F6;
-            --text: #1F2937;
-            --white: #ffffff;
-            --danger: #EF4444;
-        }
-
+        :root { --primary: #4F46E5; --secondary: #818CF8; --bg: #F3F4F6; --text: #1F2937; --white: #ffffff; --danger: #EF4444; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { background: var(--bg); overflow: hidden; height: 100vh; width: 100vw; }
 
-        /* --- 1. INITIAL LOADING SCREEN (Bird) --- */
-        #loading-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--white); z-index: 9999;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-        }
+        /* --- UI COMPONENTS --- */
+        #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--white); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .logo-container { position: relative; height: 100px; width: 300px; text-align: center; }
         .bird { font-size: 2rem; color: var(--primary); position: absolute; opacity: 0; }
         .bird.fly { animation: flyIn 2.5s forwards ease-in-out; }
-        @keyframes flyIn {
-            0% { opacity: 0; transform: translate(-150px, -100px) scale(0.5); }
-            50% { opacity: 1; transform: translate(0px, -40px) scale(1); }
-            100% { opacity: 1; transform: translate(0px, -25px) scale(1); }
-        }
+        @keyframes flyIn { 0% { opacity: 0; transform: translate(-150px, -100px) scale(0.5); } 50% { opacity: 1; transform: translate(0px, -40px) scale(1); } 100% { opacity: 1; transform: translate(0px, -25px) scale(1); } }
         .app-name span { font-size: 2.5rem; font-weight: 800; color: var(--primary); opacity: 0; display: inline-block; transform: translateY(20px); }
         .app-name span.show { animation: letterPop 0.5s forwards; }
         @keyframes letterPop { to { opacity: 1; transform: translateY(0); } }
 
-        /* --- 2. WELCOME ANIMATION OVERLAY (New) --- */
-        #welcome-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            z-index: 8888; display: none; /* Hidden by default */
-            flex-direction: column; justify-content: center; align-items: center; color: white;
-            text-align: center;
-        }
+        /* Welcome Overlay */
+        #welcome-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, var(--primary), var(--secondary)); z-index: 8888; display: none; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; }
         .welcome-content { animation: popUp 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
         .welcome-icon { font-size: 4rem; margin-bottom: 20px; background: rgba(255,255,255,0.2); width: 100px; height: 100px; line-height: 100px; border-radius: 50%; backdrop-filter: blur(5px); }
         @keyframes popUp { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        /* --- 3. AUTH SCREEN --- */
+        /* Auth */
         #auth-screen { display: none; position: relative; width: 100%; height: 100%; background: var(--white); overflow: hidden; }
         .auth-container { display: flex; width: 200%; height: 100%; transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
         .form-box { width: 50%; height: 100%; padding: 40px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; outline: none; }
         .btn { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3); }
 
-        /* --- 4. MAIN APP UI --- */
+        /* Main App */
         #main-app { display: none; height: 100%; width: 100%; flex-direction: column; }
         .page { flex: 1; overflow-y: auto; padding: 20px; display: none; animation: fadeIn 0.4s; padding-bottom: 80px; }
         .page.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Bottom Navigation */
-        .bottom-nav {
-            height: 70px; background: white; display: flex; justify-content: space-around; align-items: center;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.05); position: absolute; bottom: 0; width: 100%; z-index: 100;
-        }
+        .bottom-nav { height: 70px; background: white; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); position: absolute; bottom: 0; width: 100%; z-index: 100; }
         .nav-item { color: #9CA3AF; font-size: 1.2rem; cursor: pointer; display: flex; flex-direction: column; align-items: center; transition: 0.3s; }
         .nav-item.active { color: var(--primary); transform: translateY(-5px); }
         .nav-item span { font-size: 0.7rem; margin-top: 4px; }
-        .nav-center {
-            width: 60px; height: 60px; background: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center;
-            color: white; font-size: 1.5rem; margin-top: -35px; box-shadow: 0 5px 15px rgba(79, 70, 229, 0.5); border: 5px solid var(--bg); transition: 0.3s;
-        }
-
-        /* Cards & Admin */
+        .nav-center { width: 60px; height: 60px; background: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.5rem; margin-top: -35px; box-shadow: 0 5px 15px rgba(79, 70, 229, 0.5); border: 5px solid var(--bg); }
+        
         .card { background: white; padding: 15px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
         .book-item { display: flex; align-items: center; gap: 15px; padding: 10px; border-bottom: 1px solid #eee; }
         .book-icon { width: 50px; height: 60px; background: var(--secondary); border-radius: 5px; display: flex; justify-content: center; align-items: center; color: white; }
         .exam-card { border-left: 5px solid var(--primary); }
-        
+
         #admin-panel { display: none; background: white; height: 100%; width: 100%; position: absolute; top:0; z-index: 200; overflow-y: auto;}
         .student-card { background: #f9fafb; padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--primary); }
         
@@ -89,7 +59,6 @@
         #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
         @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 100px; opacity: 1;} }
         @keyframes fadeout { from {bottom: 100px; opacity: 1;} to {bottom: 0; opacity: 0;} }
-
     </style>
 </head>
 <body>
@@ -143,35 +112,12 @@
                 <p style="font-size:0.9rem; color:grey;">Physics Chapter 5 exam is live now.</p>
             </div>
         </div>
-
-        <div id="book-page" class="page">
-            <h3>My Library</h3>
-            <div class="card">
-                <div class="book-item">
-                    <div class="book-icon"><i class="fas fa-atom"></i></div>
-                    <div><h4>HSC Physics</h4><small>Dr. Shahjahan</small></div>
-                </div>
-            </div>
-        </div>
-
-        <div id="exam-page" class="page">
-            <h3>Live Exams</h3>
-            <div class="card exam-card">
-                <h4>Biology Daily Quiz</h4>
-                <button class="btn" style="padding:10px; font-size:0.9rem;">Start Exam</button>
-            </div>
-        </div>
-
-        <div id="review-page" class="page">
-            <h3>Give Review</h3>
-            <div class="card"><textarea style="width:100%; padding:10px;" rows="4" placeholder="Write review..."></textarea></div>
-        </div>
-
+        <div id="book-page" class="page"><h3>My Library</h3><div class="card"><div class="book-item"><div class="book-icon"><i class="fas fa-atom"></i></div><div><h4>HSC Physics</h4><small>Dr. Shahjahan</small></div></div></div></div>
+        <div id="exam-page" class="page"><h3>Live Exams</h3><div class="card exam-card"><h4>Biology Daily Quiz</h4><button class="btn" style="padding:10px; font-size:0.9rem;">Start Exam</button></div></div>
+        <div id="review-page" class="page"><h3>Give Review</h3><div class="card"><textarea style="width:100%; padding:10px;" rows="4" placeholder="Write review..."></textarea></div></div>
         <div id="profile-page" class="page">
             <div style="text-align:center; margin-top:20px;">
-                <div style="width:100px; height:100px; background:#ddd; border-radius:50%; margin:0 auto; display:flex; justify-content:center; align-items:center; font-size:3rem; color:grey;">
-                    <i class="fas fa-user"></i>
-                </div>
+                <div style="width:100px; height:100px; background:#ddd; border-radius:50%; margin:0 auto; display:flex; justify-content:center; align-items:center; font-size:3rem; color:grey;"><i class="fas fa-user"></i></div>
                 <h3 id="profileName" style="margin-top:15px;">User</h3>
                 <p id="profileEmail" style="color:grey;">email@mail.com</p>
             </div>
@@ -180,7 +126,6 @@
             </div>
             <button class="btn" style="background:var(--danger); margin-top:20px;" onclick="handleLogout()">Logout</button>
         </div>
-
         <div class="bottom-nav">
             <div class="nav-item active" onclick="navTo('home')"><i class="fas fa-home"></i><span>Home</span></div>
             <div class="nav-item" onclick="navTo('book')"><i class="fas fa-book-open"></i><span>Book</span></div>
@@ -213,8 +158,7 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
         const ADMIN_EMAIL = "mdwld2005@gmail.com";
-        
-        let isFirstLoad = true; // To prevent double animation on reload
+        let isFirstLoad = true;
 
         document.addEventListener('DOMContentLoaded', () => {
             const name = "MENTOR"; const container = document.getElementById('appName');
@@ -222,82 +166,82 @@
             setTimeout(() => document.getElementById('birdIcon').classList.add('fly'), 100);
             setTimeout(() => document.querySelectorAll('.app-name span').forEach(s => s.classList.add('show')), 100);
 
-            // AUTH LISTENER
             auth.onAuthStateChanged(user => {
-                document.getElementById('loading-screen').style.display = 'none'; // Close initial loader
-                
+                document.getElementById('loading-screen').style.display = 'none';
                 if (user) {
-                    // Hide Login Page
                     document.getElementById('auth-screen').style.display = 'none';
-                    
-                    // If this is a fresh login/load, show Welcome Animation
-                    if(isFirstLoad) {
-                        showWelcomeSequence(user);
-                        isFirstLoad = false;
-                    } else {
-                        document.getElementById('main-app').style.display = 'flex';
-                    }
+                    if(isFirstLoad) { showWelcomeSequence(user); isFirstLoad = false; }
+                    else { document.getElementById('main-app').style.display = 'flex'; }
                     loadUserData(user);
                 } else {
-                    // Show Login Page & Hide Main App
                     document.getElementById('auth-screen').style.display = 'block';
                     document.getElementById('main-app').style.display = 'none';
-                    isFirstLoad = true; // Reset for next login
+                    isFirstLoad = true;
                 }
             });
         });
 
-        // --- NEW: WELCOME SEQUENCE FUNCTION ---
         function showWelcomeSequence(user) {
             const overlay = document.getElementById('welcome-overlay');
             const welcomeText = document.getElementById('welcomeOverlayText');
-            
-            // Set text (Try to get name, default to User)
             welcomeText.innerText = "Welcome Back!";
-            
-            // Show Overlay
             overlay.style.display = 'flex';
-            
-            // Hide Main App initially (so it pops up after animation)
             document.getElementById('main-app').style.display = 'none';
-
-            // Wait 2.5 seconds then show app
-            setTimeout(() => {
-                overlay.style.display = 'none';
-                document.getElementById('main-app').style.display = 'flex';
-            }, 2500);
+            setTimeout(() => { overlay.style.display = 'none'; document.getElementById('main-app').style.display = 'flex'; }, 2500);
         }
 
+        // --- UPDATED LOAD DATA FUNCTION ---
         function loadUserData(user) {
+            document.getElementById('profileEmail').innerText = user.email;
+            if(user.email === ADMIN_EMAIL) document.getElementById('admin-btn-container').style.display = 'block';
+            else document.getElementById('admin-btn-container').style.display = 'none';
+
             db.collection('students').doc(user.uid).get().then(doc => {
-                const data = doc.exists ? doc.data() : {name: "User", email: user.email};
-                document.getElementById('welcomeName').innerText = `Hello, ${data.name}!`;
-                document.getElementById('profileName').innerText = data.name;
-                document.getElementById('profileEmail').innerText = user.email;
-                document.getElementById('welcomeOverlayText').innerText = `Welcome, ${data.name.split(' ')[0]}!`; // Update Welcome Text with real name
-                
-                if(user.email === ADMIN_EMAIL) document.getElementById('admin-btn-container').style.display = 'block';
-                else document.getElementById('admin-btn-container').style.display = 'none';
+                if(doc.exists) {
+                    const data = doc.data();
+                    document.getElementById('welcomeName').innerText = `Hello, ${data.name}!`;
+                    document.getElementById('profileName').innerText = data.name;
+                    document.getElementById('welcomeOverlayText').innerText = `Welcome, ${data.name.split(' ')[0]}!`;
+                } else {
+                    const tempName = user.email.split('@')[0];
+                    document.getElementById('welcomeName').innerText = `Hello, ${tempName}!`;
+                    document.getElementById('profileName').innerText = tempName;
+                    document.getElementById('welcomeOverlayText').innerText = `Welcome!`;
+                }
+            }).catch(error => console.error("Data Load Error:", error));
+        }
+
+        // --- UPDATED REGISTER FUNCTION (CRITICAL FOR SAVING DATA) ---
+        function handleRegister() {
+            const e = document.getElementById('regEmail').value;
+            const p = document.getElementById('regPass').value;
+            const n = document.getElementById('regName').value;
+
+            if(!e||!p||!n) return showToast("Empty Fields");
+
+            auth.createUserWithEmailAndPassword(e, p).then(cred => {
+                // ডাটাবেসে ডাটা সেভ করা হচ্ছে
+                return db.collection('students').doc(cred.user.uid).set({
+                    name: n,
+                    email: e,
+                    joined: firebase.firestore.FieldValue.serverTimestamp() // সঠিক টাইম ফরম্যাট
+                });
+            }).then(() => {
+                showToast("Account & Data Saved!");
+                setTimeout(() => location.reload(), 1500); 
+            }).catch(error => {
+                console.error("Register Error:", error); // কনসোলে এরর দেখাবে
+                if(error.code === 'permission-denied') {
+                    showToast("Database Permission Denied! Fix Rules.");
+                } else {
+                    showToast(error.message);
+                }
             });
         }
 
         function toggleAuth(t) { document.getElementById('authContainer').style.transform = t==='register' ? "translateX(-50%)" : "translateX(0%)"; }
         function showToast(m) { const x = document.getElementById("toast"); x.textContent = m; x.className = "show"; setTimeout(()=>x.className=x.className.replace("show",""), 3000); }
-
-        function handleLogin() {
-            const e = document.getElementById('loginEmail').value, p = document.getElementById('loginPass').value;
-            auth.signInWithEmailAndPassword(e, p).catch(e=>showToast("Email or Password Is Wrong"));
-        }
-
-        function handleRegister() {
-            const e = document.getElementById('regEmail').value, p = document.getElementById('regPass').value, n = document.getElementById('regName').value;
-            if(!e||!p||!n) return showToast("Empty Fields");
-            auth.createUserWithEmailAndPassword(e, p).then(c => {
-                db.collection('students').doc(c.user.uid).set({name:n, email:e});
-                showToast("Account Created!");
-            }).catch(e=>showToast(e.message));
-        }
-
+        function handleLogin() { const e=document.getElementById('loginEmail').value, p=document.getElementById('loginPass').value; auth.signInWithEmailAndPassword(e, p).catch(e=>showToast("Email or Password Is Wrong")); }
         function handleLogout() { auth.signOut().then(()=>location.reload()); }
         function navTo(id) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -306,14 +250,13 @@
             if(id !== 'exam') event.currentTarget.classList.add('active');
         }
 
-        // Admin Logic
         let allStudents = [];
         function openAdminPanel() {
             document.getElementById('admin-panel').style.display = 'block';
             db.collection('students').get().then(snap => {
                 allStudents = []; snap.forEach(d => allStudents.push({id:d.id, ...d.data()}));
                 document.getElementById('totalStudents').innerText = allStudents.length; renderStudents(allStudents);
-            });
+            }).catch(err => console.error("Admin Load Error:", err));
         }
         function renderStudents(list) {
             const con = document.getElementById('studentListContainer'); con.innerHTML = '';
