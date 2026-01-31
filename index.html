@@ -18,6 +18,7 @@
             --text-sub: #64748b;
             --success: #10b981;
             --danger: #ef4444;
+            --warning: #f59e0b;
             --shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.2);
             --glass: rgba(255, 255, 255, 0.9);
         }
@@ -25,82 +26,235 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: var(--text-main); overflow: hidden; height: 100vh; width: 100vw; }
 
-        /* --- TOAST --- */
+        /* --- NOTIFICATION SYSTEM --- */
         .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 10000; width: 90%; max-width: 400px; }
-        .toast { background: white; padding: 15px 20px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 15px; margin-bottom: 10px; opacity: 0; transform: translateY(-20px); transition: 0.4s; border-left: 5px solid var(--primary); }
+        .toast {
+            background: white; padding: 15px 20px; border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 15px;
+            margin-bottom: 10px; opacity: 0; transform: translateY(-20px); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-left: 5px solid var(--primary);
+        }
         .toast.show { opacity: 1; transform: translateY(0); }
-        .toast.success { border-color: var(--success); } .toast.error { border-color: var(--danger); }
+        .toast.success { border-color: var(--success); } .toast.success i { color: var(--success); }
+        .toast.error { border-color: var(--danger); } .toast.error i { color: var(--danger); }
+        .toast.loading { border-color: var(--primary); }
+        .toast-content h4 { font-size: 0.95rem; margin-bottom: 2px; }
+        .toast-content p { font-size: 0.8rem; color: var(--text-sub); }
         .spinner { width: 18px; height: 18px; border: 2px solid #ddd; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
         /* --- UI COMPONENTS --- */
-        .btn { width: 100%; padding: 16px; border: none; border-radius: 14px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; font-weight: 600; cursor: pointer; box-shadow: var(--shadow); transition: 0.2s; }
-        .btn:active { transform: scale(0.98); }
-        .input-group { margin-bottom: 15px; }
-        .input-group input, .input-group select, .input-group textarea { width: 100%; padding: 16px; border: 2px solid #e2e8f0; border-radius: 14px; background: var(--surface); outline: none; transition: 0.3s; }
-        .input-group input:focus { border-color: var(--primary); }
-
+        .btn {
+            width: 100%; padding: 16px; border: none; border-radius: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white; font-weight: 600; font-size: 1rem; cursor: pointer;
+            box-shadow: var(--shadow); transition: 0.2s; position: relative; overflow: hidden;
+        }
+        .btn:active { transform: scale(0.98); opacity: 0.9; }
+        
+        .btn-outline {
+            background: transparent; border: 2px solid var(--primary); color: var(--primary);
+        }
+        
+        .input-group { margin-bottom: 15px; position: relative; }
+        .input-group input, .input-group select, .input-group textarea {
+            width: 100%; padding: 16px; border: 2px solid #e2e8f0; border-radius: 14px;
+            background: var(--surface); outline: none; transition: 0.3s; color: var(--text-main);
+            font-size: 0.95rem;
+        }
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus { 
+            border-color: var(--primary); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); 
+        }
+        
         /* --- SCREENS --- */
         #loading-screen { position: fixed; inset: 0; background: var(--surface); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .bird { font-size: 2.5rem; color: var(--primary); position: absolute; opacity: 0; }
         .bird.fly { animation: flyIn 2.5s forwards ease-in-out; }
         .app-name span { font-size: 2rem; font-weight: 800; color: var(--primary); opacity: 0; display: inline-block; transform: translateY(10px); }
         .app-name span.show { animation: letterPop 0.5s forwards; }
+
         @keyframes flyIn { 0% { opacity: 0; transform: translate(-100px, -50px) scale(0.5); } 50% { opacity: 1; transform: translate(0px, -20px) scale(1); } 100% { opacity: 1; transform: translate(0px, -10px) scale(1); } }
         @keyframes letterPop { to { opacity: 1; transform: translateY(0); } }
 
         #welcome-overlay { position: fixed; inset: 0; background: var(--primary); z-index: 8888; display: none; flex-direction: column; justify-content: center; align-items: center; color: white; }
-        .welcome-card { background: white; padding: 30px; border-radius: 20px; text-align: center; color: var(--text-main); animation: popUp 0.6s; }
+        .welcome-card { background: white; padding: 30px; border-radius: 20px; text-align: center; color: var(--text-main); animation: popUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
         @keyframes popUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
+        /* Auth */
         #auth-screen { display: none; height: 100%; width: 100%; background: var(--surface); overflow-y: auto; }
         .auth-container { padding: 30px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }
+        .auth-header { margin-bottom: 40px; text-align: center; }
+        .auth-header h1 { font-size: 2rem; color: var(--primary); font-weight: 800; }
 
+        /* Main App */
         #main-app { display: none; height: 100%; width: 100%; flex-direction: column; background: var(--bg); }
         .page { flex: 1; overflow-y: auto; padding: 20px; display: none; padding-bottom: 100px; }
         .page.active { display: block; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         /* --- SLIDER --- */
-        .slider-wrapper { position: relative; width: 100%; border-radius: 16px; overflow: hidden; margin-bottom: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); background: #e2e8f0; aspect-ratio: 16 / 7; }
-        .slide { position: absolute; inset: 0; opacity: 0; transition: opacity 0.8s; cursor: pointer; }
-        .slide.active { opacity: 1; z-index: 2; }
+        .slider-wrapper {
+            position: relative; width: 100%; border-radius: 16px; overflow: hidden;
+            margin-bottom: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            background: #e2e8f0; aspect-ratio: 16 / 7;
+        }
+        .slide {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0; transition: opacity 0.8s ease-in-out; cursor: pointer;
+        }
         .slide img { width: 100%; height: 100%; object-fit: cover; }
-        .slider-dots { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 5; }
-        .dot { width: 6px; height: 6px; background: rgba(255,255,255,0.4); border-radius: 10px; }
+        .slide.active { opacity: 1; z-index: 2; }
+        .slider-dots {
+            position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 6px; z-index: 5;
+        }
+        .dot { width: 6px; height: 6px; background: rgba(255,255,255,0.4); border-radius: 10px; transition: 0.3s; }
         .dot.active { background: white; width: 18px; }
 
-        /* --- HOME GRID BUTTONS --- */
-        .home-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .home-btn { background: white; padding: 20px 10px; border-radius: 16px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.03); cursor: pointer; transition: 0.2s; }
-        .home-btn:active { transform: scale(0.95); }
-        .home-btn i { font-size: 1.8rem; margin-bottom: 8px; display: block; }
-        .hb-routine i { color: #8b5cf6; } .hb-study i { color: #f59e0b; } .hb-rank i { color: #ec4899; }
+        /* --- HOME PAGE OPTIONS --- */
+        .home-options {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px;
+        }
+        .home-option {
+            background: var(--surface); padding: 20px; border-radius: 16px; text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: 0.2s; cursor: pointer;
+        }
+        .home-option:active { transform: scale(0.97); }
+        .home-option i { font-size: 1.8rem; margin-bottom: 10px; color: var(--primary); }
+        .home-option h3 { font-size: 1rem; margin-bottom: 5px; }
 
-        /* --- ROUTINE & STUDY STYLES --- */
-        .routine-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 4px solid var(--primary); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+        /* --- ROUTINE PAGE --- */
+        .routine-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .routine-item {
+            background: var(--surface); padding: 15px; margin-bottom: 12px; border-radius: 14px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02); border: 1px solid #f1f5f9;
+        }
+        .routine-item h4 { margin-bottom: 5px; }
+        .routine-item p { font-size: 0.9rem; color: var(--text-sub); margin-bottom: 10px; }
+        .routine-days { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 10px; }
+        .day-pill {
+            background: #e0e7ff; color: var(--primary); padding: 3px 10px;
+            border-radius: 20px; font-size: 0.8rem;
+        }
+
+        /* --- STUDY PAGE --- */
+        .study-goal-card {
+            background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+            padding: 20px; border-radius: 16px; color: white; margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+        .timer-display {
+            text-align: center; padding: 20px; background: var(--surface); 
+            border-radius: 16px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+        .timer-display h2 { font-size: 2.5rem; color: var(--primary); margin-bottom: 10px; }
         
-        /* Study UI */
-        .goal-card { background: linear-gradient(135deg, var(--primary), var(--secondary)); padding: 20px; border-radius: 16px; color: white; text-align: center; margin-bottom: 20px; }
-        .progress-bar-bg { width: 100%; height: 10px; background: rgba(255,255,255,0.3); border-radius: 5px; margin-top: 10px; overflow: hidden; }
-        .progress-bar-fill { height: 100%; background: #10b981; width: 0%; transition: width 0.5s; }
+        .progress-container { margin-bottom: 20px; }
+        .progress-label { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .progress-bar {
+            height: 10px; background: #e2e8f0; border-radius: 5px; overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%; background: linear-gradient(to right, var(--primary), var(--secondary));
+            border-radius: 5px; transition: width 0.5s ease;
+        }
         
-        .study-card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); position: relative; overflow: hidden; }
-        .study-card.locked { opacity: 0.7; filter: grayscale(1); pointer-events: none; }
-        .study-card.locked::after { content: '\f023'; font-family: "Font Awesome 6 Free"; font-weight: 900; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 3rem; color: #64748b; opacity: 0.5; }
+        .level-selector { margin-bottom: 20px; }
         
-        /* --- BOTTOM NAV --- */
-        .bottom-nav { position: fixed; bottom: 20px; left: 20px; right: 20px; height: 70px; background: var(--glass); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-radius: 20px; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 10px 40px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.5); z-index: 100; }
+        .study-card {
+            background: var(--surface); padding: 20px; border-radius: 16px;
+            margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+        .study-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .day-tag { background: #dcfce7; color: var(--success); padding: 3px 10px; border-radius: 20px; font-size: 0.8rem; }
+        .topics-list { margin: 10px 0; }
+        .topic-item { display: flex; align-items: center; margin-bottom: 8px; }
+        .topic-item i { color: var(--success); margin-right: 10px; }
+        
+        .practice-btn {
+            background: var(--primary); color: white; padding: 10px 20px;
+            border-radius: 10px; border: none; font-weight: 600; cursor: pointer;
+            display: block; width: 100%; margin-top: 15px;
+        }
+
+        /* --- MCQ PRACTICE MODAL --- */
+        .mcq-modal {
+            position: fixed; inset: 0; background: var(--bg); z-index: 200;
+            display: none; flex-direction: column; overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+        .mcq-question {
+            background: var(--surface); padding: 20px; border-radius: 16px;
+            margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+        .mcq-option {
+            background: var(--surface); padding: 15px; margin-bottom: 10px;
+            border-radius: 12px; border: 2px solid #e2e8f0; cursor: pointer;
+            transition: 0.2s;
+        }
+        .mcq-option.selected { border-color: var(--primary); background: #eef2ff; }
+        .mcq-option.correct { border-color: var(--success); background: #dcfce7; }
+        .mcq-option.wrong { border-color: var(--danger); background: #fee2e2; }
+
+        /* --- RESULT MESSAGE --- */
+        .result-message {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: white; padding: 30px; border-radius: 20px; text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2); z-index: 300; display: none;
+            animation: popUp 0.5s ease;
+        }
+
+        /* --- BOTTOM NAVIGATION --- */
+        .bottom-nav {
+            position: fixed; bottom: 20px; left: 20px; right: 20px; height: 70px;
+            background: var(--glass); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border-radius: 20px; display: flex; justify-content: space-around; align-items: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.5); z-index: 100;
+        }
         .nav-item { color: #94a3b8; font-size: 1.3rem; transition: 0.3s; position: relative; }
         .nav-item.active { color: var(--primary); transform: translateY(-5px); }
-        .nav-center-btn { width: 55px; height: 55px; background: var(--primary); border-radius: 18px; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.4rem; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4); transform: translateY(0); transition: 0.3s; }
+        .nav-item.active::after { content: ''; position: absolute; bottom: -5px; left: 50%; transform: translateX(-50%); width: 5px; height: 5px; background: var(--primary); border-radius: 50%; }
+        
+        .nav-center-btn {
+            width: 55px; height: 55px; background: var(--primary); border-radius: 18px;
+            display: flex; justify-content: center; align-items: center; color: white;
+            font-size: 1.4rem; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+            transform: translateY(0); transition: 0.3s;
+        }
+        .nav-center-btn:active { transform: scale(0.9); }
 
-        /* --- ADMIN & MODALS --- */
-        .full-screen-modal { position: fixed; inset: 0; background: var(--bg); z-index: 200; display: none; flex-direction: column; overflow-y: auto; animation: slideUp 0.3s ease; }
+        /* --- MODALS --- */
+        .full-screen-modal {
+            position: fixed; inset: 0; background: var(--bg); z-index: 200; display: none; flex-direction: column;
+            overflow-y: auto; animation: slideUp 0.3s ease;
+        }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        .modal-header { padding: 20px; background: var(--surface); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
-        .delete-btn { width: 30px; height: 30px; background: #fee2e2; color: var(--danger); border: none; border-radius: 8px; cursor: pointer; }
-
+        
+        .modal-header { 
+            padding: 20px; background: var(--surface); display: flex; justify-content: space-between; 
+            align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.03); position: sticky; top: 0; z-index: 10; 
+        }
+        
+        .upload-area {
+            border: 2px dashed #cbd5e1; border-radius: 16px; padding: 30px; text-align: center;
+            margin-bottom: 15px; cursor: pointer; background: #f8fafc; transition: 0.3s;
+        }
+        .upload-area:hover { border-color: var(--primary); background: #eef2ff; }
+        
+        .admin-item { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--primary); }
+        .delete-btn { width: 35px; height: 35px; border-radius: 8px; background: #fee2e2; color: var(--danger); border: none; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        
+        /* --- RANK PAGE --- */
+        .rank-list { margin-top: 20px; }
+        .rank-item {
+            background: var(--surface); padding: 15px; border-radius: 12px; margin-bottom: 10px;
+            display: flex; align-items: center; gap: 15px;
+        }
+        .rank-number {
+            width: 40px; height: 40px; border-radius: 50%; background: var(--primary);
+            color: white; display: flex; justify-content: center; align-items: center;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -118,28 +272,39 @@
         <div class="welcome-card">
             <div style="font-size:3rem; margin-bottom:15px; color:var(--success);"><i class="fas fa-check-circle"></i></div>
             <h2 style="font-size:1.5rem; margin-bottom:5px;">Welcome Back!</h2>
-            <p id="welcomeUserName" style="color:var(--text-sub)"></p>
+            <p id="welcomeUserName" style="color:var(--text-sub)">Glad to see you again.</p>
         </div>
     </div>
 
     <div id="auth-screen">
         <div class="auth-container">
-            <div style="text-align:center; margin-bottom:40px;">
+            <div class="auth-header">
                 <i class="fas fa-graduation-cap" style="font-size:3rem; color:var(--primary); margin-bottom:10px;"></i>
-                <h1 style="color:var(--primary);">MENTOR</h1>
+                <h1>MENTOR</h1>
+                <p style="color:var(--text-sub);">Learn. Practice. Achieve.</p>
             </div>
+
             <div id="loginForm">
-                <div class="input-group"><input type="email" id="loginEmail" placeholder="Email Address"></div>
-                <div class="input-group"><input type="password" id="loginPass" placeholder="Password"></div>
+                <div class="input-group">
+                    <input type="email" id="loginEmail" placeholder="Email Address">
+                </div>
+                <div class="input-group">
+                    <input type="password" id="loginPass" placeholder="Password">
+                </div>
                 <button class="btn" onclick="handleLogin()">Log In</button>
-                <p style="text-align:center; margin-top:20px;">New here? <b style="color:var(--primary); cursor:pointer;" onclick="toggleAuth('reg')">Create Account</b></p>
+                <p style="text-align:center; margin-top:20px; font-size:0.9rem;">
+                    New here? <b style="color:var(--primary); cursor:pointer;" onclick="toggleAuth('reg')">Create Account</b>
+                </p>
             </div>
+
             <div id="regForm" style="display:none;">
                 <div class="input-group"><input type="text" id="regName" placeholder="Full Name"></div>
                 <div class="input-group"><input type="email" id="regEmail" placeholder="Email Address"></div>
                 <div class="input-group"><input type="password" id="regPass" placeholder="Password"></div>
                 <button class="btn" onclick="handleRegister()">Create Account</button>
-                <p style="text-align:center; margin-top:20px;">Have account? <b style="color:var(--primary); cursor:pointer;" onclick="toggleAuth('login')">Log In</b></p>
+                <p style="text-align:center; margin-top:20px; font-size:0.9rem;">
+                    Have an account? <b style="color:var(--primary); cursor:pointer;" onclick="toggleAuth('login')">Log In</b>
+                </p>
             </div>
         </div>
     </div>
@@ -147,93 +312,166 @@
     <div id="main-app">
         <div id="home-page" class="page active">
             <div class="slider-wrapper" id="homeSlider">
-                <div style="display:flex; justify-content:center; align-items:center; height:100%; color:#94a3b8;"><i class="fas fa-spinner fa-spin"></i></div>
+                <div style="display:flex; justify-content:center; align-items:center; height:100%; color:#94a3b8;">
+                    <i class="fas fa-spinner fa-spin"></i>
+                </div>
+                <div class="slider-dots" id="sliderDots"></div>
             </div>
 
-            <div style="margin-bottom:20px;">
-                <h2 id="homeWelcomeName">Hello!</h2>
-                <p style="color:var(--text-sub); font-size:0.9rem;">Keep learning, keep growing.</p>
+            <div class="info-card">
+                <h2 id="homeWelcomeName" style="margin-bottom:5px;">Hello User!</h2>
+                <p style="opacity:0.9; font-size:0.9rem;">Ready to learn something new today?</p>
             </div>
 
-            <div class="home-grid">
-                <div class="home-btn hb-routine" onclick="navTo('routine')">
-                    <i class="fas fa-clock"></i> Routine
+            <h3 style="font-size:1.1rem; margin-bottom:15px; padding-left:5px;">Quick Actions</h3>
+            <div class="home-options">
+                <div class="home-option" onclick="navTo('routine')">
+                    <i class="fas fa-calendar-alt"></i>
+                    <h3>Routine</h3>
+                    <p style="font-size:0.8rem; color:var(--text-sub);">Manage Schedule</p>
                 </div>
-                <div class="home-btn hb-study" onclick="navTo('study')">
-                    <i class="fas fa-book-open"></i> Study
+                <div class="home-option" onclick="navTo('study')">
+                    <i class="fas fa-book-open"></i>
+                    <h3>Study</h3>
+                    <p style="font-size:0.8rem; color:var(--text-sub);">Track Progress</p>
                 </div>
-                <div class="home-btn hb-rank" onclick="navTo('rank')">
-                    <i class="fas fa-medal"></i> Rank
+                <div class="home-option" onclick="navTo('rank')">
+                    <i class="fas fa-trophy"></i>
+                    <h3>Rank</h3>
+                    <p style="font-size:0.8rem; color:var(--text-sub);">Top 10%</p>
                 </div>
             </div>
         </div>
 
         <div id="routine-page" class="page">
-            <h2 style="margin-bottom:15px;">Daily Routine</h2>
-            <div class="input-group" style="display:flex; gap:10px;">
-                <input type="text" id="userRoutineInput" placeholder="Add personal task..." style="flex:1;">
-                <input type="time" id="userRoutineTime" style="width:auto;">
-                <button class="btn" style="width:auto; padding:0 20px;" onclick="addPersonalRoutine()"><i class="fas fa-plus"></i></button>
+            <div class="routine-header">
+                <h2>My Routine</h2>
+                <button class="btn" style="width:auto; padding:10px 20px;" onclick="openRoutineModal()">
+                    <i class="fas fa-plus"></i> Add Routine
+                </button>
             </div>
-            <div id="routineList">Loading...</div>
+            <div id="routineListContainer">
+                <!-- Routines will be loaded here -->
+            </div>
         </div>
 
         <div id="study-page" class="page">
-            <div class="goal-card">
-                <h2 id="studyGoalTitle">Loading Goal...</h2>
-                <div style="font-size:2rem; font-weight:bold; margin:10px 0;" id="studyTimer">00d 00h 00m</div>
-                <div style="display:flex; justify-content:space-between; font-size:0.8rem;">
-                    <span>Progress</span>
-                    <span id="studyProgressText">0%</span>
+            <div class="study-goal-card">
+                <h3 id="studyGoalTitle">Daily Goal: 4 Hours</h3>
+                <p id="studyGoalDesc">Complete all topics for today</p>
+            </div>
+
+            <div class="timer-display">
+                <h2 id="studyTimer">00:00:00</h2>
+                <p>Study Session Timer</p>
+                <div style="margin-top:15px;">
+                    <button class="btn" style="width:auto; padding:10px 20px; margin-right:10px;" onclick="startTimer()">
+                        <i class="fas fa-play"></i> Start
+                    </button>
+                    <button class="btn btn-outline" style="width:auto; padding:10px 20px;" onclick="stopTimer()">
+                        <i class="fas fa-pause"></i> Pause
+                    </button>
                 </div>
-                <div class="progress-bar-bg"><div class="progress-bar-fill" id="studyProgressBar"></div></div>
             </div>
 
-            <div class="input-group">
-                <select id="studyLevelSelect" onchange="loadStudyContent(this.value)">
-                    <option value="">Select Level</option>
-                </select>
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Today's Progress</span>
+                    <span id="progressPercent">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+                </div>
             </div>
 
-            <div id="studyCardsContainer"></div>
+            <div class="level-selector">
+                <div class="input-group">
+                    <select id="studyLevelSelect" onchange="loadStudyCards()">
+                        <option value="">Select Level</option>
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="studyCardsContainer">
+                <!-- Study cards will be loaded here -->
+            </div>
         </div>
 
         <div id="rank-page" class="page">
-            <h2 style="margin-bottom:15px;">Leaderboard</h2>
-            <div class="routine-card" style="background:#fef3c7; border-color:#f59e0b;">
-                <div><b>You</b></div>
-                <div style="font-weight:bold; color:#f59e0b;" id="myRankScore">0 pts</div>
+            <h2 style="margin-bottom:20px;">Leaderboard</h2>
+            <div class="info-card" style="background:linear-gradient(135deg, #f59e0b, #fbbf24);">
+                <h3>Your Rank: #15</h3>
+                <p>Top 10% of students</p>
             </div>
-            <div id="leaderboardList">Loading...</div>
+            
+            <div class="rank-list">
+                <h3 style="margin-bottom:15px;">Top Performers</h3>
+                <div class="rank-item">
+                    <div class="rank-number" style="background:#f59e0b;">1</div>
+                    <div>
+                        <h4>Alex Johnson</h4>
+                        <p style="color:var(--text-sub); font-size:0.9rem;">Score: 98%</p>
+                    </div>
+                </div>
+                <div class="rank-item">
+                    <div class="rank-number" style="background:#64748b;">2</div>
+                    <div>
+                        <h4>Sarah Williams</h4>
+                        <p style="color:var(--text-sub); font-size:0.9rem;">Score: 96%</p>
+                    </div>
+                </div>
+                <div class="rank-item">
+                    <div class="rank-number" style="background:#a16207;">3</div>
+                    <div>
+                        <h4>Michael Chen</h4>
+                        <p style="color:var(--text-sub); font-size:0.9rem;">Score: 95%</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div id="exam-page" class="page">
             <h2 style="margin-bottom:20px;">Exam Center</h2>
-            <div class="routine-card" onclick="openExamList('live')" style="cursor:pointer;">
-                <div style="display:flex; gap:15px; align-items:center;">
-                    <i class="fas fa-broadcast-tower" style="color:red; font-size:1.5rem;"></i>
-                    <div><b>Live Exams</b><br><small>Last 24h</small></div>
-                </div>
+            <div class="exam-item" onclick="openExamList('live')">
+                <div class="exam-item-icon" style="background:#fee2e2; color:#ef4444;"><i class="fas fa-broadcast-tower"></i></div>
+                <div><h4 style="font-size:1rem;">Live Exams</h4><small style="color:var(--text-sub)">Happening Now</small></div>
             </div>
-            <div class="routine-card" onclick="openExamList('model')" style="cursor:pointer;">
-                <div style="display:flex; gap:15px; align-items:center;">
-                    <i class="fas fa-clipboard-list" style="color:green; font-size:1.5rem;"></i>
-                    <div><b>Model Tests</b><br><small>Full Syllabus</small></div>
-                </div>
+            <div class="exam-item" onclick="openExamList('model')">
+                <div class="exam-item-icon" style="background:#dcfce7; color:#10b981;"><i class="fas fa-clipboard-list"></i></div>
+                <div><h4 style="font-size:1rem;">Model Tests</h4><small style="color:var(--text-sub)">Full Syllabus</small></div>
+            </div>
+            <div class="exam-item" onclick="openExamList('subject')">
+                <div class="exam-item-icon" style="background:#fef3c7; color:#f59e0b;"><i class="fas fa-layer-group"></i></div>
+                <div><h4 style="font-size:1rem;">Subject Wise</h4><small style="color:var(--text-sub)">Chapter Based</small></div>
             </div>
         </div>
 
-        <div id="book-page" class="page"><h2>Library</h2><p>Coming Soon</p></div>
-        <div id="review-page" class="page"><h2>Reviews</h2><p>No reviews</p></div>
+        <div id="book-page" class="page"><h2 style="padding:20px;">Library Empty</h2></div>
+        <div id="review-page" class="page"><h2 style="padding:20px;">No Reviews</h2></div>
 
         <div id="profile-page" class="page">
-            <div style="text-align:center; margin:30px 0;">
-                <div style="width:80px; height:80px; background:#e0e7ff; color:var(--primary); border-radius:50%; margin:0 auto 10px; display:flex; justify-content:center; align-items:center; font-size:2rem;"><i class="fas fa-user"></i></div>
-                <h2 id="profileName">User</h2>
-                <p id="profileEmail" style="color:var(--text-sub);">email@mail.com</p>
+            <div style="text-align:center; margin-top:30px; margin-bottom:30px;">
+                <div style="width:100px; height:100px; background:#e0e7ff; color:var(--primary); border-radius:50%; margin:0 auto; display:flex; justify-content:center; align-items:center; font-size:2.5rem; margin-bottom:15px;">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h2 id="profileName">User Name</h2>
+                <p id="profileEmail" style="color:var(--text-sub);">email@example.com</p>
             </div>
-            <button id="adminBtn" class="btn" style="background:#334155; margin-bottom:10px; display:none;" onclick="openAdminPanel()">Admin Panel</button>
-            <button class="btn" style="background:#fee2e2; color:var(--danger);" onclick="auth.signOut().then(()=>location.reload())">Logout</button>
+            
+            <div id="admin-btn-container" style="display:none; padding:0 20px;">
+                <button class="btn" style="background:var(--text-main); margin-bottom:15px;" onclick="openAdminPanel()">
+                    <i class="fas fa-shield-alt"></i> Admin Panel
+                </button>
+            </div>
+            
+            <div style="padding:0 20px;">
+                <button class="btn" style="background:#fee2e2; color:var(--danger);" onclick="handleLogout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
         </div>
 
         <div class="bottom-nav">
@@ -245,75 +483,142 @@
         </div>
     </div>
 
+    <!-- ADMIN PANEL -->
     <div id="admin-panel" class="full-screen-modal">
         <div class="modal-header">
-            <h3>Admin Panel</h3>
-            <button onclick="document.getElementById('admin-panel').style.display='none'" style="border:none; background:none; font-size:1.5rem;"><i class="fas fa-times"></i></button>
+            <h3>Admin Dashboard</h3>
+            <button onclick="document.getElementById('admin-panel').style.display='none'" style="background:none; border:none; font-size:1.5rem;"><i class="fas fa-times"></i></button>
         </div>
         <div style="padding:20px;">
-            <div style="display:flex; gap:10px; overflow-x:auto; margin-bottom:20px;">
-                <button class="btn" style="width:auto; padding:8px 15px; font-size:0.8rem;" onclick="showAdminTab('routine')">Routine</button>
-                <button class="btn" style="width:auto; padding:8px 15px; font-size:0.8rem; background:#64748b;" onclick="showAdminTab('study')">Study</button>
-                <button class="btn" style="width:auto; padding:8px 15px; font-size:0.8rem; background:#64748b;" onclick="showAdminTab('slider')">Slider</button>
+            <div style="display:flex; gap:10px; margin-bottom:20px; overflow-x:auto; padding-bottom:5px;">
+                <button class="btn" style="padding:10px 20px; font-size:0.9rem; width:auto;" onclick="showAdminSection('slider')">Sliders</button>
+                <button class="btn" style="padding:10px 20px; font-size:0.9rem; width:auto; background:#94a3b8;" onclick="showAdminSection('students')">Students</button>
+                <button class="btn" style="padding:10px 20px; font-size:0.9rem; width:auto; background:#94a3b8;" onclick="showAdminSection('exams')">Exams</button>
+                <button class="btn" style="padding:10px 20px; font-size:0.9rem; width:auto; background:#94a3b8;" onclick="showAdminSection('routine')">Routine</button>
+                <button class="btn" style="padding:10px 20px; font-size:0.9rem; width:auto; background:#94a3b8;" onclick="showAdminSection('study')">Study</button>
             </div>
 
-            <div id="admin-routine-tab">
-                <h4>Manage Routine</h4>
-                <div class="input-group" style="display:flex; gap:10px;">
-                    <input type="text" id="admRoutineTxt" placeholder="Global routine task...">
-                    <input type="time" id="admRoutineTime">
-                    <button class="btn" style="width:auto;" onclick="addAdminRoutine()"><i class="fas fa-plus"></i></button>
+            <div id="admin-slider-sec">
+                <div class="upload-area" onclick="document.getElementById('sliderFile').click()">
+                    <i class="fas fa-cloud-upload-alt" style="font-size:2rem; color:var(--primary); margin-bottom:10px;"></i>
+                    <p style="color:var(--text-sub);">Click to Upload Image (16:7)</p>
+                    <input type="file" id="sliderFile" accept="image/*" style="display:none" onchange="previewFile()">
                 </div>
-                <div id="adminRoutineList"></div>
-            </div>
-
-            <div id="admin-study-tab" style="display:none;">
-                <h4>Manage Goal</h4>
-                <div class="input-group"><input type="text" id="admGoalTitle" placeholder="Goal Title (e.g. HSC 2026)"></div>
-                <div class="input-group"><input type="datetime-local" id="admGoalDate"></div>
-                <button class="btn" onclick="setGoalData()" style="margin-bottom:20px;">Set Goal Info</button>
-
-                <h4>Add Study Level</h4>
-                <div class="input-group" style="display:flex; gap:10px;">
-                    <input type="text" id="admLevelName" placeholder="Level Name (e.g. Phase 1)">
-                    <button class="btn" style="width:auto;" onclick="addLevel()"><i class="fas fa-plus"></i></button>
+                <p id="fileNameDisplay" style="text-align:center; font-size:0.8rem; color:var(--primary); margin-bottom:10px;"></p>
+                <div class="input-group">
+                    <input type="text" id="sliderLink" placeholder="Redirect Link (Optional)">
                 </div>
+                <button class="btn" id="uploadBtn" onclick="uploadSlider()">Add Slider</button>
                 
-                <h4>Add Study Day Content</h4>
-                <select id="admDayLevelSelect" class="input-group" style="width:100%; padding:15px; border-radius:14px; border:2px solid #e2e8f0;"><option>Select Level First</option></select>
-                <input type="number" id="admDayNum" placeholder="Day Number (e.g. 1)" class="input-group" style="display:block; width:100%; padding:15px; border-radius:14px; border:2px solid #e2e8f0; margin-bottom:10px;">
-                <input type="text" id="admDayTitle" placeholder="Day Title" class="input-group" style="display:block; width:100%; padding:15px; border-radius:14px; border:2px solid #e2e8f0; margin-bottom:10px;">
-                <textarea id="admDayDesc" placeholder="Study Details..." rows="3" style="width:100%; padding:15px; border-radius:14px; border:2px solid #e2e8f0; margin-bottom:10px;"></textarea>
-                <textarea id="admDayJson" placeholder="MCQ JSON: [{q:'..',options:['..'],correct:0}]" rows="3" style="width:100%; padding:15px; border-radius:14px; border:2px solid #e2e8f0; margin-bottom:10px;"></textarea>
-                <button class="btn" onclick="addStudyDay()">Add Day Content</button>
+                <h4 style="margin:25px 0 15px 0;">Active Sliders</h4>
+                <div id="adminSliderList">Loading...</div>
             </div>
 
-            <div id="admin-slider-tab" style="display:none;">
-                <input type="file" id="sliderFile" style="margin-bottom:10px;">
-                <input type="text" id="sliderLink" placeholder="Link" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:10px;">
-                <button class="btn" onclick="uploadSlider()">Upload</button>
-                <div id="adminSliderList" style="margin-top:20px;"></div>
+            <div id="admin-students-sec" style="display:none;"><p>Student list goes here...</p></div>
+            <div id="admin-exams-sec" style="display:none;"><p>Exam management goes here...</p></div>
+            
+            <div id="admin-routine-sec" style="display:none;">
+                <h4>Manage All Routines</h4>
+                <div id="adminRoutineList">Loading...</div>
+            </div>
+            
+            <div id="admin-study-sec" style="display:none;">
+                <div class="input-group">
+                    <input type="text" id="studyGoalTitleInput" placeholder="Study Goal Title">
+                </div>
+                <div class="input-group">
+                    <textarea id="studyGoalDescInput" placeholder="Goal Description" rows="3"></textarea>
+                </div>
+                <div class="input-group">
+                    <input type="number" id="studyTargetHours" placeholder="Target Hours (e.g., 4)">
+                </div>
+                <button class="btn" onclick="saveStudyGoal()">Save Study Goal</button>
+                
+                <h4 style="margin:25px 0 15px 0;">Study Levels</h4>
+                <div class="input-group">
+                    <input type="text" id="levelNameInput" placeholder="Level Name">
+                </div>
+                <div class="input-group">
+                    <textarea id="levelDescInput" placeholder="Level Description" rows="2"></textarea>
+                </div>
+                <button class="btn" onclick="addStudyLevel()">Add Level</button>
+                
+                <div id="studyLevelsList" style="margin-top:20px;"></div>
             </div>
         </div>
     </div>
 
-    <div id="active-exam-modal" class="full-screen-modal">
-        <div class="modal-header" style="background:var(--primary); color:white;">
-            <h4 id="activeExamTitle">Practice</h4>
-            <div id="examTimerDisplay" style="background:rgba(255,255,255,0.2); padding:5px 10px; border-radius:8px;"></div>
-        </div>
-        <div id="questionContainer" style="padding:20px; padding-bottom:100px;"></div>
-        <div style="position:fixed; bottom:0; width:100%; padding:20px; background:white; border-top:1px solid #eee;">
-            <button class="btn" onclick="submitPractice()">Submit</button>
-        </div>
-    </div>
-
-    <div id="exam-list-modal" class="full-screen-modal">
+    <!-- ROUTINE MODAL -->
+    <div id="routine-modal" class="full-screen-modal">
         <div class="modal-header">
-            <h3 id="examListTitle">Exams</h3>
-            <button onclick="document.getElementById('exam-list-modal').style.display='none'" style="border:none; background:none; font-size:1.5rem;"><i class="fas fa-arrow-left"></i></button>
+            <h3>Create Routine</h3>
+            <button onclick="document.getElementById('routine-modal').style.display='none'" style="background:none; border:none; font-size:1.5rem;"><i class="fas fa-times"></i></button>
         </div>
-        <div id="examListContainer" style="padding:20px;"></div>
+        <div style="padding:20px;">
+            <div class="input-group">
+                <input type="text" id="routineTitle" placeholder="Routine Title">
+            </div>
+            <div class="input-group">
+                <textarea id="routineDesc" placeholder="Description" rows="3"></textarea>
+            </div>
+            <div class="input-group">
+                <label>Select Days:</label>
+                <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:10px;">
+                    <label style="display:flex; align-items:center; gap:5px;">
+                        <input type="checkbox" value="Mon"> Mon
+                    </label>
+                    <label style="display:flex; align-items:center; gap:5px;">
+                        <input type="checkbox" value="Tue"> Tue
+                    </label>
+                    <label style="display:flex; align-items:center; gap:5px;">
+                        <input type="checkbox" value="Wed"> Wed
+                    </label>
+                    <label style="display:flex; align-items:center; gap:5px;">
+                        <input type="checkbox" value="Thu"> Thu
+                    </label>
+                    <label style="display:flex; align-items:center; gap:5px;">
+                        <input type="checkbox" value="Fri"> Fri
+                    </label>
+                    <label style="display:flex; align-items:center; gap:5px;">
+                        <input type="checkbox" value="Sat"> Sat
+                    </label>
+                    <label style="display:flex; align-items:center; gap:5px;">
+                        <input type="checkbox" value="Sun"> Sun
+                    </label>
+                </div>
+            </div>
+            <button class="btn" onclick="saveRoutine()">Save Routine</button>
+        </div>
+    </div>
+
+    <!-- MCQ PRACTICE MODAL -->
+    <div id="mcq-modal" class="mcq-modal">
+        <div class="modal-header">
+            <h3>Practice Test</h3>
+            <div>
+                <span id="mcqProgress">Question 1/5</span>
+                <button onclick="closeMCQModal()" style="background:none; border:none; font-size:1.5rem; margin-left:15px;"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+        <div style="padding:20px;">
+            <div id="mcqQuestionsContainer">
+                <!-- Questions will be loaded here -->
+            </div>
+            <div style="margin-top:20px;">
+                <button class="btn" id="submitMCQBtn" onclick="submitMCQ()">Submit Answers</button>
+                <button class="btn btn-outline" style="margin-top:10px;" onclick="nextQuestion()" id="nextQuestionBtn" style="display:none;">Next Question</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- RESULT MESSAGE -->
+    <div class="result-message" id="resultMessage">
+        <div style="font-size:4rem; margin-bottom:15px; color:var(--success);" id="resultIcon">
+            <i class="fas fa-trophy"></i>
+        </div>
+        <h2 id="resultTitle">Congratulations!</h2>
+        <p id="resultText">You scored 90% and passed the test!</p>
+        <button class="btn" onclick="closeResult()" style="margin-top:20px;">Continue</button>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
@@ -321,420 +626,796 @@
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
 
     <script>
-        const firebaseConfig = { apiKey: "AIzaSyCRWpnJC1Z3WCNUAyfjhw8KlKyJ03z3G2w", authDomain: "mentor-ac742.firebaseapp.com", projectId: "mentor-ac742", storageBucket: "mentor-ac742.firebasestorage.app", messagingSenderId: "271805714479", appId: "1:271805714479:web:efc071e2021db4286db6da", measurementId: "G-612FVVNZVK" };
+        // 1. CONFIG
+        const firebaseConfig = { 
+            apiKey: "AIzaSyCRWpnJC1Z3WCNUAyfjhw8KlKyJ03z3G2w", 
+            authDomain: "mentor-ac742.firebaseapp.com", 
+            projectId: "mentor-ac742", 
+            storageBucket: "mentor-ac742.firebasestorage.app", 
+            messagingSenderId: "271805714479", 
+            appId: "1:271805714479:web:efc071e2021db4286db6da", 
+            measurementId: "G-612FVVNZVK" 
+        };
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
-        
         const ADMIN_EMAIL = "mdwld2005@gmail.com";
         const CLOUD_NAME = "dsmvmq076";
         const UPLOAD_PRESET = "my_app_upload";
+
+        // Global Variables
         let currentUser = null;
+        let studyTimer = null;
+        let timerSeconds = 0;
+        let currentLevel = '';
+        let currentDay = 1;
+        let mcqQuestions = [];
+        let currentQuestionIndex = 0;
+        let userAnswers = [];
+        let studyProgress = 0;
 
-        // --- INIT ---
+        // 2. NOTIFICATION SYSTEM
+        function showNotify(type, title, msg) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            let icon = '';
+            if(type === 'success') icon = '<i class="fas fa-check-circle" style="font-size:1.5rem;"></i>';
+            if(type === 'error') icon = '<i class="fas fa-exclamation-circle" style="font-size:1.5rem;"></i>';
+            if(type === 'loading') icon = '<div class="spinner"></div>';
+
+            toast.innerHTML = `
+                ${icon}
+                <div class="toast-content">
+                    <h4>${title}</h4>
+                    <p>${msg}</p>
+                </div>
+            `;
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 100);
+            
+            if(type !== 'loading') {
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 400);
+                }, 3000);
+            }
+            return toast;
+        }
+
+        // 3. APP INIT
         document.addEventListener('DOMContentLoaded', () => {
-            const n="MENTOR", c=document.getElementById('appName');
-            n.split('').forEach((l,i)=>{const s=document.createElement('span');s.textContent=l;s.style.animationDelay=`${0.5+i*0.1}s`;c.appendChild(s)});
-            setTimeout(()=>document.getElementById('birdIcon').classList.add('fly'),100);
-            setTimeout(()=>document.querySelectorAll('.app-name span').forEach(s=>s.classList.add('show')),100);
+            // Logo Animation
+            const name = "MENTOR"; 
+            const container = document.getElementById('appName');
+            name.split('').forEach((l, i) => { 
+                const s = document.createElement('span'); s.textContent = l; 
+                s.style.animationDelay = `${0.5 + (i*0.1)}s`; 
+                container.appendChild(s); 
+            });
+            setTimeout(() => document.getElementById('birdIcon').classList.add('fly'), 100);
+            setTimeout(() => document.querySelectorAll('.app-name span').forEach(s => s.classList.add('show')), 100);
 
+            // Auth Listener
             auth.onAuthStateChanged(user => {
                 setTimeout(() => {
-                    document.getElementById('loading-screen').style.display='none';
-                    if(user) {
+                    document.getElementById('loading-screen').style.display = 'none';
+                    if (user) {
                         currentUser = user;
-                        document.getElementById('auth-screen').style.display='none';
-                        document.getElementById('main-app').style.display='flex';
+                        document.getElementById('auth-screen').style.display = 'none';
+                        document.getElementById('main-app').style.display = 'flex';
                         loadUserData(user);
                         loadHomeSliders();
+                        loadUserRoutines();
+                        loadStudyGoal();
+                        loadStudyLevels();
                     } else {
-                        document.getElementById('auth-screen').style.display='block';
-                        document.getElementById('main-app').style.display='none';
+                        document.getElementById('auth-screen').style.display = 'block';
+                        document.getElementById('main-app').style.display = 'none';
                     }
                 }, 2500);
             });
         });
 
-        // --- NOTIFICATION ---
-        function showNotify(type, title, msg) {
-            const c=document.getElementById('toastContainer'), t=document.createElement('div');
-            t.className=`toast ${type}`;
-            t.innerHTML=`<div class="${type==='loading'?'spinner':''}">${type==='success'?'<i class="fas fa-check"></i>':(type==='error'?'<i class="fas fa-times"></i>':'')}</div><div><h4>${title}</h4><p>${msg}</p></div>`;
-            c.appendChild(t); setTimeout(()=>t.classList.add('show'),100);
-            if(type!=='loading') setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),400)},3000);
-            return t;
+        // 4. AUTH LOGIC
+        function toggleAuth(type) {
+            document.getElementById('loginForm').style.display = type === 'login' ? 'block' : 'none';
+            document.getElementById('regForm').style.display = type === 'reg' ? 'block' : 'none';
         }
 
-        // --- AUTH ---
-        function toggleAuth(t) { document.getElementById('loginForm').style.display=t==='login'?'block':'none'; document.getElementById('regForm').style.display=t==='reg'?'block':'none'; }
         function handleLogin() {
-            const e=document.getElementById('loginEmail').value, p=document.getElementById('loginPass').value;
-            const noti=showNotify('loading','Logging in...','Please wait');
-            auth.signInWithEmailAndPassword(e,p).then(c=>{ noti.remove(); showWelcome(c.user); }).catch(e=>{ noti.remove(); showNotify('error','Failed',e.message); });
+            const e = document.getElementById('loginEmail').value;
+            const p = document.getElementById('loginPass').value;
+            if(!e || !p) return showNotify('error', 'Opps!', 'Please fill all fields.');
+            
+            const loadToast = showNotify('loading', 'Logging in...', 'Please wait a moment');
+            
+            auth.signInWithEmailAndPassword(e, p).then(cred => {
+                loadToast.remove();
+                showWelcome(cred.user);
+            }).catch(err => {
+                loadToast.remove();
+                showNotify('error', 'Login Failed', 'Check email or password.');
+            });
         }
+
         function handleRegister() {
-            const n=document.getElementById('regName').value, e=document.getElementById('regEmail').value, p=document.getElementById('regPass').value;
-            const noti=showNotify('loading','Creating Account...','Please wait');
-            auth.createUserWithEmailAndPassword(e,p).then(c=>{
-                db.collection('students').doc(c.user.uid).set({name:n, email:e, joined:new Date(), points:0, studyProgress:{}});
-                noti.remove(); showWelcome(c.user);
-            }).catch(e=>{ noti.remove(); showNotify('error','Failed',e.message); });
-        }
-        function showWelcome(u) {
-            document.getElementById('welcome-overlay').style.display='flex';
-            document.getElementById('welcomeUserName').innerText = u.displayName || u.email;
-            setTimeout(()=>document.getElementById('welcome-overlay').style.display='none',2000);
-        }
-        function loadUserData(u) {
-            document.getElementById('profileEmail').innerText=u.email;
-            if(u.email===ADMIN_EMAIL) document.getElementById('adminBtn').style.display='block';
-            db.collection('students').doc(u.uid).get().then(d=>{
-                const n=d.exists?d.data().name:'User';
-                document.getElementById('homeWelcomeName').innerText=`Hello, ${n}!`;
-                document.getElementById('profileName').innerText=n;
+            const n = document.getElementById('regName').value;
+            const e = document.getElementById('regEmail').value;
+            const p = document.getElementById('regPass').value;
+            if(!n || !e || !p) return showNotify('error', 'Error', 'All fields required');
+
+            const loadToast = showNotify('loading', 'Creating Account', 'Setting up your profile...');
+
+            auth.createUserWithEmailAndPassword(e, p).then(cred => {
+                db.collection('students').doc(cred.user.uid).set({
+                    name: n, email: e, joined: new Date()
+                }).then(() => {
+                    loadToast.remove();
+                    showWelcome(cred.user);
+                });
+            }).catch(err => {
+                loadToast.remove();
+                showNotify('error', 'Failed', err.message);
             });
         }
 
-        // --- NAVIGATION ---
+        function showWelcome(user) {
+            const name = user.displayName || document.getElementById('regName').value || "User";
+            document.getElementById('welcomeUserName').innerText = name;
+            
+            document.getElementById('welcome-overlay').style.display = 'flex';
+            setTimeout(() => {
+                document.getElementById('welcome-overlay').style.display = 'none';
+            }, 2000);
+        }
+
+        function handleLogout() {
+            auth.signOut().then(() => window.location.reload());
+        }
+
+        function loadUserData(user) {
+            document.getElementById('profileEmail').innerText = user.email;
+            if(user.email === ADMIN_EMAIL) document.getElementById('admin-btn-container').style.display = 'block';
+
+            db.collection('students').doc(user.uid).get().then(doc => {
+                const name = doc.exists ? doc.data().name : user.email.split('@')[0];
+                document.getElementById('homeWelcomeName').innerText = `Hello, ${name}!`;
+                document.getElementById('profileName').innerText = name;
+                document.getElementById('welcomeUserName').innerText = name;
+            });
+        }
+
+        // 5. NAVIGATION
         function navTo(id) {
-            document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-            document.getElementById(id+'-page').classList.add('active');
-            // Logic for specific pages
-            if(id==='routine') loadRoutines();
-            if(id==='study') loadStudyData();
-            if(id==='rank') loadLeaderboard();
-            // Highlight Icon
-            const map = {'home':0, 'book':1, 'exam':2, 'review':3, 'profile':4};
-            if(map[id]!==undefined) document.querySelectorAll('.nav-item')[map[id]].classList.add('active');
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(id + '-page').classList.add('active');
+            
+            // Highlight nav icon
+            if(id === 'home') document.querySelectorAll('.nav-item')[0].classList.add('active');
+            if(id === 'book') document.querySelectorAll('.nav-item')[1].classList.add('active');
+            if(id === 'review') document.querySelectorAll('.nav-item')[3].classList.add('active');
+            if(id === 'profile') document.querySelectorAll('.nav-item')[4].classList.add('active');
+            
+            // Load specific page data
+            if(id === 'routine') loadUserRoutines();
+            if(id === 'study') loadStudyProgress();
         }
 
-        // --- FEATURE: ROUTINE ---
-        function loadRoutines() {
-            const list = document.getElementById('routineList');
-            list.innerHTML='Loading...';
-            // Fetch Global Admin Routines & Personal Routines
-            Promise.all([
-                db.collection('routines').where('type','==','admin').get(),
-                db.collection('routines').where('uid','==',currentUser.uid).get()
-            ]).then(res => {
-                const adminR = res[0].docs.map(d=>({id:d.id, ...d.data(), isAdmin:true}));
-                const userR = res[1].docs.map(d=>({id:d.id, ...d.data(), isAdmin:false}));
-                const all = [...adminR, ...userR].sort((a,b) => a.time.localeCompare(b.time));
-                
-                list.innerHTML='';
-                if(all.length===0) list.innerHTML='<p style="text-align:center;color:#aaa">No routines set.</p>';
-                
-                all.forEach(r => {
-                    list.innerHTML += `
-                    <div class="routine-card" style="border-left-color:${r.isAdmin?'var(--primary)':'var(--success)'}">
-                        <div>
-                            <b>${r.task}</b>
-                            <div style="font-size:0.8rem; color:grey;">${tConvert(r.time)} • ${r.isAdmin?'Admin':'Personal'}</div>
-                        </div>
-                        ${!r.isAdmin ? `<button class="delete-btn" onclick="delRoutine('${r.id}')"><i class="fas fa-trash"></i></button>` : ''}
-                    </div>`;
-                });
-            });
+        // 6. ROUTINE SYSTEM
+        function openRoutineModal() {
+            document.getElementById('routine-modal').style.display = 'flex';
         }
-        function addPersonalRoutine() {
-            const task = document.getElementById('userRoutineInput').value;
-            const time = document.getElementById('userRoutineTime').value;
-            if(!task || !time) return showNotify('error','Error','Fill all fields');
+
+        function saveRoutine() {
+            const title = document.getElementById('routineTitle').value;
+            const desc = document.getElementById('routineDesc').value;
+            const dayCheckboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+            const days = Array.from(dayCheckboxes).map(cb => cb.value);
+            
+            if(!title || days.length === 0) {
+                return showNotify('error', 'Error', 'Please fill title and select at least one day');
+            }
+            
             db.collection('routines').add({
-                task, time, type:'personal', uid:currentUser.uid, createdAt: new Date()
-            }).then(()=>{
-                document.getElementById('userRoutineInput').value='';
-                loadRoutines();
+                userId: currentUser.uid,
+                title: title,
+                description: desc,
+                days: days,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                showNotify('success', 'Success', 'Routine saved!');
+                document.getElementById('routine-modal').style.display = 'none';
+                loadUserRoutines();
             });
         }
-        function delRoutine(id) { if(confirm("Delete?")) db.collection('routines').doc(id).delete().then(loadRoutines); }
-        function tConvert(time) {
-            time = time.toString ().match (/^([01]\d|2[0-3])(:)([0-5]\d)(:[0-5]\d)?$/) || [time];
-            if (time.length > 1) { 
-                time = time.slice (1);  
-                time[5] = +time[0] < 12 ? ' AM' : ' PM'; 
-                time[0] = +time[0] % 12 || 12; 
+
+        function loadUserRoutines() {
+            const container = document.getElementById('routineListContainer');
+            container.innerHTML = '<p style="text-align:center; color:#94a3b8;">Loading routines...</p>';
+            
+            let query = db.collection('routines').where('userId', '==', currentUser.uid);
+            
+            // If admin, show all routines
+            if(currentUser.email === ADMIN_EMAIL) {
+                query = db.collection('routines');
             }
-            return time.join (''); 
-        }
-
-        // --- FEATURE: STUDY (Smart Goal) ---
-        let currentLevel = null;
-        let studyDays = [];
-        let userProgress = {};
-
-        function loadStudyData() {
-            // Load Goal Info
-            db.collection('settings').doc('goal').onSnapshot(doc => {
-                if(doc.exists) {
-                    const d = doc.data();
-                    document.getElementById('studyGoalTitle').innerText = d.title;
-                    startTimer(d.targetDate);
+            
+            query.orderBy('createdAt', 'desc').get().then(snap => {
+                container.innerHTML = '';
+                if(snap.empty) {
+                    container.innerHTML = '<div style="text-align:center; margin-top:50px; color:#94a3b8;"><i class="fas fa-calendar-plus" style="font-size:3rem;"></i><p>No routines yet. Create one!</p></div>';
+                    return;
                 }
-            });
-
-            // Load Levels for Dropdown
-            const sel = document.getElementById('studyLevelSelect');
-            db.collection('study_levels').get().then(snap => {
-                sel.innerHTML = '<option value="">Select Level</option>';
-                snap.forEach(d => {
-                    sel.innerHTML += `<option value="${d.id}">${d.data().name}</option>`;
-                });
-            });
-
-            // Load User Progress
-            db.collection('students').doc(currentUser.uid).get().then(doc => {
-                if(doc.exists) userProgress = doc.data().studyProgress || {};
-            });
-        }
-
-        function loadStudyContent(levelId) {
-            if(!levelId) return;
-            currentLevel = levelId;
-            const cont = document.getElementById('studyCardsContainer');
-            cont.innerHTML = 'Loading content...';
-
-            db.collection('study_days').where('levelId','==',levelId).orderBy('dayNum').get().then(snap => {
-                studyDays = snap.docs.map(d=>({id:d.id, ...d.data()}));
-                renderStudyCards();
-            });
-        }
-
-        function renderStudyCards() {
-            const cont = document.getElementById('studyCardsContainer');
-            cont.innerHTML = '';
-            
-            // Determine completed day for this level
-            const completed = userProgress[currentLevel] || 0; 
-            
-            // Calculate Progress Bar
-            const total = studyDays.length;
-            const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
-            document.getElementById('studyProgressText').innerText = percent + "%";
-            document.getElementById('studyProgressBar').style.width = percent + "%";
-
-            studyDays.forEach(day => {
-                const isLocked = day.dayNum > (completed + 1);
-                const isCompleted = day.dayNum <= completed;
                 
-                cont.innerHTML += `
-                <div class="study-card ${isLocked ? 'locked' : ''}">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                        <h3 style="color:var(--primary);">Day ${day.dayNum}: ${day.title}</h3>
-                        ${isCompleted ? '<i class="fas fa-check-circle" style="color:var(--success); font-size:1.5rem;"></i>' : ''}
-                    </div>
-                    <p style="color:var(--text-sub); margin-bottom:15px;">${day.content}</p>
-                    ${!isLocked && !isCompleted ? `<button class="btn" onclick="openPractice('${day.id}')">Start Practice</button>` : ''}
-                    ${isCompleted ? '<small style="color:green;">Completed</small>' : ''}
-                </div>`;
-            });
-        }
-
-        function startTimer(isoDate) {
-            const end = new Date(isoDate).getTime();
-            setInterval(() => {
-                const now = new Date().getTime();
-                const dist = end - now;
-                if(dist < 0) {
-                     document.getElementById('studyTimer').innerText = "EXPIRED";
-                     return;
-                }
-                const d = Math.floor(dist / (1000 * 60 * 60 * 24));
-                const h = Math.floor((dist % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const m = Math.floor((dist % (1000 * 60 * 60)) / (1000 * 60));
-                document.getElementById('studyTimer').innerText = `${d}d ${h}h ${m}m`;
-            }, 60000); // update every minute
-        }
-
-        // --- PRACTICE MCQ LOGIC ---
-        let activePracticeQuestions = [];
-        let activeDayId = null;
-
-        function openPractice(dayId) {
-            const day = studyDays.find(d => d.id === dayId);
-            if(!day || !day.questions) return showNotify('error','Error','No questions found');
-            
-            activePracticeQuestions = day.questions;
-            activeDayId = dayId;
-            
-            const qc = document.getElementById('questionContainer');
-            qc.innerHTML = '';
-            
-            day.questions.forEach((q, i) => {
-                let opts = '';
-                q.options.forEach((o, j) => {
-                    opts += `<div class="p-opt" data-idx="${j}" onclick="selectOpt(this)">${j+1}. ${o}</div>`;
-                });
-                qc.innerHTML += `<div class="q-box" data-correct="${q.correct}"><p><b>Q${i+1}.</b> ${q.q}</p>${opts}</div>`;
-            });
-
-            document.getElementById('active-exam-modal').style.display='flex';
-            document.getElementById('activeExamTitle').innerText = "Day " + day.dayNum + " Practice";
-            document.getElementById('examTimerDisplay').style.display='none';
-            // Add style for options
-            const style = document.createElement('style');
-            style.innerHTML = `.p-opt { padding:10px; border:1px solid #eee; margin:5px 0; border-radius:8px; cursor:pointer; } .p-opt.sel { background:#e0e7ff; border-color:var(--primary); }`;
-            document.head.appendChild(style);
-        }
-
-        window.selectOpt = function(el) {
-            el.parentNode.querySelectorAll('.p-opt').forEach(e=>e.classList.remove('sel'));
-            el.classList.add('sel');
-        }
-
-        function submitPractice() {
-            const qBoxes = document.querySelectorAll('.q-box');
-            let score = 0;
-            qBoxes.forEach(box => {
-                const selected = box.querySelector('.sel');
-                if(selected && parseInt(selected.dataset.idx) === parseInt(box.dataset.correct)) {
-                    score++;
-                }
-            });
-
-            const percent = (score / activePracticeQuestions.length) * 100;
-            document.getElementById('active-exam-modal').style.display='none';
-
-            if(percent >= 80) {
-                showNotify('success', 'Great Job!', `You got ${percent}%. Next day unlocked!`);
-                
-                // Update Progress
-                const currentDayNum = studyDays.find(d => d.id === activeDayId).dayNum;
-                // Only update if this is a new progress
-                if((userProgress[currentLevel] || 0) < currentDayNum) {
-                     userProgress[currentLevel] = currentDayNum;
-                     db.collection('students').doc(currentUser.uid).update({
-                         studyProgress: userProgress,
-                         points: firebase.firestore.FieldValue.increment(10) // Give points for rank
-                     }).then(renderStudyCards);
-                }
-            } else {
-                showNotify('error', 'Try Again', `You got ${percent}%. Need 80% to pass.`);
-            }
-        }
-
-        // --- FEATURE: RANK ---
-        function loadLeaderboard() {
-            const list = document.getElementById('leaderboardList');
-            list.innerHTML = 'Loading...';
-            db.collection('students').orderBy('points', 'desc').limit(20).get().then(snap => {
-                list.innerHTML = '';
-                let rank = 1;
                 snap.forEach(doc => {
-                    const s = doc.data();
-                    const isMe = doc.id === currentUser.uid;
-                    if(isMe) document.getElementById('myRankScore').innerText = (s.points || 0) + " pts";
+                    const data = doc.data();
+                    const daysHtml = data.days.map(day => `<span class="day-pill">${day}</span>`).join('');
                     
-                    list.innerHTML += `
-                    <div class="routine-card" style="border-left-color:${isMe?'#f59e0b':'#ddd'}">
-                        <div style="display:flex; gap:10px;">
-                            <b>#${rank++}</b>
-                            <span>${s.name}</span>
+                    container.innerHTML += `
+                    <div class="routine-item">
+                        <div style="display:flex; justify-content:space-between; align-items:start;">
+                            <div>
+                                <h4>${data.title}</h4>
+                                <p>${data.description || 'No description'}</p>
+                                <div class="routine-days">${daysHtml}</div>
+                            </div>
+                            <button class="delete-btn" onclick="deleteRoutine('${doc.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
                         </div>
-                        <div style="font-weight:bold; color:var(--primary);">${s.points||0} pts</div>
+                        ${currentUser.email === ADMIN_EMAIL ? `<small style="color:var(--text-sub);">By: ${data.userId}</small>` : ''}
                     </div>`;
                 });
             });
         }
 
-        // --- ADMIN FUNCTIONS ---
-        function showAdminTab(id) {
-            ['routine','study','slider'].forEach(t => document.getElementById('admin-'+t+'-tab').style.display='none');
-            document.getElementById('admin-'+id+'-tab').style.display='block';
-            if(id==='routine') loadAdminRoutines();
+        function deleteRoutine(id) {
+            if(confirm("Delete this routine?")) {
+                db.collection('routines').doc(id).delete().then(() => {
+                    showNotify('success', 'Deleted', 'Routine removed');
+                    loadUserRoutines();
+                });
+            }
+        }
+
+        // 7. STUDY SYSTEM
+        function loadStudyGoal() {
+            db.collection('studyGoals').orderBy('createdAt', 'desc').limit(1).get().then(snap => {
+                if(!snap.empty) {
+                    const goal = snap.docs[0].data();
+                    document.getElementById('studyGoalTitle').innerText = goal.title;
+                    document.getElementById('studyGoalDesc').innerText = goal.description;
+                }
+            });
+        }
+
+        function loadStudyLevels() {
+            db.collection('studyLevels').orderBy('order').get().then(snap => {
+                const select = document.getElementById('studyLevelSelect');
+                select.innerHTML = '<option value="">Select Level</option>';
+                
+                snap.forEach(doc => {
+                    const level = doc.data();
+                    select.innerHTML += `<option value="${doc.id}">${level.name}</option>`;
+                });
+            });
+        }
+
+        function loadStudyCards() {
+            const levelId = document.getElementById('studyLevelSelect').value;
+            if(!levelId) return;
+            
+            currentLevel = levelId;
+            const container = document.getElementById('studyCardsContainer');
+            container.innerHTML = '<p style="text-align:center; color:#94a3b8;">Loading study plan...</p>';
+            
+            // Load study syllabus for this level
+            db.collection('studySyllabus').where('levelId', '==', levelId).get().then(snap => {
+                container.innerHTML = '';
+                
+                if(snap.empty) {
+                    container.innerHTML = '<div style="text-align:center; margin-top:50px; color:#94a3b8;"><p>No study plan available for this level.</p></div>';
+                    return;
+                }
+                
+                const docs = Array.from(snap.docs);
+                docs.sort((a, b) => a.data().day - b.data().day);
+                
+                // Show current day's card
+                const todayCard = docs.find(doc => doc.data().day === currentDay) || docs[0];
+                if(todayCard) {
+                    const data = todayCard.data();
+                    container.innerHTML = `
+                    <div class="study-card">
+                        <div class="study-card-header">
+                            <h3>Day ${data.day}</h3>
+                            <span class="day-tag">Today</span>
+                        </div>
+                        <div class="topics-list">
+                            ${data.topics ? data.topics.map(topic => `
+                                <div class="topic-item">
+                                    <i class="fas fa-book"></i>
+                                    <span>${topic}</span>
+                                </div>
+                            `).join('') : '<p>No topics listed</p>'}
+                        </div>
+                        <button class="practice-btn" onclick="startPracticeTest('${todayCard.id}')">
+                            <i class="fas fa-play-circle"></i> Start Practice
+                        </button>
+                    </div>`;
+                }
+            });
+        }
+
+        function loadStudyProgress() {
+            if(!currentUser) return;
+            
+            db.collection('userProgress').doc(currentUser.uid).get().then(doc => {
+                if(doc.exists) {
+                    const progress = doc.data();
+                    studyProgress = progress.progress || 0;
+                    currentDay = progress.currentDay || 1;
+                    
+                    document.getElementById('progressPercent').innerText = `${studyProgress}%`;
+                    document.getElementById('progressFill').style.width = `${studyProgress}%`;
+                }
+            });
+        }
+
+        // 8. TIMER FUNCTIONS
+        function startTimer() {
+            if(studyTimer) return;
+            
+            studyTimer = setInterval(() => {
+                timerSeconds++;
+                updateTimerDisplay();
+                
+                // Update progress every 5 minutes
+                if(timerSeconds % 300 === 0) {
+                    studyProgress = Math.min(100, studyProgress + 5);
+                    updateProgress();
+                }
+            }, 1000);
+            
+            showNotify('success', 'Timer Started', 'Study session has begun');
+        }
+
+        function stopTimer() {
+            if(studyTimer) {
+                clearInterval(studyTimer);
+                studyTimer = null;
+                showNotify('info', 'Timer Stopped', 'Study session paused');
+            }
+        }
+
+        function updateTimerDisplay() {
+            const hours = Math.floor(timerSeconds / 3600);
+            const minutes = Math.floor((timerSeconds % 3600) / 60);
+            const seconds = timerSeconds % 60;
+            
+            document.getElementById('studyTimer').innerText = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function updateProgress() {
+            document.getElementById('progressPercent').innerText = `${studyProgress}%`;
+            document.getElementById('progressFill').style.width = `${studyProgress}%`;
+            
+            // Save progress to database
+            if(currentUser) {
+                db.collection('userProgress').doc(currentUser.uid).set({
+                    progress: studyProgress,
+                    currentDay: currentDay,
+                    lastUpdated: new Date()
+                }, { merge: true });
+            }
+        }
+
+        // 9. MCQ PRACTICE SYSTEM
+        function startPracticeTest(syllabusId) {
+            // Load practice questions for this syllabus
+            db.collection('practiceQuestions').where('syllabusId', '==', syllabusId).get().then(snap => {
+                if(snap.empty) {
+                    showNotify('error', 'No Questions', 'Practice questions not available yet');
+                    return;
+                }
+                
+                mcqQuestions = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                currentQuestionIndex = 0;
+                userAnswers = [];
+                
+                document.getElementById('mcq-modal').style.display = 'flex';
+                loadQuestion();
+            });
+        }
+
+        function loadQuestion() {
+            if(currentQuestionIndex >= mcqQuestions.length) {
+                submitMCQ();
+                return;
+            }
+            
+            const question = mcqQuestions[currentQuestionIndex];
+            const container = document.getElementById('mcqQuestionsContainer');
+            const optionsHtml = question.options.map((opt, idx) => `
+                <div class="mcq-option" onclick="selectOption(${idx})" id="option${idx}">
+                    ${opt}
+                </div>
+            `).join('');
+            
+            container.innerHTML = `
+                <div class="mcq-question">
+                    <h3>${question.question}</h3>
+                    <div style="margin-top:15px;">${optionsHtml}</div>
+                </div>
+            `;
+            
+            document.getElementById('mcqProgress').innerText = `Question ${currentQuestionIndex + 1}/${mcqQuestions.length}`;
+            document.getElementById('submitMCQBtn').style.display = currentQuestionIndex === mcqQuestions.length - 1 ? 'block' : 'none';
+            document.getElementById('nextQuestionBtn').style.display = currentQuestionIndex < mcqQuestions.length - 1 ? 'block' : 'none';
+            
+            // Restore previous selection if exists
+            if(userAnswers[currentQuestionIndex] !== undefined) {
+                selectOption(userAnswers[currentQuestionIndex], true);
+            }
+        }
+
+        function selectOption(optionIndex, noSave = false) {
+            // Remove previous selection
+            document.querySelectorAll('.mcq-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // Highlight selected option
+            document.getElementById(`option${optionIndex}`).classList.add('selected');
+            
+            if(!noSave) {
+                userAnswers[currentQuestionIndex] = optionIndex;
+            }
+        }
+
+        function nextQuestion() {
+            if(userAnswers[currentQuestionIndex] === undefined) {
+                showNotify('error', 'Select Answer', 'Please select an answer before continuing');
+                return;
+            }
+            
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function submitMCQ() {
+            let correctCount = 0;
+            
+            mcqQuestions.forEach((q, idx) => {
+                if(userAnswers[idx] === q.correctAnswer) {
+                    correctCount++;
+                }
+            });
+            
+            const score = Math.round((correctCount / mcqQuestions.length) * 100);
+            const passed = score >= 80;
+            
+            // Show result
+            document.getElementById('resultMessage').style.display = 'block';
+            
+            if(passed) {
+                document.getElementById('resultIcon').innerHTML = '<i class="fas fa-trophy"></i>';
+                document.getElementById('resultTitle').innerText = 'Congratulations!';
+                document.getElementById('resultText').innerText = `You scored ${score}% and passed the test! Moving to next day...`;
+                
+                // Update progress and move to next day
+                studyProgress = Math.min(100, studyProgress + 20);
+                currentDay++;
+                updateProgress();
+                
+                // Unlock next day after a delay
+                setTimeout(() => {
+                    loadStudyCards();
+                }, 2000);
+            } else {
+                document.getElementById('resultIcon').innerHTML = '<i class="fas fa-redo"></i>';
+                document.getElementById('resultTitle').innerText = 'Try Again!';
+                document.getElementById('resultText').innerText = `You scored ${score}%. Need 80% to pass. Review the material and try again.`;
+            }
+            
+            closeMCQModal();
+        }
+
+        function closeMCQModal() {
+            document.getElementById('mcq-modal').style.display = 'none';
+        }
+
+        function closeResult() {
+            document.getElementById('resultMessage').style.display = 'none';
+        }
+
+        // 10. ADMIN FUNCTIONS
+        function openAdminPanel() {
+            document.getElementById('admin-panel').style.display = 'flex';
+            loadAdminSliders();
+            loadAdminRoutines();
+            loadAdminStudyLevels();
+        }
+
+        function showAdminSection(sec) {
+            ['slider', 'students', 'exams', 'routine', 'study'].forEach(s => {
+                document.getElementById(`admin-${s}-sec`).style.display = s === sec ? 'block' : 'none';
+            });
+            
+            // Update button colors
+            document.querySelectorAll('#admin-panel .btn').forEach(btn => {
+                btn.style.background = '#94a3b8';
+            });
+            event.target.style.background = 'var(--primary)';
         }
 
         function loadAdminRoutines() {
-            const l = document.getElementById('adminRoutineList');
-            l.innerHTML='Loading...';
-            db.collection('routines').where('type','==','admin').get().then(snap=>{
-                l.innerHTML='';
-                snap.forEach(d=>{
-                    l.innerHTML+=`<div class="routine-card"><span>${d.data().task}</span><button class="delete-btn" onclick="delRoutine('${d.id}')"><i class="fas fa-trash"></i></button></div>`;
+            const container = document.getElementById('adminRoutineList');
+            container.innerHTML = 'Loading...';
+            
+            db.collection('routines').orderBy('createdAt', 'desc').get().then(snap => {
+                container.innerHTML = '';
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    container.innerHTML += `
+                    <div class="admin-item">
+                        <div>
+                            <h4>${data.title}</h4>
+                            <small>Days: ${data.days.join(', ')}</small>
+                        </div>
+                        <button class="delete-btn" onclick="deleteRoutine('${doc.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>`;
                 });
             });
         }
-        function addAdminRoutine() {
-            const task=document.getElementById('admRoutineTxt').value, time=document.getElementById('admRoutineTime').value;
-            db.collection('routines').add({task,time,type:'admin'}).then(()=>{document.getElementById('admRoutineTxt').value=''; loadAdminRoutines();});
-        }
-        
-        function setGoalData() {
-            db.collection('settings').doc('goal').set({
-                title: document.getElementById('admGoalTitle').value,
-                targetDate: document.getElementById('admGoalDate').value
-            }).then(()=>showNotify('success','Updated','Goal info updated'));
-        }
-        
-        function addLevel() {
-            db.collection('study_levels').add({name: document.getElementById('admLevelName').value}).then(()=>showNotify('success','Added','Level Added'));
-        }
-        
-        // Populate Admin Level Select on click
-        document.getElementById('admin-panel').addEventListener('click', ()=>{
-             const s = document.getElementById('admDayLevelSelect');
-             if(s.children.length<=1) {
-                 db.collection('study_levels').get().then(snap=>{
-                     s.innerHTML='<option>Select Level</option>';
-                     snap.forEach(d=>s.innerHTML+=`<option value="${d.id}">${d.data().name}</option>`);
-                 });
-             }
-        });
 
-        function addStudyDay() {
-            const levelId = document.getElementById('admDayLevelSelect').value;
-            const dayNum = parseInt(document.getElementById('admDayNum').value);
-            const title = document.getElementById('admDayTitle').value;
-            const content = document.getElementById('admDayDesc').value;
-            const json = document.getElementById('admDayJson').value;
+        function saveStudyGoal() {
+            const title = document.getElementById('studyGoalTitleInput').value;
+            const desc = document.getElementById('studyGoalDescInput').value;
+            const hours = document.getElementById('studyTargetHours').value;
             
-            try {
-                const questions = JSON.parse(json);
-                db.collection('study_days').add({levelId, dayNum, title, content, questions}).then(()=>showNotify('success','Added','Day Content Added'));
-            } catch(e) { showNotify('error','JSON Error','Check JSON format'); }
+            if(!title || !desc || !hours) {
+                return showNotify('error', 'Error', 'Please fill all fields');
+            }
+            
+            db.collection('studyGoals').add({
+                title: title,
+                description: desc,
+                targetHours: parseInt(hours),
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                showNotify('success', 'Saved', 'Study goal updated');
+                loadStudyGoal();
+            });
         }
 
-        // --- OLD FUNCTIONS (Slider, Exam List) ---
-        let slideInterval; let slideIndex = 0;
+        function addStudyLevel() {
+            const name = document.getElementById('levelNameInput').value;
+            const desc = document.getElementById('levelDescInput').value;
+            
+            if(!name) return showNotify('error', 'Error', 'Please enter level name');
+            
+            db.collection('studyLevels').add({
+                name: name,
+                description: desc,
+                order: Date.now()
+            }).then(() => {
+                showNotify('success', 'Added', 'Study level added');
+                document.getElementById('levelNameInput').value = '';
+                document.getElementById('levelDescInput').value = '';
+                loadStudyLevels();
+                loadAdminStudyLevels();
+            });
+        }
+
+        function loadAdminStudyLevels() {
+            const container = document.getElementById('studyLevelsList');
+            container.innerHTML = 'Loading...';
+            
+            db.collection('studyLevels').orderBy('order').get().then(snap => {
+                container.innerHTML = '';
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    container.innerHTML += `
+                    <div class="admin-item">
+                        <div>
+                            <h4>${data.name}</h4>
+                            <p>${data.description}</p>
+                        </div>
+                        <button class="delete-btn" onclick="deleteStudyLevel('${doc.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>`;
+                });
+            });
+        }
+
+        function deleteStudyLevel(id) {
+            if(confirm("Delete this study level?")) {
+                db.collection('studyLevels').doc(id).delete().then(() => {
+                    showNotify('success', 'Deleted', 'Study level removed');
+                    loadAdminStudyLevels();
+                    loadStudyLevels();
+                });
+            }
+        }
+
+        // 11. SLIDER FUNCTIONS (Existing)
+        let slideInterval;
+        let slideIndex = 0;
+
         function loadHomeSliders() {
             db.collection('sliders').orderBy('createdAt', 'desc').get().then(snap => {
-                const w=document.getElementById('homeSlider');
-                if(snap.empty){ w.innerHTML='<div style="display:flex;justify-content:center;align-items:center;height:100%;color:#aaa;">No News</div>'; return;}
-                let s='',d=''; snap.docs.forEach((doc,i)=>{ const dt=doc.data(); s+=`<div class="slide ${i===0?'active':''}" onclick="window.open('${dt.link||'#'}')"><img src="${dt.imageUrl}"></div>`; d+=`<div class="dot ${i===0?'active':''}"></div>`; });
-                w.innerHTML=s+`<div class="slider-dots">${d}</div>`;
+                const wrapper = document.getElementById('homeSlider');
+                
+                if(snap.empty) {
+                    wrapper.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100%; color:#94a3b8;">No News Today</div>';
+                    return;
+                }
+
+                let slides = '';
+                let dots = '';
+                snap.docs.forEach((doc, i) => {
+                    const d = doc.data();
+                    slides += `<div class="slide ${i===0?'active':''}" onclick="window.open('${d.link||'#'}','_blank')"><img src="${d.imageUrl}"></div>`;
+                    dots += `<div class="dot ${i===0?'active':''}"></div>`;
+                });
+
+                wrapper.innerHTML = slides + `<div class="slider-dots">${dots}</div>`;
+                
                 if(slideInterval) clearInterval(slideInterval);
-                slideInterval=setInterval(()=>{
-                    const sl=document.querySelectorAll('.slide'), dt=document.querySelectorAll('.dot');
-                    if(sl.length<2)return;
-                    sl[slideIndex].classList.remove('active'); dt[slideIndex].classList.remove('active');
-                    slideIndex=(slideIndex+1)%sl.length;
-                    sl[slideIndex].classList.add('active'); dt[slideIndex].classList.add('active');
-                },4000);
+                slideInterval = setInterval(() => {
+                    const allSlides = document.querySelectorAll('.slide');
+                    const allDots = document.querySelectorAll('.dot');
+                    if(allSlides.length < 2) return;
+
+                    allSlides[slideIndex].classList.remove('active');
+                    allDots[slideIndex].classList.remove('active');
+                    
+                    slideIndex = (slideIndex + 1) % allSlides.length;
+                    
+                    allSlides[slideIndex].classList.add('active');
+                    allDots[slideIndex].classList.add('active');
+                }, 4000);
             });
         }
+
+        function previewFile() {
+            const file = document.getElementById('sliderFile').files[0];
+            if(file) document.getElementById('fileNameDisplay').innerText = `Selected: ${file.name}`;
+        }
+
         function uploadSlider() {
-            const f=document.getElementById('sliderFile').files[0], l=document.getElementById('sliderLink').value;
-            if(!f)return showNotify('error','Err','No File');
-            const fd=new FormData(); fd.append("file",f); fd.append("upload_preset",UPLOAD_PRESET);
-            const n=showNotify('loading','Uploading...','');
-            fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:"POST",body:fd}).then(r=>r.json()).then(d=>{
-                db.collection('sliders').add({imageUrl:d.secure_url, link:l, createdAt:new Date()}).then(()=>{ n.remove(); showNotify('success','Done','Slider Added'); loadHomeSliders(); });
+            const file = document.getElementById('sliderFile').files[0];
+            const link = document.getElementById('sliderLink').value;
+            const btn = document.getElementById('uploadBtn');
+
+            if(!file) return showNotify('error', 'No File', 'Please select an image first.');
+
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+            btn.disabled = true;
+
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("upload_preset", UPLOAD_PRESET);
+
+            fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+                method: "POST",
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.secure_url) {
+                    db.collection('sliders').add({
+                        imageUrl: data.secure_url,
+                        link: link,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }).then(() => {
+                        showNotify('success', 'Uploaded!', 'Slider added successfully.');
+                        btn.innerHTML = 'Add Slider'; btn.disabled = false;
+                        document.getElementById('fileNameDisplay').innerText = '';
+                        loadAdminSliders();
+                        loadHomeSliders();
+                    });
+                }
+            })
+            .catch(err => {
+                showNotify('error', 'Upload Failed', 'Cloudinary Error.');
+                btn.innerHTML = 'Add Slider'; btn.disabled = false;
             });
         }
-        function openAdminPanel() { document.getElementById('admin-panel').style.display='flex'; }
+
+        function loadAdminSliders() {
+            const list = document.getElementById('adminSliderList');
+            list.innerHTML = '<p style="text-align:center;">Loading...</p>';
+            db.collection('sliders').orderBy('createdAt', 'desc').get().then(snap => {
+                list.innerHTML = '';
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    list.innerHTML += `
+                    <div class="admin-item">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <img src="${d.imageUrl}" style="width:60px; height:30px; object-fit:cover; border-radius:4px;">
+                            <small>${d.link ? 'Linked' : 'No Link'}</small>
+                        </div>
+                        <button class="delete-btn" onclick="deleteSlider('${doc.id}')"><i class="fas fa-trash"></i></button>
+                    </div>`;
+                });
+            });
+        }
+
+        function deleteSlider(id) {
+            if(confirm("Delete this slider?")) {
+                db.collection('sliders').doc(id).delete().then(() => {
+                    showNotify('success', 'Deleted', 'Slider removed.');
+                    loadAdminSliders();
+                    loadHomeSliders();
+                });
+            }
+        }
+
+        // 12. EXAM FUNCTIONS (Existing)
         function openExamList(type) {
-            const m=document.getElementById('exam-list-modal'), c=document.getElementById('examListContainer');
-            m.style.display='flex'; c.innerHTML='Loading...';
-            let q=db.collection('exams');
-            if(type==='live') q=q.where('createdAt','>=',new Date(Date.now()-86400000));
-            else q=q.where('type','==',type);
-            q.get().then(s=>{
-                c.innerHTML='';
-                if(s.empty) c.innerHTML='<p>No exams found.</p>';
-                s.forEach(d=>c.innerHTML+=`<div class="routine-card"><b>${d.data().title}</b><button class="btn" style="width:auto;padding:5px 10px;" onclick="startExam('${d.id}')">Start</button></div>`);
+            document.getElementById('exam-list-modal').style.display = 'flex';
+            document.getElementById('examListTitle').innerText = type.toUpperCase() + " Exams";
+            const con = document.getElementById('examListContainer');
+            con.innerHTML = '<p style="text-align:center; color:#94a3b8;">Loading exams...</p>';
+            
+            let q = db.collection('exams');
+            if(type === 'live') q = q.where('createdAt', '>=', new Date(Date.now() - 86400000));
+            else q = q.where('type', '==', type);
+
+            q.get().then(snap => {
+                con.innerHTML = '';
+                if(snap.empty) { con.innerHTML = '<div style="text-align:center; margin-top:50px; color:#94a3b8;"><i class="fas fa-box-open" style="font-size:3rem;"></i><p>No exams found.</p></div>'; return; }
+                
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    con.innerHTML += `
+                    <div class="exam-item" onclick="startExam('${doc.id}')">
+                        <div class="exam-item-icon"><i class="fas fa-pen"></i></div>
+                        <div><b>${d.title}</b><br><small>${d.time} min • ${d.questions.length} Qs</small></div>
+                    </div>`;
+                });
             });
         }
+
+        let currentExamData = null;
+        function startExam(id) {
+            db.collection('exams').doc(id).get().then(doc => {
+                currentExamData = doc.data();
+                document.getElementById('active-exam-modal').style.display = 'flex';
+                document.getElementById('activeExamTitle').innerText = currentExamData.title;
+                document.getElementById('examTimer').innerText = currentExamData.time + ":00";
+                
+                const qc = document.getElementById('questionContainer');
+                qc.innerHTML = '';
+                currentExamData.questions.forEach((q, i) => {
+                    let opts = '';
+                    q.options.forEach((o, j) => {
+                        opts += `<div style="padding:10px; border:1px solid #eee; margin:5px 0; border-radius:8px; cursor:pointer;" onclick="this.style.background='#e0e7ff'">${j+1}. ${o}</div>`;
+                    });
+                    qc.innerHTML += `<div style="margin-bottom:20px;"><p><b>Q${i+1}.</b> ${q.q}</p>${opts}</div>`;
+                });
+            });
+        }
+
+        function closeExam() {
+            if(confirm("Submit Exam?")) document.getElementById('active-exam-modal').style.display = 'none';
+        }
+
+        // Initialize on load
+        window.onload = function() {
+            // Any additional initialization
+        };
+
     </script>
 </body>
 </html>
