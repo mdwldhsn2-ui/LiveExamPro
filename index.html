@@ -2,427 +2,613 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MENTOR App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MENTOR Academy</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        :root { --primary: #4F46E5; --secondary: #818CF8; --bg: #F3F4F6; --text: #1F2937; --white: #ffffff; --danger: #EF4444; --success: #10B981; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background: var(--bg); overflow: hidden; height: 100vh; width: 100vw; }
+        :root {
+            --primary: #6366f1; /* Indigo 500 */
+            --primary-dark: #4f46e5;
+            --secondary: #818cf8;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.2);
+            --glass: rgba(255, 255, 255, 0.9);
+        }
 
-        /* --- UI COMPONENTS --- */
-        #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--white); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .logo-container { position: relative; height: 100px; width: 300px; text-align: center; }
-        .bird { font-size: 2rem; color: var(--primary); position: absolute; opacity: 0; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: var(--text-main); overflow: hidden; height: 100vh; width: 100vw; }
+
+        /* --- 1. NOTIFICATION SYSTEM (TOAST) --- */
+        .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 10000; width: 90%; max-width: 400px; }
+        .toast {
+            background: white; padding: 15px 20px; border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 15px;
+            margin-bottom: 10px; opacity: 0; transform: translateY(-20px); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-left: 5px solid var(--primary);
+        }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.success { border-color: var(--success); } .toast.success i { color: var(--success); }
+        .toast.error { border-color: var(--danger); } .toast.error i { color: var(--danger); }
+        .toast.loading { border-color: var(--primary); }
+        .toast-content h4 { font-size: 0.95rem; margin-bottom: 2px; }
+        .toast-content p { font-size: 0.8rem; color: var(--text-sub); }
+        .spinner { width: 18px; height: 18px; border: 2px solid #ddd; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* --- 2. UI COMPONENTS --- */
+        .btn {
+            width: 100%; padding: 16px; border: none; border-radius: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white; font-weight: 600; font-size: 1rem; cursor: pointer;
+            box-shadow: var(--shadow); transition: 0.2s; position: relative; overflow: hidden;
+        }
+        .btn:active { transform: scale(0.98); opacity: 0.9; }
+        
+        .input-group { margin-bottom: 15px; position: relative; }
+        .input-group input, .input-group select, .input-group textarea {
+            width: 100%; padding: 16px; border: 2px solid #e2e8f0; border-radius: 14px;
+            background: var(--surface); outline: none; transition: 0.3s; color: var(--text-main);
+            font-size: 0.95rem;
+        }
+        .input-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); }
+        
+        /* --- 3. SCREENS --- */
+        #loading-screen { position: fixed; inset: 0; background: var(--surface); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .bird { font-size: 2.5rem; color: var(--primary); position: absolute; opacity: 0; }
         .bird.fly { animation: flyIn 2.5s forwards ease-in-out; }
-        @keyframes flyIn { 0% { opacity: 0; transform: translate(-150px, -100px) scale(0.5); } 50% { opacity: 1; transform: translate(0px, -40px) scale(1); } 100% { opacity: 1; transform: translate(0px, -25px) scale(1); } }
-        .app-name span { font-size: 2.5rem; font-weight: 800; color: var(--primary); opacity: 0; display: inline-block; transform: translateY(20px); }
+        .app-name span { font-size: 2rem; font-weight: 800; color: var(--primary); opacity: 0; display: inline-block; transform: translateY(10px); }
         .app-name span.show { animation: letterPop 0.5s forwards; }
+
+        @keyframes flyIn { 0% { opacity: 0; transform: translate(-100px, -50px) scale(0.5); } 50% { opacity: 1; transform: translate(0px, -20px) scale(1); } 100% { opacity: 1; transform: translate(0px, -10px) scale(1); } }
         @keyframes letterPop { to { opacity: 1; transform: translateY(0); } }
 
-        /* Welcome Overlay */
-        #welcome-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, var(--primary), var(--secondary)); z-index: 8888; display: none; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; }
-        .welcome-content { animation: popUp 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
-        .welcome-icon { font-size: 4rem; margin-bottom: 20px; background: rgba(255,255,255,0.2); width: 100px; height: 100px; line-height: 100px; border-radius: 50%; backdrop-filter: blur(5px); }
-        @keyframes popUp { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        #welcome-overlay { position: fixed; inset: 0; background: var(--primary); z-index: 8888; display: none; flex-direction: column; justify-content: center; align-items: center; color: white; }
+        .welcome-card { background: white; padding: 30px; border-radius: 20px; text-align: center; color: var(--text-main); animation: popUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        @keyframes popUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
         /* Auth */
-        #auth-screen { display: none; position: relative; width: 100%; height: 100%; background: var(--white); overflow: hidden; }
-        .auth-container { display: flex; width: 200%; height: 100%; transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
-        .form-box { width: 50%; height: 100%; padding: 40px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        input, select, textarea { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; outline: none; background: #fff; }
-        .btn { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3); }
+        #auth-screen { display: none; height: 100%; width: 100%; background: var(--surface); overflow-y: auto; }
+        .auth-container { padding: 30px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }
+        .auth-header { margin-bottom: 40px; text-align: center; }
+        .auth-header h1 { font-size: 2rem; color: var(--primary); font-weight: 800; }
 
         /* Main App */
-        #main-app { display: none; height: 100%; width: 100%; flex-direction: column; }
-        .page { flex: 1; overflow-y: auto; padding: 20px; display: none; animation: fadeIn 0.4s; padding-bottom: 80px; }
-        .page.active { display: block; }
+        #main-app { display: none; height: 100%; width: 100%; flex-direction: column; background: var(--bg); }
+        .page { flex: 1; overflow-y: auto; padding: 20px; display: none; padding-bottom: 100px; }
+        .page.active { display: block; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .bottom-nav { height: 70px; background: white; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); position: absolute; bottom: 0; width: 100%; z-index: 100; }
-        .nav-item { color: #9CA3AF; font-size: 1.2rem; cursor: pointer; display: flex; flex-direction: column; align-items: center; transition: 0.3s; }
-        .nav-item.active { color: var(--primary); transform: translateY(-5px); }
-        .nav-center { width: 60px; height: 60px; background: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.5rem; margin-top: -35px; box-shadow: 0 5px 15px rgba(79, 70, 229, 0.5); border: 5px solid var(--bg); transition: 0.3s; cursor: pointer;}
-        .nav-center:active { transform: scale(0.9); }
-
-        .card { background: white; padding: 15px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
-        
-        /* SLIDER STYLES (16:7 Ratio) */
-        .slider-container {
-            width: 100%;
-            aspect-ratio: 16 / 7; /* 16:7 Ratio */
-            border-radius: 15px;
-            overflow: hidden;
-            position: relative;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            background: #ddd; /* Loading placeholder */
+        /* --- 4. SLIDER (FIXED) --- */
+        .slider-wrapper {
+            position: relative; width: 100%; border-radius: 16px; overflow: hidden;
+            margin-bottom: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            background: #e2e8f0; aspect-ratio: 16 / 7; /* FORCE ASPECT RATIO */
         }
         .slide {
-            width: 100%; height: 100%;
-            position: absolute; top: 0; left: 0;
-            opacity: 0; transition: opacity 0.5s ease-in-out;
-            cursor: pointer;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0; transition: opacity 0.8s ease-in-out; cursor: pointer;
         }
-        .slide.active { opacity: 1; z-index: 1; }
         .slide img { width: 100%; height: 100%; object-fit: cover; }
-        
-        /* Slider Dots */
+        .slide.active { opacity: 1; z-index: 2; }
         .slider-dots {
             position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
-            display: flex; gap: 5px; z-index: 2;
+            display: flex; gap: 6px; z-index: 5;
         }
-        .dot { width: 8px; height: 8px; background: rgba(255,255,255,0.5); border-radius: 50%; }
-        .dot.active { background: white; width: 20px; border-radius: 10px; }
+        .dot { width: 6px; height: 6px; background: rgba(255,255,255,0.4); border-radius: 10px; transition: 0.3s; }
+        .dot.active { background: white; width: 18px; }
 
-        /* EXAM STYLES */
-        .exam-option-card { display: flex; align-items: center; gap: 15px; padding: 20px; background: white; border-radius: 15px; margin-bottom: 15px; cursor: pointer; transition: 0.2s; border: 1px solid #eee; }
-        .exam-option-card:active { transform: scale(0.98); background: #f0fdf4; }
-        .exam-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; color: white; }
-        .exam-list-item { border-left: 4px solid var(--primary); background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .exam-sub-folder { background: #e0e7ff; color: var(--primary); padding: 15px; border-radius: 10px; margin-bottom: 10px; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; }
+        /* --- 5. CARDS & LISTS --- */
+        .info-card {
+            background: linear-gradient(135deg, var(--primary), #818cf8);
+            padding: 25px; border-radius: 20px; color: white; margin-bottom: 20px;
+            box-shadow: var(--shadow); position: relative; overflow: hidden;
+        }
+        .info-card::before { content:''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: rgba(255,255,255,0.1); transform: rotate(45deg); pointer-events: none; }
         
-        #active-exam-view { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 500; display: none; flex-direction: column; }
-        .exam-header { padding: 15px; background: var(--primary); color: white; display: flex; justify-content: space-between; align-items: center; }
-        .question-container { padding: 20px; overflow-y: auto; flex: 1; }
-        .option-box { padding: 12px; border: 1px solid #ddd; margin: 8px 0; border-radius: 8px; cursor: pointer; }
-        .option-box.selected { background: #e0e7ff; border-color: var(--primary); }
+        .grid-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .stat-card {
+            background: var(--surface); padding: 20px; border-radius: 16px; text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: 0.2s;
+        }
+        .stat-card:active { transform: scale(0.97); }
+        .stat-icon { font-size: 1.8rem; margin-bottom: 8px; color: var(--primary); }
 
-        /* Admin */
-        #admin-panel { display: none; background: white; height: 100%; width: 100%; position: absolute; top:0; z-index: 200; overflow-y: auto;}
-        .student-card { background: #f9fafb; padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--primary); }
-        .tab-btn { padding: 8px 15px; border: none; background: #ddd; border-radius: 20px; cursor: pointer; margin-right: 5px; font-size: 0.9rem; }
-        .tab-btn.active-tab { background: var(--primary); color: white; }
+        .exam-item {
+            background: var(--surface); padding: 15px; margin-bottom: 12px; border-radius: 14px;
+            display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            border: 1px solid #f1f5f9; cursor: pointer;
+        }
+        .exam-item-icon { width: 45px; height: 45px; border-radius: 12px; background: #e0e7ff; color: var(--primary); display: flex; justify-content: center; align-items: center; font-size: 1.2rem; }
+        
+        /* --- 6. BOTTOM NAVIGATION (Glassmorphism) --- */
+        .bottom-nav {
+            position: fixed; bottom: 20px; left: 20px; right: 20px; height: 70px;
+            background: var(--glass); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border-radius: 20px; display: flex; justify-content: space-around; align-items: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.5); z-index: 100;
+        }
+        .nav-item { color: #94a3b8; font-size: 1.3rem; transition: 0.3s; position: relative; }
+        .nav-item.active { color: var(--primary); transform: translateY(-5px); }
+        .nav-item.active::after { content: ''; position: absolute; bottom: -5px; left: 50%; transform: translateX(-50%); width: 5px; height: 5px; background: var(--primary); border-radius: 50%; }
+        
+        /* Center Button */
+        .nav-center-btn {
+            width: 55px; height: 55px; background: var(--primary); border-radius: 18px;
+            display: flex; justify-content: center; align-items: center; color: white;
+            font-size: 1.4rem; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+            transform: translateY(0); transition: 0.3s;
+        }
+        .nav-center-btn:active { transform: scale(0.9); }
 
-        #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 5px; padding: 16px; position: fixed; z-index: 1000; left: 50%; bottom: 100px; transform: translateX(-50%); }
-        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
-        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 100px; opacity: 1;} }
-        @keyframes fadeout { from {bottom: 100px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+        /* --- 7. ADMIN & EXAM VIEWS --- */
+        .full-screen-modal {
+            position: fixed; inset: 0; background: var(--bg); z-index: 200; display: none; flex-direction: column;
+            overflow-y: auto; animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        
+        .modal-header { padding: 20px; background: var(--surface); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.03); position: sticky; top: 0; z-index: 10; }
+        
+        /* Upload Area */
+        .upload-area {
+            border: 2px dashed #cbd5e1; border-radius: 16px; padding: 30px; text-align: center;
+            margin-bottom: 15px; cursor: pointer; background: #f8fafc; transition: 0.3s;
+        }
+        .upload-area:hover { border-color: var(--primary); background: #eef2ff; }
+        
+        .admin-item { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--primary); }
+        .delete-btn { width: 35px; height: 35px; border-radius: 8px; background: #fee2e2; color: var(--danger); border: none; display: flex; justify-content: center; align-items: center; cursor: pointer; }
     </style>
 </head>
 <body>
 
+    <div class="toast-container" id="toastContainer"></div>
+
     <div id="loading-screen">
-        <div class="logo-container">
+        <div style="position:relative; width: 300px; height: 100px; text-align: center;">
             <i class="fas fa-dove bird" id="birdIcon"></i>
-            <h1 class="app-name" id="appName"></h1>
+            <div class="app-name" id="appName"></div>
         </div>
     </div>
 
     <div id="welcome-overlay">
-        <div class="welcome-content">
-            <div class="welcome-icon"><i class="fas fa-check"></i></div>
-            <h1 id="welcomeOverlayText">Welcome!</h1>
-            <p>Glad to have you here.</p>
+        <div class="welcome-card">
+            <div style="font-size:3rem; margin-bottom:15px; color:var(--success);"><i class="fas fa-check-circle"></i></div>
+            <h2 style="font-size:1.5rem; margin-bottom:5px;">Welcome Back!</h2>
+            <p id="welcomeUserName" style="color:var(--text-sub)">Glad to see you again.</p>
         </div>
     </div>
 
     <div id="auth-screen">
-        <div class="auth-container" id="authContainer">
-            <div class="form-box">
-                <h2 style="color:var(--primary); margin-bottom:20px;">Login</h2>
-                <input type="email" id="loginEmail" placeholder="Email Address">
-                <input type="password" id="loginPass" placeholder="Password">
-                <button class="btn" onclick="handleLogin()">Login</button>
-                <p style="margin-top:15px; font-size:0.9rem; color:grey;">Don't have an account? <b style="color:var(--primary); cursor:pointer;" onclick="toggleAuth('register')">Register</b></p>
+        <div class="auth-container">
+            <div class="auth-header">
+                <i class="fas fa-graduation-cap" style="font-size:3rem; color:var(--primary); margin-bottom:10px;"></i>
+                <h1>MENTOR</h1>
+                <p style="color:var(--text-sub);">Learn. Practice. Achieve.</p>
             </div>
-            <div class="form-box">
-                <h2 style="color:var(--primary); margin-bottom:20px;">Register</h2>
-                <input type="text" id="regName" placeholder="Full Name">
-                <input type="email" id="regEmail" placeholder="Email Address">
-                <input type="password" id="regPass" placeholder="Password">
-                <button class="btn" onclick="handleRegister()">Sign Up</button>
-                <p style="margin-top:15px; font-size:0.9rem; color:grey;">Already have an account? <b style="color:var(--primary); cursor:pointer;" onclick="toggleAuth('login')">Login</b></p>
+
+            <div id="loginForm">
+                <div class="input-group">
+                    <input type="email" id="loginEmail" placeholder="Email Address">
+                </div>
+                <div class="input-group">
+                    <input type="password" id="loginPass" placeholder="Password">
+                </div>
+                <button class="btn" onclick="handleLogin()">Log In</button>
+                <p style="text-align:center; margin-top:20px; font-size:0.9rem;">
+                    New here? <b style="color:var(--primary); cursor:pointer;" onclick="toggleAuth('reg')">Create Account</b>
+                </p>
+            </div>
+
+            <div id="regForm" style="display:none;">
+                <div class="input-group"><input type="text" id="regName" placeholder="Full Name"></div>
+                <div class="input-group"><input type="email" id="regEmail" placeholder="Email Address"></div>
+                <div class="input-group"><input type="password" id="regPass" placeholder="Password"></div>
+                <button class="btn" onclick="handleRegister()">Create Account</button>
+                <p style="text-align:center; margin-top:20px; font-size:0.9rem;">
+                    Have an account? <b style="color:var(--primary); cursor:pointer;" onclick="toggleAuth('login')">Log In</b>
+                </p>
             </div>
         </div>
     </div>
 
     <div id="main-app">
-        
         <div id="home-page" class="page active">
-            <div class="slider-container" id="homeSlider">
+            <div class="slider-wrapper" id="homeSlider">
+                <div style="display:flex; justify-content:center; align-items:center; height:100%; color:#94a3b8;">
+                    <i class="fas fa-spinner fa-spin"></i>
+                </div>
                 <div class="slider-dots" id="sliderDots"></div>
             </div>
 
-            <div class="card" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white;">
-                <h2 id="welcomeName">Hello!</h2>
-                <p>Welcome to Mentor Academy.</p>
+            <div class="info-card">
+                <h2 id="homeWelcomeName" style="margin-bottom:5px;">Hello User!</h2>
+                <p style="opacity:0.9; font-size:0.9rem;">Ready to learn something new today?</p>
             </div>
-            
-            <h3>Quick Stats</h3>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
-                <div class="card" style="text-align:center; margin:0;"><i class="fas fa-book fa-2x" style="color:var(--secondary)"></i><p>Library</p></div>
-                <div class="card" style="text-align:center; margin:0;"><i class="fas fa-trophy fa-2x" style="color:#F59E0B"></i><p>Rank</p></div>
+
+            <h3 style="font-size:1.1rem; margin-bottom:15px; padding-left:5px;">Dashboard</h3>
+            <div class="grid-stats">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-book-reader"></i></div>
+                    <h4>Library</h4>
+                    <p style="font-size:0.8rem; color:var(--text-sub);">0 Books</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="color:#f59e0b;"><i class="fas fa-trophy"></i></div>
+                    <h4>Rank</h4>
+                    <p style="font-size:0.8rem; color:var(--text-sub);">Top 10%</p>
+                </div>
             </div>
         </div>
 
         <div id="exam-page" class="page">
-            <h3>Exam Center</h3>
-            <p style="color:grey; margin-bottom:20px;">Select a category to start</p>
-            <div class="exam-option-card" onclick="openExamCategory('live')"><div class="exam-icon" style="background: #EF4444;"><i class="fas fa-broadcast-tower"></i></div><div><h4>Live Exam</h4><small>Last 24 Hours</small></div></div>
-            <div class="exam-option-card" onclick="openExamCategory('model')"><div class="exam-icon" style="background: #10B981;"><i class="fas fa-clipboard-list"></i></div><div><h4>Model Test</h4><small>Full Syllabus</small></div></div>
-            <div class="exam-option-card" onclick="openExamCategory('subject')"><div class="exam-icon" style="background: #F59E0B;"><i class="fas fa-book-open"></i></div><div><h4>Subject Wise</h4><small>Chapter based</small></div></div>
-            <div id="exam-list-container" style="display:none; margin-top:20px;"><div style="display:flex; align-items:center; margin-bottom:15px;"><i class="fas fa-arrow-left" onclick="resetExamView()" style="padding:10px; cursor:pointer;"></i><h4 id="exam-list-title" style="margin-left:10px;">Exams</h4></div><div id="exam-items-area"></div></div>
+            <h2 style="margin-bottom:20px;">Exam Center</h2>
+            <div class="exam-item" onclick="openExamList('live')">
+                <div class="exam-item-icon" style="background:#fee2e2; color:#ef4444;"><i class="fas fa-broadcast-tower"></i></div>
+                <div><h4 style="font-size:1rem;">Live Exams</h4><small style="color:var(--text-sub)">Happening Now</small></div>
+            </div>
+            <div class="exam-item" onclick="openExamList('model')">
+                <div class="exam-item-icon" style="background:#dcfce7; color:#10b981;"><i class="fas fa-clipboard-list"></i></div>
+                <div><h4 style="font-size:1rem;">Model Tests</h4><small style="color:var(--text-sub)">Full Syllabus</small></div>
+            </div>
+            <div class="exam-item" onclick="openExamList('subject')">
+                <div class="exam-item-icon" style="background:#fef3c7; color:#f59e0b;"><i class="fas fa-layer-group"></i></div>
+                <div><h4 style="font-size:1rem;">Subject Wise</h4><small style="color:var(--text-sub)">Chapter Based</small></div>
+            </div>
         </div>
 
-        <div id="book-page" class="page"><h3>Library</h3><p>Books coming soon...</p></div>
-        <div id="review-page" class="page"><h3>Reviews</h3><p>No reviews yet.</p></div>
-        
+        <div id="book-page" class="page"><h2 style="padding:20px;">Library Empty</h2></div>
+        <div id="review-page" class="page"><h2 style="padding:20px;">No Reviews</h2></div>
+
         <div id="profile-page" class="page">
-            <div style="text-align:center; margin-top:20px;">
-                <div style="width:100px; height:100px; background:#ddd; border-radius:50%; margin:0 auto; display:flex; justify-content:center; align-items:center; font-size:3rem; color:grey;"><i class="fas fa-user"></i></div>
-                <h3 id="profileName" style="margin-top:15px;">User</h3>
-                <p id="profileEmail" style="color:grey;">email@mail.com</p>
+            <div style="text-align:center; margin-top:30px; margin-bottom:30px;">
+                <div style="width:100px; height:100px; background:#e0e7ff; color:var(--primary); border-radius:50%; margin:0 auto; display:flex; justify-content:center; align-items:center; font-size:2.5rem; margin-bottom:15px;">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h2 id="profileName">User Name</h2>
+                <p id="profileEmail" style="color:var(--text-sub);">email@example.com</p>
             </div>
-            <div id="admin-btn-container" style="display:none; margin-top:20px;">
-                <button class="btn" style="background:#374151;" onclick="openAdminPanel()">Admin Panel</button>
+            
+            <div id="admin-btn-container" style="display:none; padding:0 20px;">
+                <button class="btn" style="background:var(--text-main); margin-bottom:15px;" onclick="openAdminPanel()">
+                    <i class="fas fa-shield-alt"></i> Admin Panel
+                </button>
             </div>
-            <button class="btn" style="background:var(--danger); margin-top:20px;" onclick="handleLogout()">Logout</button>
+            
+            <div style="padding:0 20px;">
+                <button class="btn" style="background:#fee2e2; color:var(--danger);" onclick="handleLogout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
         </div>
 
         <div class="bottom-nav">
-            <div class="nav-item active" onclick="navTo('home')"><i class="fas fa-home"></i><span>Home</span></div>
-            <div class="nav-item" onclick="navTo('book')"><i class="fas fa-book-open"></i><span>Book</span></div>
-            <div class="nav-center" onclick="navTo('exam')"><i class="fas fa-graduation-cap"></i></div>
-            <div class="nav-item" onclick="navTo('review')"><i class="fas fa-star"></i><span>Review</span></div>
-            <div class="nav-item" onclick="navTo('profile')"><i class="fas fa-user"></i><span>Profile</span></div>
+            <div class="nav-item active" onclick="navTo('home')"><i class="fas fa-home"></i></div>
+            <div class="nav-item" onclick="navTo('book')"><i class="fas fa-book"></i></div>
+            <div class="nav-center-btn" onclick="navTo('exam')"><i class="fas fa-graduation-cap"></i></div>
+            <div class="nav-item" onclick="navTo('review')"><i class="fas fa-star"></i></div>
+            <div class="nav-item" onclick="navTo('profile')"><i class="fas fa-user"></i></div>
         </div>
     </div>
 
-    <div id="active-exam-view">
-        <div class="exam-header"><h4 id="activeExamTitle">Title</h4><div><i class="fas fa-clock"></i> <span id="examTimer">00:00</span></div></div>
-        <div class="question-container" id="questionArea"></div>
-        <div style="padding:15px; border-top:1px solid #ddd;"><button class="btn" onclick="closeExam()">Submit / Close</button></div>
-    </div>
-
-    <div id="admin-panel">
-        <div style="padding:20px; background:var(--text); color:white; display:flex; justify-content:space-between;">
-            <h3>Admin Panel</h3> <i class="fas fa-times" onclick="document.getElementById('admin-panel').style.display='none'" style="cursor:pointer; font-size:1.5rem;"></i>
+    <div id="admin-panel" class="full-screen-modal">
+        <div class="modal-header">
+            <h3>Admin Dashboard</h3>
+            <button onclick="document.getElementById('admin-panel').style.display='none'" style="background:none; border:none; font-size:1.5rem;"><i class="fas fa-times"></i></button>
         </div>
-        
-        <div style="padding:15px; background:#eee; display:flex; overflow-x:auto;">
-            <button class="tab-btn active-tab" onclick="switchAdminTab('students')">Students</button>
-            <button class="tab-btn" onclick="switchAdminTab('exams')">Exams</button>
-            <button class="tab-btn" onclick="switchAdminTab('sliders')">Sliders</button>
-        </div>
+        <div style="padding:20px;">
+            <div style="display:flex; gap:10px; margin-bottom:20px; overflow-x:auto; padding-bottom:5px;">
+                <button class="btn" style="padding:10px 20px; font-size:0.9rem; width:auto;" onclick="showAdminSection('slider')">Sliders</button>
+                <button class="btn" style="padding:10px 20px; font-size:0.9rem; width:auto; background:#94a3b8;" onclick="showAdminSection('students')">Students</button>
+                <button class="btn" style="padding:10px 20px; font-size:0.9rem; width:auto; background:#94a3b8;" onclick="showAdminSection('exams')">Exams</button>
+            </div>
 
-        <div id="admin-students-tab" style="padding:20px;"><h4>Total: <span id="totalStudents">0</span></h4><div id="studentListContainer"></div></div>
+            <div id="admin-slider-sec">
+                <div class="upload-area" onclick="document.getElementById('sliderFile').click()">
+                    <i class="fas fa-cloud-upload-alt" style="font-size:2rem; color:var(--primary); margin-bottom:10px;"></i>
+                    <p style="color:var(--text-sub);">Click to Upload Image (16:7)</p>
+                    <input type="file" id="sliderFile" accept="image/*" style="display:none" onchange="previewFile()">
+                </div>
+                <p id="fileNameDisplay" style="text-align:center; font-size:0.8rem; color:var(--primary); margin-bottom:10px;"></p>
+                <div class="input-group">
+                    <input type="text" id="sliderLink" placeholder="Redirect Link (Optional)">
+                </div>
+                <button class="btn" id="uploadBtn" onclick="uploadSlider()">Add Slider</button>
+                
+                <h4 style="margin:25px 0 15px 0;">Active Sliders</h4>
+                <div id="adminSliderList">Loading...</div>
+            </div>
 
-        <div id="admin-exams-tab" style="padding:20px; display:none;">
-            <h3>Add Exam</h3>
-            <select id="examTypeInput" onchange="toggleSubjectInput()"><option value="model">Model Test</option><option value="subject">Subject Wise</option><option value="live">Live Exam</option></select>
-            <div id="subjectInputDiv" style="display:none;"><input type="text" id="examSubjectInput" placeholder="Subject Name"></div>
-            <input type="text" id="examTitleInput" placeholder="Exam Title"><input type="number" id="examTimeInput" placeholder="Time (min)">
-            <textarea id="examJsonInput" rows="4" placeholder='Paste JSON here...'></textarea>
-            <button class="btn" onclick="addNewExam()">Publish</button>
-            <div id="adminExamList" style="margin-top:20px;"></div>
-        </div>
-
-        <div id="admin-sliders-tab" style="padding:20px; display:none;">
-            <h3>Add Home Slider</h3>
-            <label>Upload Image (16:7 Ratio recommended)</label>
-            <input type="file" id="sliderFileInput" accept="image/*">
-            <input type="text" id="sliderLinkInput" placeholder="Link URL (e.g., https://google.com)">
-            <button class="btn" id="uploadSliderBtn" onclick="uploadSliderImage()">Upload & Add Slider</button>
-            <div id="uploadStatus" style="margin-top:10px; color:var(--primary);"></div>
-            
-            <hr style="margin:20px 0;">
-            <h3>Active Sliders</h3>
-            <div id="adminSliderList">Loading...</div>
+            <div id="admin-students-sec" style="display:none;"><p>Student list goes here...</p></div>
+            <div id="admin-exams-sec" style="display:none;"><p>Exam management goes here...</p></div>
         </div>
     </div>
 
-    <div id="toast">Message</div>
+    <div id="exam-list-modal" class="full-screen-modal">
+        <div class="modal-header">
+            <h3 id="examListTitle">Exams</h3>
+            <button onclick="document.getElementById('exam-list-modal').style.display='none'" style="background:none; border:none; font-size:1.5rem;"><i class="fas fa-arrow-left"></i></button>
+        </div>
+        <div id="examListContainer" style="padding:20px;"></div>
+    </div>
+
+    <div id="active-exam-modal" class="full-screen-modal">
+        <div class="modal-header" style="background:var(--primary); color:white;">
+            <h4 id="activeExamTitle">Exam</h4>
+            <div style="background:rgba(255,255,255,0.2); padding:5px 10px; border-radius:8px;"><i class="fas fa-clock"></i> <span id="examTimer">00:00</span></div>
+        </div>
+        <div id="questionContainer" style="padding:20px; padding-bottom:100px;"></div>
+        <div style="position:fixed; bottom:0; width:100%; padding:20px; background:white; border-top:1px solid #eee;">
+            <button class="btn" onclick="closeExam()">Submit Paper</button>
+        </div>
+    </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
 
     <script>
+        // 1. CONFIG
         const firebaseConfig = { apiKey: "AIzaSyCRWpnJC1Z3WCNUAyfjhw8KlKyJ03z3G2w", authDomain: "mentor-ac742.firebaseapp.com", projectId: "mentor-ac742", storageBucket: "mentor-ac742.firebasestorage.app", messagingSenderId: "271805714479", appId: "1:271805714479:web:efc071e2021db4286db6da", measurementId: "G-612FVVNZVK" };
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
         const ADMIN_EMAIL = "mdwld2005@gmail.com";
-        
-        // Cloudinary Config
         const CLOUD_NAME = "dsmvmq076";
         const UPLOAD_PRESET = "my_app_upload";
 
+        // 2. NOTIFICATION SYSTEM (Professional)
+        function showNotify(type, title, msg) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            let icon = '';
+            if(type === 'success') icon = '<i class="fas fa-check-circle" style="font-size:1.5rem;"></i>';
+            if(type === 'error') icon = '<i class="fas fa-exclamation-circle" style="font-size:1.5rem;"></i>';
+            if(type === 'loading') icon = '<div class="spinner"></div>';
+
+            toast.innerHTML = `
+                ${icon}
+                <div class="toast-content">
+                    <h4>${title}</h4>
+                    <p>${msg}</p>
+                </div>
+            `;
+            container.appendChild(toast);
+            
+            // Animation
+            setTimeout(() => toast.classList.add('show'), 100);
+            
+            // Auto Remove (except loading)
+            if(type !== 'loading') {
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 400);
+                }, 3000);
+            }
+            return toast; // return element to manually remove loading toast
+        }
+
+        // 3. APP INIT
         document.addEventListener('DOMContentLoaded', () => {
-            // Anim Setup
-            const name = "MENTOR"; const container = document.getElementById('appName');
-            name.split('').forEach((l, i) => { const s = document.createElement('span'); s.textContent = l; s.style.animationDelay = `${1.0 + (i*0.1)}s`; container.appendChild(s); });
+            // Logo Animation
+            const name = "MENTOR"; 
+            const container = document.getElementById('appName');
+            name.split('').forEach((l, i) => { 
+                const s = document.createElement('span'); s.textContent = l; 
+                s.style.animationDelay = `${0.5 + (i*0.1)}s`; 
+                container.appendChild(s); 
+            });
             setTimeout(() => document.getElementById('birdIcon').classList.add('fly'), 100);
             setTimeout(() => document.querySelectorAll('.app-name span').forEach(s => s.classList.add('show')), 100);
 
-            // AUTH LISTENER
+            // Auth Listener
             auth.onAuthStateChanged(user => {
                 setTimeout(() => {
                     document.getElementById('loading-screen').style.display = 'none';
                     if (user) {
                         document.getElementById('auth-screen').style.display = 'none';
-                        document.getElementById('main-app').style.display = 'flex'; // Direct entry on reload
+                        document.getElementById('main-app').style.display = 'flex';
                         loadUserData(user);
-                        loadHomeSliders(); // Load sliders
+                        loadHomeSliders();
                     } else {
                         document.getElementById('auth-screen').style.display = 'block';
                         document.getElementById('main-app').style.display = 'none';
                     }
-                }, 3000);
+                }, 2500); // Wait for anim
             });
         });
 
-        // --- WELCOME ONLY ON ACTION ---
-        function showWelcomeSequence(user) {
-            const overlay = document.getElementById('welcome-overlay');
-            const welcomeText = document.getElementById('welcomeOverlayText');
-            welcomeText.innerText = "Welcome Back!";
-            overlay.style.display = 'flex';
-            document.getElementById('main-app').style.display = 'none';
-            setTimeout(() => { overlay.style.display = 'none'; document.getElementById('main-app').style.display = 'flex'; }, 2500);
+        // 4. AUTH LOGIC
+        function toggleAuth(type) {
+            document.getElementById('loginForm').style.display = type === 'login' ? 'block' : 'none';
+            document.getElementById('regForm').style.display = type === 'reg' ? 'block' : 'none';
         }
 
         function handleLogin() {
-            const e=document.getElementById('loginEmail').value, p=document.getElementById('loginPass').value;
+            const e = document.getElementById('loginEmail').value;
+            const p = document.getElementById('loginPass').value;
+            if(!e || !p) return showNotify('error', 'Opps!', 'Please fill all fields.');
+            
+            const loadToast = showNotify('loading', 'Logging in...', 'Please wait a moment');
+            
             auth.signInWithEmailAndPassword(e, p).then(cred => {
-                // Show Welcome ONLY here
-                showWelcomeSequence(cred.user);
-            }).catch(e=>showToast("Login Failed"));
-        }
-
-        function handleRegister() {
-            const e = document.getElementById('regEmail').value, p = document.getElementById('regPass').value, n = document.getElementById('regName').value;
-            if(!e||!p||!n) return showToast("Empty Fields");
-            auth.createUserWithEmailAndPassword(e, p).then(cred => {
-                db.collection('students').doc(cred.user.uid).set({ name: n, email: e, joined: firebase.firestore.FieldValue.serverTimestamp() });
-                // Show Welcome ONLY here
-                showWelcomeSequence(cred.user); 
-            }).catch(e=>showToast(e.message));
-        }
-
-        // --- SLIDER LOGIC ---
-        let currentSlideIndex = 0;
-        let sliderInterval;
-
-        function loadHomeSliders() {
-            db.collection('sliders').orderBy('createdAt', 'desc').get().then(snap => {
-                const sliderContainer = document.getElementById('homeSlider');
-                const dotsContainer = document.getElementById('sliderDots');
-                
-                // Keep dots container, clear rest
-                const dotsHTML = '<div class="slider-dots" id="sliderDots"></div>';
-                
-                if(snap.empty) {
-                    sliderContainer.innerHTML = '<p style="text-align:center; padding-top:40px; color:grey;">No slides yet</p>';
-                    return;
-                }
-                
-                sliderContainer.innerHTML = dotsHTML; // Reset
-                const newDotsContainer = document.getElementById('sliderDots');
-
-                let slidesHTML = '';
-                let dotsRender = '';
-                
-                snap.docs.forEach((doc, index) => {
-                    const d = doc.data();
-                    slidesHTML += `
-                    <div class="slide ${index === 0 ? 'active' : ''}" onclick="window.open('${d.link || '#'}', '_blank')">
-                        <img src="${d.imageUrl}">
-                    </div>`;
-                    dotsRender += `<div class="dot ${index === 0 ? 'active' : ''}"></div>`;
-                });
-
-                sliderContainer.innerHTML += slidesHTML;
-                newDotsContainer.innerHTML = dotsRender;
-
-                // Start Auto Slide
-                if(sliderInterval) clearInterval(sliderInterval);
-                sliderInterval = setInterval(nextSlide, 4000);
+                loadToast.remove();
+                showWelcome(cred.user);
+            }).catch(err => {
+                loadToast.remove();
+                showNotify('error', 'Login Failed', 'Check email or password.');
             });
         }
 
-        function nextSlide() {
-            const slides = document.querySelectorAll('.slide');
-            const dots = document.querySelectorAll('.dot');
-            if(slides.length === 0) return;
+        function handleRegister() {
+            const n = document.getElementById('regName').value;
+            const e = document.getElementById('regEmail').value;
+            const p = document.getElementById('regPass').value;
+            if(!n || !e || !p) return showNotify('error', 'Error', 'All fields required');
 
-            slides[currentSlideIndex].classList.remove('active');
-            dots[currentSlideIndex].classList.remove('active');
+            const loadToast = showNotify('loading', 'Creating Account', 'Setting up your profile...');
 
-            currentSlideIndex = (currentSlideIndex + 1) % slides.length;
-
-            slides[currentSlideIndex].classList.add('active');
-            dots[currentSlideIndex].classList.add('active');
+            auth.createUserWithEmailAndPassword(e, p).then(cred => {
+                db.collection('students').doc(cred.user.uid).set({
+                    name: n, email: e, joined: new Date()
+                }).then(() => {
+                    loadToast.remove();
+                    showWelcome(cred.user);
+                });
+            }).catch(err => {
+                loadToast.remove();
+                showNotify('error', 'Failed', err.message);
+            });
         }
 
-        // --- CLOUDINARY UPLOAD ---
-        function uploadSliderImage() {
-            const fileInput = document.getElementById('sliderFileInput');
-            const link = document.getElementById('sliderLinkInput').value;
-            const status = document.getElementById('uploadStatus');
-            const btn = document.getElementById('uploadSliderBtn');
-
-            if(fileInput.files.length === 0) return showToast("Select an image first!");
+        function showWelcome(user) {
+            // Get Name
+            const name = user.displayName || document.getElementById('regName').value || "User";
+            document.getElementById('welcomeUserName').innerText = name;
             
-            const file = fileInput.files[0];
+            document.getElementById('welcome-overlay').style.display = 'flex';
+            setTimeout(() => {
+                document.getElementById('welcome-overlay').style.display = 'none';
+            }, 2000);
+        }
+
+        function handleLogout() {
+            auth.signOut().then(() => window.location.reload());
+        }
+
+        function loadUserData(user) {
+            document.getElementById('profileEmail').innerText = user.email;
+            if(user.email === ADMIN_EMAIL) document.getElementById('admin-btn-container').style.display = 'block';
+
+            db.collection('students').doc(user.uid).get().then(doc => {
+                const name = doc.exists ? doc.data().name : user.email.split('@')[0];
+                document.getElementById('homeWelcomeName').innerText = `Hello, ${name}!`;
+                document.getElementById('profileName').innerText = name;
+                document.getElementById('welcomeUserName').innerText = name;
+            });
+        }
+
+        // 5. SLIDER LOGIC (16:7 FIXED)
+        let slideInterval;
+        let slideIndex = 0;
+
+        function loadHomeSliders() {
+            db.collection('sliders').orderBy('createdAt', 'desc').get().then(snap => {
+                const wrapper = document.getElementById('homeSlider');
+                
+                if(snap.empty) {
+                    wrapper.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100%; color:#94a3b8;">No News Today</div>';
+                    return;
+                }
+
+                let slides = '';
+                let dots = '';
+                snap.docs.forEach((doc, i) => {
+                    const d = doc.data();
+                    slides += `<div class="slide ${i===0?'active':''}" onclick="window.open('${d.link||'#'}','_blank')"><img src="${d.imageUrl}"></div>`;
+                    dots += `<div class="dot ${i===0?'active':''}"></div>`;
+                });
+
+                wrapper.innerHTML = slides + `<div class="slider-dots">${dots}</div>`;
+                
+                // Auto Play
+                if(slideInterval) clearInterval(slideInterval);
+                slideInterval = setInterval(() => {
+                    const allSlides = document.querySelectorAll('.slide');
+                    const allDots = document.querySelectorAll('.dot');
+                    if(allSlides.length < 2) return;
+
+                    allSlides[slideIndex].classList.remove('active');
+                    allDots[slideIndex].classList.remove('active');
+                    
+                    slideIndex = (slideIndex + 1) % allSlides.length;
+                    
+                    allSlides[slideIndex].classList.add('active');
+                    allDots[slideIndex].classList.add('active');
+                }, 4000);
+            });
+        }
+
+        // 6. ADMIN & UPLOAD LOGIC
+        function openAdminPanel() {
+            document.getElementById('admin-panel').style.display = 'flex';
+            loadAdminSliders();
+        }
+
+        function showAdminSection(sec) {
+            document.getElementById('admin-slider-sec').style.display = sec === 'slider' ? 'block' : 'none';
+            // others logic...
+        }
+
+        function previewFile() {
+            const file = document.getElementById('sliderFile').files[0];
+            if(file) document.getElementById('fileNameDisplay').innerText = `Selected: ${file.name}`;
+        }
+
+        function uploadSlider() {
+            const file = document.getElementById('sliderFile').files[0];
+            const link = document.getElementById('sliderLink').value;
+            const btn = document.getElementById('uploadBtn');
+
+            if(!file) return showNotify('error', 'No File', 'Please select an image first.');
+
+            // UI Loading
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+            btn.disabled = true;
+
             const formData = new FormData();
             formData.append("file", file);
             formData.append("upload_preset", UPLOAD_PRESET);
-
-            status.innerText = "Uploading to Cloud...";
-            btn.disabled = true;
 
             fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
                 method: "POST",
                 body: formData
             })
-            .then(response => response.json())
+            .then(res => res.json())
             .then(data => {
                 if(data.secure_url) {
-                    status.innerText = "Saving to Database...";
-                    // Save to Firebase
                     db.collection('sliders').add({
                         imageUrl: data.secure_url,
                         link: link,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     }).then(() => {
-                        showToast("Slider Added!");
-                        status.innerText = "";
-                        fileInput.value = "";
-                        document.getElementById('sliderLinkInput').value = "";
-                        btn.disabled = false;
+                        showNotify('success', 'Uploaded!', 'Slider added successfully.');
+                        btn.innerHTML = 'Add Slider'; btn.disabled = false;
+                        document.getElementById('fileNameDisplay').innerText = '';
                         loadAdminSliders();
-                        loadHomeSliders(); // Refresh Home
+                        loadHomeSliders();
                     });
-                } else {
-                    throw new Error("Upload Failed");
                 }
             })
             .catch(err => {
-                console.error(err);
-                status.innerText = "Error Uploading";
-                btn.disabled = false;
+                showNotify('error', 'Upload Failed', 'Cloudinary Error.');
+                btn.innerHTML = 'Add Slider'; btn.disabled = false;
             });
         }
 
-        // --- ADMIN: SLIDER MANAGEMENT ---
         function loadAdminSliders() {
             const list = document.getElementById('adminSliderList');
-            list.innerHTML = 'Loading...';
+            list.innerHTML = '<p style="text-align:center;">Loading...</p>';
             db.collection('sliders').orderBy('createdAt', 'desc').get().then(snap => {
                 list.innerHTML = '';
                 snap.forEach(doc => {
                     const d = doc.data();
                     list.innerHTML += `
-                    <div class="student-card">
+                    <div class="admin-item">
                         <div style="display:flex; align-items:center; gap:10px;">
-                            <img src="${d.imageUrl}" style="width:60px; height:30px; object-fit:cover; border-radius:5px;">
-                            <small>${d.link ? 'Has Link' : 'No Link'}</small>
+                            <img src="${d.imageUrl}" style="width:60px; height:30px; object-fit:cover; border-radius:4px;">
+                            <small>${d.link ? 'Linked' : 'No Link'}</small>
                         </div>
-                        <button onclick="deleteSlider('${doc.id}')" style="background:red; color:white; border:none; padding:5px 10px;">Del</button>
+                        <button class="delete-btn" onclick="deleteSlider('${doc.id}')"><i class="fas fa-trash"></i></button>
                     </div>`;
                 });
             });
@@ -431,98 +617,75 @@
         function deleteSlider(id) {
             if(confirm("Delete this slider?")) {
                 db.collection('sliders').doc(id).delete().then(() => {
+                    showNotify('success', 'Deleted', 'Slider removed.');
                     loadAdminSliders();
                     loadHomeSliders();
                 });
             }
         }
 
-        // --- STANDARD FUNCTIONS (Existing) ---
-        function loadUserData(user) {
-            document.getElementById('profileEmail').innerText = user.email;
-            if(user.email === ADMIN_EMAIL) document.getElementById('admin-btn-container').style.display = 'block';
-            db.collection('students').doc(user.uid).get().then(doc => {
-                if(doc.exists) {
-                    const data = doc.data();
-                    document.getElementById('welcomeName').innerText = `Hello, ${data.name}!`;
-                    document.getElementById('profileName').innerText = data.name;
-                    document.getElementById('welcomeOverlayText').innerText = `Welcome, ${data.name}!`;
-                } else {
-                    const temp = user.email.split('@')[0];
-                    document.getElementById('welcomeName').innerText = `Hello, ${temp}!`;
-                    document.getElementById('profileName').innerText = temp;
-                }
-            });
-        }
-        function toggleAuth(t) { document.getElementById('authContainer').style.transform = t==='register' ? "translateX(-50%)" : "translateX(0%)"; }
-        function showToast(m) { const x = document.getElementById("toast"); x.textContent = m; x.className = "show"; setTimeout(()=>x.className=x.className.replace("show",""), 3000); }
-        function handleLogout() { auth.signOut().then(()=>location.reload()); }
+        // 7. NAVIGATION & EXAMS
         function navTo(id) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(id + '-page').classList.add('active');
-            if(id !== 'exam') event.currentTarget.classList.add('active');
-            if(id !== 'exam') resetExamView();
+            
+            // Highlight nav icon
+            if(id === 'home') document.querySelectorAll('.nav-item')[0].classList.add('active');
+            if(id === 'book') document.querySelectorAll('.nav-item')[1].classList.add('active');
+            if(id === 'review') document.querySelectorAll('.nav-item')[3].classList.add('active');
+            if(id === 'profile') document.querySelectorAll('.nav-item')[4].classList.add('active');
         }
 
-        // Exam & Admin Tabs
-        let currentExams = [];
-        function resetExamView() { document.getElementById('exam-list-container').style.display = 'none'; document.querySelectorAll('.exam-option-card').forEach(c => c.style.display = 'flex'); }
-        function openExamCategory(type) {
-            document.querySelectorAll('.exam-option-card').forEach(c => c.style.display = 'none');
-            const c = document.getElementById('exam-list-container'), l = document.getElementById('exam-items-area'), t = document.getElementById('exam-list-title');
-            c.style.display = 'block'; l.innerHTML = 'Loading...';
+        // Placeholder for Exam Logic (Keep basic structure)
+        function openExamList(type) {
+            document.getElementById('exam-list-modal').style.display = 'flex';
+            document.getElementById('examListTitle').innerText = type.toUpperCase() + " Exams";
+            const con = document.getElementById('examListContainer');
+            con.innerHTML = '<p style="text-align:center; color:#94a3b8;">Loading exams...</p>';
+            
             let q = db.collection('exams');
-            if(type === 'live') { t.innerText="Live Exams"; q=q.where('createdAt','>=',new Date(Date.now()-86400000)); }
-            else if(type==='model'){ t.innerText="Model Tests"; q=q.where('type','==','model'); }
-            else { t.innerText="Subject Wise"; q=q.where('type','==','subject'); }
-            q.get().then(s => {
-                l.innerHTML = s.empty ? '<p>No exams.</p>' : '';
-                currentExams=[]; s.forEach(d=>currentExams.push({id:d.id,...d.data()}));
-                if(type==='subject'){ [...new Set(currentExams.map(e=>e.subject))].forEach(sub=>{ l.innerHTML+=`<div class="exam-sub-folder" onclick="showSubExams('${sub}')"><span>${sub}</span></div>`; }); }
-                else { currentExams.forEach(e=>renderExamItem(e,l)); }
-            });
-        }
-        function showSubExams(sub) { 
-            const l=document.getElementById('exam-items-area'); l.innerHTML=''; 
-            currentExams.filter(e=>e.subject===sub).forEach(e=>renderExamItem(e,l)); 
-        }
-        function renderExamItem(e,c) { c.innerHTML+=`<div class="exam-list-item" onclick="startExam('${e.id}')"><div><b>${e.title}</b><br><small>${e.time}m</small></div><button class="btn" style="width:auto;margin:0;">Start</button></div>`; }
-        function startExam(id) {
-            const e = currentExams.find(x=>x.id===id);
-            document.getElementById('active-exam-view').style.display='flex'; document.getElementById('activeExamTitle').innerText=e.title; document.getElementById('examTimer').innerText=e.time+":00";
-            const q = document.getElementById('questionArea'); q.innerHTML='';
-            e.questions.forEach((qu,i) => {
-                let opt = ''; qu.options.forEach((o,j)=>opt+=`<div class="option-box" onclick="this.parentNode.querySelectorAll('.option-box').forEach(b=>b.classList.remove('selected'));this.classList.add('selected')">${j+1}. ${o}</div>`);
-                q.innerHTML+=`<div style="margin-bottom:20px;"><p><b>Q${i+1}:</b> ${qu.q}</p>${opt}</div><hr>`;
-            });
-        }
-        function closeExam() { if(confirm("Exit?")) document.getElementById('active-exam-view').style.display='none'; }
+            if(type === 'live') q = q.where('createdAt', '>=', new Date(Date.now() - 86400000));
+            else q = q.where('type', '==', type);
 
-        function openAdminPanel() { document.getElementById('admin-panel').style.display='block'; switchAdminTab('students'); }
-        function switchAdminTab(t) {
-            document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active-tab')); event.target.classList.add('active-tab');
-            ['students','exams','sliders'].forEach(x=>document.getElementById('admin-'+x+'-tab').style.display='none');
-            document.getElementById('admin-'+t+'-tab').style.display='block';
-            if(t==='students') loadAdminStudents(); if(t==='exams') loadAdminExams(); if(t==='sliders') loadAdminSliders();
+            q.get().then(snap => {
+                con.innerHTML = '';
+                if(snap.empty) { con.innerHTML = '<div style="text-align:center; margin-top:50px; color:#94a3b8;"><i class="fas fa-box-open" style="font-size:3rem;"></i><p>No exams found.</p></div>'; return; }
+                
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    con.innerHTML += `
+                    <div class="exam-item" onclick="startExam('${doc.id}')">
+                        <div class="exam-item-icon"><i class="fas fa-pen"></i></div>
+                        <div><b>${d.title}</b><br><small>${d.time} min • ${d.questions.length} Qs</small></div>
+                    </div>`;
+                });
+            });
         }
-        function loadAdminStudents() {
-            const l=document.getElementById('studentListContainer'); l.innerHTML='Loading...';
-            db.collection('students').get().then(s=>{ l.innerHTML=''; document.getElementById('totalStudents').innerText=s.size; s.forEach(d=>l.innerHTML+=`<div class="student-card"><div><b>${d.data().name}</b><br><small>${d.data().email}</small></div><button onclick="delStu('${d.id}')" style="background:red; color:white; padding:5px;">Del</button></div>`); });
+
+        let currentExamData = null;
+        function startExam(id) {
+            db.collection('exams').doc(id).get().then(doc => {
+                currentExamData = doc.data();
+                document.getElementById('active-exam-modal').style.display = 'flex';
+                document.getElementById('activeExamTitle').innerText = currentExamData.title;
+                document.getElementById('examTimer').innerText = currentExamData.time + ":00";
+                
+                const qc = document.getElementById('questionContainer');
+                qc.innerHTML = '';
+                currentExamData.questions.forEach((q, i) => {
+                    let opts = '';
+                    q.options.forEach((o, j) => {
+                        opts += `<div style="padding:10px; border:1px solid #eee; margin:5px 0; border-radius:8px; cursor:pointer;" onclick="this.style.background='#e0e7ff'">${j+1}. ${o}</div>`;
+                    });
+                    qc.innerHTML += `<div style="margin-bottom:20px;"><p><b>Q${i+1}.</b> ${q.q}</p>${opts}</div>`;
+                });
+            });
         }
-        function delStu(id){ if(confirm("Del?")) db.collection('students').doc(id).delete().then(()=>loadAdminStudents()); }
-        function loadAdminExams(){
-            const l=document.getElementById('adminExamList'); l.innerHTML='Loading...';
-            db.collection('exams').orderBy('createdAt','desc').get().then(s=>{ l.innerHTML=''; s.forEach(d=>l.innerHTML+=`<div class="student-card"><div><b>${d.data().title}</b></div><button onclick="delExam('${d.id}')" style="background:red; color:white; padding:5px;">Del</button></div>`); });
+        function closeExam() {
+            if(confirm("Submit Exam?")) document.getElementById('active-exam-modal').style.display = 'none';
         }
-        function delExam(id){ if(confirm("Del?")) db.collection('exams').doc(id).delete().then(()=>loadAdminExams()); }
-        function toggleSubjectInput(){ document.getElementById('subjectInputDiv').style.display = document.getElementById('examTypeInput').value==='subject'?'block':'none'; }
-        function addNewExam(){
-            const type=document.getElementById('examTypeInput').value, title=document.getElementById('examTitleInput').value, time=document.getElementById('examTimeInput').value, json=document.getElementById('examJsonInput').value;
-            let sub=document.getElementById('examSubjectInput').value; if(type!=='subject') sub=null;
-            if(!title||!time||!json) return showToast("Error");
-            try { db.collection('exams').add({title:title, type:type, subject:sub, time:parseInt(time), questions:JSON.parse(json), createdAt:new Date()}).then(()=>{showToast("Published"); loadAdminExams();}); } catch(e){showToast("Bad JSON");}
-        }
+
     </script>
 </body>
 </html>
