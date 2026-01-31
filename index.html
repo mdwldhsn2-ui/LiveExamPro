@@ -9,84 +9,97 @@
 
     <style>
         :root {
-            --primary: #6366f1; --primary-dark: #4f46e5; --secondary: #818cf8;
-            --bg: #f1f5f9; --surface: #ffffff; --text-main: #1e293b; --text-sub: #64748b;
-            --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #818cf8;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --success: #10b981;
+            --danger: #ef4444;
             --shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.2);
-            --glass: rgba(255, 255, 255, 0.95);
+            --glass: rgba(255, 255, 255, 0.9);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: var(--text-main); overflow: hidden; height: 100vh; width: 100vw; }
 
-        /* --- NOTIFICATION --- */
+        /* --- TOAST --- */
         .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 10000; width: 90%; max-width: 400px; }
         .toast { background: white; padding: 15px 20px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 15px; margin-bottom: 10px; opacity: 0; transform: translateY(-20px); transition: 0.4s; border-left: 5px solid var(--primary); }
         .toast.show { opacity: 1; transform: translateY(0); }
-        .toast.success { border-color: var(--success); } .toast.error { border-color: var(--danger); } .toast.loading { border-color: var(--primary); }
+        .toast.success { border-color: var(--success); } .toast.error { border-color: var(--danger); }
+        .spinner { width: 18px; height: 18px; border: 2px solid #ddd; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* --- COMMON UI --- */
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; font-weight: 600; cursor: pointer; box-shadow: var(--shadow); transition: 0.2s; }
+        /* --- UI COMPONENTS --- */
+        .btn { width: 100%; padding: 16px; border: none; border-radius: 14px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; font-weight: 600; cursor: pointer; box-shadow: var(--shadow); transition: 0.2s; }
         .btn:active { transform: scale(0.98); }
         .input-group { margin-bottom: 15px; }
-        .input-group input, .input-group select, .input-group textarea { width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 12px; background: var(--surface); outline: none; transition: 0.3s; }
+        .input-group input, .input-group select, .input-group textarea { width: 100%; padding: 16px; border: 2px solid #e2e8f0; border-radius: 14px; background: var(--surface); outline: none; transition: 0.3s; }
         .input-group input:focus { border-color: var(--primary); }
 
         /* --- SCREENS --- */
         #loading-screen { position: fixed; inset: 0; background: var(--surface); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .bird { font-size: 2.5rem; color: var(--primary); position: absolute; opacity: 0; }
         .bird.fly { animation: flyIn 2.5s forwards ease-in-out; }
-        @keyframes flyIn { 0% { opacity:0; transform:translate(-100px,-50px) scale(0.5); } 50% { opacity:1; transform:translate(0px,-20px) scale(1); } 100% { opacity:1; transform:translate(0px,-10px) scale(1); } }
-        
+        .app-name span { font-size: 2rem; font-weight: 800; color: var(--primary); opacity: 0; display: inline-block; transform: translateY(10px); }
+        .app-name span.show { animation: letterPop 0.5s forwards; }
+        @keyframes flyIn { 0% { opacity: 0; transform: translate(-100px, -50px) scale(0.5); } 50% { opacity: 1; transform: translate(0px, -20px) scale(1); } 100% { opacity: 1; transform: translate(0px, -10px) scale(1); } }
+        @keyframes letterPop { to { opacity: 1; transform: translateY(0); } }
+
+        #welcome-overlay { position: fixed; inset: 0; background: var(--primary); z-index: 8888; display: none; flex-direction: column; justify-content: center; align-items: center; color: white; }
+        .welcome-card { background: white; padding: 30px; border-radius: 20px; text-align: center; color: var(--text-main); animation: popUp 0.6s; }
+        @keyframes popUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        #auth-screen { display: none; height: 100%; width: 100%; background: var(--surface); overflow-y: auto; }
+        .auth-container { padding: 30px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }
+
         #main-app { display: none; height: 100%; width: 100%; flex-direction: column; background: var(--bg); }
         .page { flex: 1; overflow-y: auto; padding: 20px; display: none; padding-bottom: 100px; }
         .page.active { display: block; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- HOME PAGE COMPONENTS --- */
-        .slider-wrapper { position: relative; width: 100%; border-radius: 16px; overflow: hidden; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); background: #e2e8f0; aspect-ratio: 16 / 7; }
-        .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 0.8s; }
+        /* --- SLIDER --- */
+        .slider-wrapper { position: relative; width: 100%; border-radius: 16px; overflow: hidden; margin-bottom: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); background: #e2e8f0; aspect-ratio: 16 / 7; }
+        .slide { position: absolute; inset: 0; opacity: 0; transition: opacity 0.8s; cursor: pointer; }
         .slide.active { opacity: 1; z-index: 2; }
         .slide img { width: 100%; height: 100%; object-fit: cover; }
+        .slider-dots { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 5; }
+        .dot { width: 6px; height: 6px; background: rgba(255,255,255,0.4); border-radius: 10px; }
+        .dot.active { background: white; width: 18px; }
 
-        /* THREE MAIN OPTIONS */
-        .quick-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 25px; }
-        .action-card { background: white; padding: 15px 5px; border-radius: 15px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.03); cursor: pointer; transition: 0.2s; border: 1px solid #f1f5f9; }
-        .action-card:active { transform: scale(0.95); background: #f8fafc; }
-        .action-icon { width: 45px; height: 45px; border-radius: 12px; margin: 0 auto 8px; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.2rem; }
+        /* --- HOME GRID BUTTONS --- */
+        .home-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .home-btn { background: white; padding: 20px 10px; border-radius: 16px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.03); cursor: pointer; transition: 0.2s; }
+        .home-btn:active { transform: scale(0.95); }
+        .home-btn i { font-size: 1.8rem; margin-bottom: 8px; display: block; }
+        .hb-routine i { color: #8b5cf6; } .hb-study i { color: #f59e0b; } .hb-rank i { color: #ec4899; }
 
-        /* --- ROUTINE PAGE --- */
-        .tab-header { display: flex; background: white; padding: 5px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .tab-item { flex: 1; text-align: center; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; color: var(--text-sub); }
-        .tab-item.active { background: var(--primary); color: white; }
-        .routine-item { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 4px solid var(--primary); position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-        .routine-time { font-weight: bold; color: var(--primary); font-size: 0.9rem; }
-
-        /* --- STUDY PAGE --- */
-        .goal-header { background: linear-gradient(135deg, #8b5cf6, #6366f1); padding: 20px; border-radius: 20px; color: white; text-align: center; margin-bottom: 20px; position: relative; overflow: hidden; }
-        .countdown { font-size: 2rem; font-weight: 700; margin: 10px 0; font-family: monospace; }
-        .progress-container { background: rgba(255,255,255,0.2); height: 8px; border-radius: 10px; margin-top: 10px; overflow: hidden; }
-        .progress-fill { height: 100%; background: #a7f3d0; width: 0%; transition: 1s; }
+        /* --- ROUTINE & STUDY STYLES --- */
+        .routine-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 4px solid var(--primary); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
         
-        .study-card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
-        .task-list li { margin-bottom: 8px; list-style: none; display: flex; gap: 10px; color: var(--text-sub); font-size: 0.9rem; }
-        .task-list li i { color: var(--success); margin-top: 4px; }
-
+        /* Study UI */
+        .goal-card { background: linear-gradient(135deg, var(--primary), var(--secondary)); padding: 20px; border-radius: 16px; color: white; text-align: center; margin-bottom: 20px; }
+        .progress-bar-bg { width: 100%; height: 10px; background: rgba(255,255,255,0.3); border-radius: 5px; margin-top: 10px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background: #10b981; width: 0%; transition: width 0.5s; }
+        
+        .study-card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); position: relative; overflow: hidden; }
+        .study-card.locked { opacity: 0.7; filter: grayscale(1); pointer-events: none; }
+        .study-card.locked::after { content: '\f023'; font-family: "Font Awesome 6 Free"; font-weight: 900; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 3rem; color: #64748b; opacity: 0.5; }
+        
         /* --- BOTTOM NAV --- */
-        .bottom-nav { position: fixed; bottom: 20px; left: 20px; right: 20px; height: 70px; background: var(--glass); backdrop-filter: blur(15px); border-radius: 20px; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 10px 40px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.5); z-index: 100; }
+        .bottom-nav { position: fixed; bottom: 20px; left: 20px; right: 20px; height: 70px; background: var(--glass); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-radius: 20px; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 10px 40px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.5); z-index: 100; }
         .nav-item { color: #94a3b8; font-size: 1.3rem; transition: 0.3s; position: relative; }
         .nav-item.active { color: var(--primary); transform: translateY(-5px); }
-        .nav-center-btn { width: 55px; height: 55px; background: var(--primary); border-radius: 18px; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.4rem; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4); margin-top: -30px; border: 5px solid var(--bg); }
+        .nav-center-btn { width: 55px; height: 55px; background: var(--primary); border-radius: 18px; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.4rem; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4); transform: translateY(0); transition: 0.3s; }
 
-        /* --- MODALS --- */
-        .full-screen-modal { position: fixed; inset: 0; background: var(--bg); z-index: 200; display: none; flex-direction: column; overflow-y: auto; animation: slideUp 0.3s; }
+        /* --- ADMIN & MODALS --- */
+        .full-screen-modal { position: fixed; inset: 0; background: var(--bg); z-index: 200; display: none; flex-direction: column; overflow-y: auto; animation: slideUp 0.3s ease; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        .modal-header { padding: 20px; background: var(--surface); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.03); position: sticky; top: 0; z-index: 10; }
-
-        /* Admin Styles */
-        .admin-section { padding: 20px; display: none; }
-        .admin-section.active { display: block; }
-        .admin-card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .modal-header { padding: 20px; background: var(--surface); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+        .delete-btn { width: 30px; height: 30px; background: #fee2e2; color: var(--danger); border: none; border-radius: 8px; cursor: pointer; }
 
     </style>
 </head>
@@ -97,25 +110,36 @@
     <div id="loading-screen">
         <div style="position:relative; width: 300px; height: 100px; text-align: center;">
             <i class="fas fa-dove bird" id="birdIcon"></i>
-            <h1 class="app-name" id="appName"></h1>
+            <div class="app-name" id="appName"></div>
         </div>
     </div>
 
-    <div id="auth-screen" style="display:none; height:100%; overflow-y:auto; background:white;">
-        <div style="padding:30px; min-height:100vh; display:flex; flex-direction:column; justify-content:center;">
-            <h1 style="color:var(--primary); font-size:2.5rem; text-align:center; margin-bottom:40px;">MENTOR</h1>
+    <div id="welcome-overlay">
+        <div class="welcome-card">
+            <div style="font-size:3rem; margin-bottom:15px; color:var(--success);"><i class="fas fa-check-circle"></i></div>
+            <h2 style="font-size:1.5rem; margin-bottom:5px;">Welcome Back!</h2>
+            <p id="welcomeUserName" style="color:var(--text-sub)"></p>
+        </div>
+    </div>
+
+    <div id="auth-screen">
+        <div class="auth-container">
+            <div style="text-align:center; margin-bottom:40px;">
+                <i class="fas fa-graduation-cap" style="font-size:3rem; color:var(--primary); margin-bottom:10px;"></i>
+                <h1 style="color:var(--primary);">MENTOR</h1>
+            </div>
             <div id="loginForm">
-                <div class="input-group"><input type="email" id="loginEmail" placeholder="Email"></div>
+                <div class="input-group"><input type="email" id="loginEmail" placeholder="Email Address"></div>
                 <div class="input-group"><input type="password" id="loginPass" placeholder="Password"></div>
                 <button class="btn" onclick="handleLogin()">Log In</button>
-                <p style="text-align:center; margin-top:20px;">New? <b style="color:var(--primary);" onclick="toggleAuth('reg')">Register</b></p>
+                <p style="text-align:center; margin-top:20px;">New here? <b style="color:var(--primary); cursor:pointer;" onclick="toggleAuth('reg')">Create Account</b></p>
             </div>
             <div id="regForm" style="display:none;">
-                <div class="input-group"><input type="text" id="regName" placeholder="Name"></div>
-                <div class="input-group"><input type="email" id="regEmail" placeholder="Email"></div>
+                <div class="input-group"><input type="text" id="regName" placeholder="Full Name"></div>
+                <div class="input-group"><input type="email" id="regEmail" placeholder="Email Address"></div>
                 <div class="input-group"><input type="password" id="regPass" placeholder="Password"></div>
-                <button class="btn" onclick="handleRegister()">Sign Up</button>
-                <p style="text-align:center; margin-top:20px;">Have account? <b style="color:var(--primary);" onclick="toggleAuth('login')">Log In</b></p>
+                <button class="btn" onclick="handleRegister()">Create Account</button>
+                <p style="text-align:center; margin-top:20px;">Have account? <b style="color:var(--primary); cursor:pointer;" onclick="toggleAuth('login')">Log In</b></p>
             </div>
         </div>
     </div>
@@ -126,131 +150,170 @@
                 <div style="display:flex; justify-content:center; align-items:center; height:100%; color:#94a3b8;"><i class="fas fa-spinner fa-spin"></i></div>
             </div>
 
-            <h2 id="homeWelcomeName" style="margin-bottom:15px; font-size:1.5rem;">Hello!</h2>
+            <div style="margin-bottom:20px;">
+                <h2 id="homeWelcomeName">Hello!</h2>
+                <p style="color:var(--text-sub); font-size:0.9rem;">Keep learning, keep growing.</p>
+            </div>
 
-            <div class="quick-actions">
-                <div class="action-card" onclick="navTo('routine')">
-                    <div class="action-card-bg"></div>
-                    <div class="action-icon" style="background:#f59e0b;"><i class="fas fa-calendar-alt"></i></div>
-                    <h4>Routine</h4>
+            <div class="home-grid">
+                <div class="home-btn hb-routine" onclick="navTo('routine')">
+                    <i class="fas fa-clock"></i> Routine
                 </div>
-                <div class="action-card" onclick="navTo('study')">
-                    <div class="action-icon" style="background:#6366f1;"><i class="fas fa-book-reader"></i></div>
-                    <h4>Study</h4>
+                <div class="home-btn hb-study" onclick="navTo('study')">
+                    <i class="fas fa-book-open"></i> Study
                 </div>
-                <div class="action-card" onclick="navTo('rank')">
-                    <div class="action-icon" style="background:#ef4444;"><i class="fas fa-trophy"></i></div>
-                    <h4>Rank</h4>
+                <div class="home-btn hb-rank" onclick="navTo('rank')">
+                    <i class="fas fa-medal"></i> Rank
                 </div>
             </div>
         </div>
 
         <div id="routine-page" class="page">
             <h2 style="margin-bottom:15px;">Daily Routine</h2>
-            <div class="tab-header">
-                <div class="tab-item active" onclick="switchRoutineTab('admin')" id="tab-admin">Official</div>
-                <div class="tab-item" onclick="switchRoutineTab('my')" id="tab-my">My Routine</div>
+            <div class="input-group" style="display:flex; gap:10px;">
+                <input type="text" id="userRoutineInput" placeholder="Add personal task..." style="flex:1;">
+                <input type="time" id="userRoutineTime" style="width:auto;">
+                <button class="btn" style="width:auto; padding:0 20px;" onclick="addPersonalRoutine()"><i class="fas fa-plus"></i></button>
             </div>
-
-            <div id="adminRoutineList" style="display:block;">
-                <p style="text-align:center; color:gray;">Loading official routines...</p>
-            </div>
-
-            <div id="myRoutineList" style="display:none;">
-                <div class="input-group" style="display:flex; gap:10px;">
-                    <input type="time" id="userRoutineTime" style="flex:1;">
-                    <input type="text" id="userRoutineTask" placeholder="Task..." style="flex:2;">
-                    <button class="btn" style="width:auto; padding:0 15px;" onclick="addUserRoutine()"><i class="fas fa-plus"></i></button>
-                </div>
-                <div id="userRoutineItems"></div>
-            </div>
+            <div id="routineList">Loading...</div>
         </div>
 
         <div id="study-page" class="page">
-            <div id="studyGoalContainer">
-                <div class="goal-header">
-                    <h3 id="goalTitle">No Goal Set</h3>
-                    <div class="countdown" id="goalTimer">00d 00h 00m</div>
-                    <p style="font-size:0.9rem; opacity:0.9;">Target Date: <span id="goalDate">--/--/--</span></p>
-                    <div class="progress-container"><div class="progress-fill" id="studyProgress" style="width:0%"></div></div>
-                    <p style="font-size:0.8rem; margin-top:5px; text-align:right;"><span id="progressText">0</span>% Completed</p>
+            <div class="goal-card">
+                <h2 id="studyGoalTitle">Loading Goal...</h2>
+                <div style="font-size:2rem; font-weight:bold; margin:10px 0;" id="studyTimer">00d 00h 00m</div>
+                <div style="display:flex; justify-content:space-between; font-size:0.8rem;">
+                    <span>Progress</span>
+                    <span id="studyProgressText">0%</span>
                 </div>
+                <div class="progress-bar-bg"><div class="progress-bar-fill" id="studyProgressBar"></div></div>
+            </div>
 
-                <div class="input-group">
-                    <select id="levelSelect" onchange="loadStudyCard()">
-                        <option value="">Select Level / Day</option>
-                        </select>
+            <div class="input-group">
+                <select id="studyLevelSelect" onchange="loadStudyContent(this.value)">
+                    <option value="">Select Level</option>
+                </select>
+            </div>
+
+            <div id="studyCardsContainer"></div>
+        </div>
+
+        <div id="rank-page" class="page">
+            <h2 style="margin-bottom:15px;">Leaderboard</h2>
+            <div class="routine-card" style="background:#fef3c7; border-color:#f59e0b;">
+                <div><b>You</b></div>
+                <div style="font-weight:bold; color:#f59e0b;" id="myRankScore">0 pts</div>
+            </div>
+            <div id="leaderboardList">Loading...</div>
+        </div>
+
+        <div id="exam-page" class="page">
+            <h2 style="margin-bottom:20px;">Exam Center</h2>
+            <div class="routine-card" onclick="openExamList('live')" style="cursor:pointer;">
+                <div style="display:flex; gap:15px; align-items:center;">
+                    <i class="fas fa-broadcast-tower" style="color:red; font-size:1.5rem;"></i>
+                    <div><b>Live Exams</b><br><small>Last 24h</small></div>
                 </div>
-
-                <div id="studyContentArea" style="display:none;">
-                    <div class="study-card">
-                        <h4 style="margin-bottom:15px; color:var(--primary);"><i class="fas fa-list-ul"></i> Today's Tasks</h4>
-                        <div id="studyDescription" style="color:var(--text-sub); margin-bottom:20px; line-height:1.6;"></div>
-                        <button class="btn" onclick="startPractice()">Practice & Unlock Next</button>
-                    </div>
+            </div>
+            <div class="routine-card" onclick="openExamList('model')" style="cursor:pointer;">
+                <div style="display:flex; gap:15px; align-items:center;">
+                    <i class="fas fa-clipboard-list" style="color:green; font-size:1.5rem;"></i>
+                    <div><b>Model Tests</b><br><small>Full Syllabus</small></div>
                 </div>
             </div>
         </div>
 
-        <div id="rank-page" class="page"><h2>Leaderboard</h2><p>Coming Soon...</p></div>
+        <div id="book-page" class="page"><h2>Library</h2><p>Coming Soon</p></div>
+        <div id="review-page" class="page"><h2>Reviews</h2><p>No reviews</p></div>
+
         <div id="profile-page" class="page">
-            <div style="text-align:center; margin-top:30px;">
-                <div style="width:80px; height:80px; background:#e2e8f0; border-radius:50%; margin:0 auto 15px; display:flex; justify-content:center; align-items:center; font-size:2rem;"><i class="fas fa-user"></i></div>
+            <div style="text-align:center; margin:30px 0;">
+                <div style="width:80px; height:80px; background:#e0e7ff; color:var(--primary); border-radius:50%; margin:0 auto 10px; display:flex; justify-content:center; align-items:center; font-size:2rem;"><i class="fas fa-user"></i></div>
                 <h2 id="profileName">User</h2>
-                <button class="btn" style="margin-top:20px; background:var(--text-main);" onclick="openAdminPanel()" id="adminBtn" style="display:none;">Admin Panel</button>
-                <button class="btn" style="margin-top:10px; background:var(--danger);" onclick="auth.signOut().then(()=>location.reload())">Logout</button>
+                <p id="profileEmail" style="color:var(--text-sub);">email@mail.com</p>
             </div>
+            <button id="adminBtn" class="btn" style="background:#334155; margin-bottom:10px; display:none;" onclick="openAdminPanel()">Admin Panel</button>
+            <button class="btn" style="background:#fee2e2; color:var(--danger);" onclick="auth.signOut().then(()=>location.reload())">Logout</button>
         </div>
 
         <div class="bottom-nav">
             <div class="nav-item active" onclick="navTo('home')"><i class="fas fa-home"></i></div>
-            <div class="nav-item" onclick="navTo('routine')"><i class="fas fa-calendar"></i></div>
-            <div class="nav-center-btn" onclick="navTo('study')"><i class="fas fa-book-open"></i></div>
-            <div class="nav-item" onclick="navTo('rank')"><i class="fas fa-trophy"></i></div>
+            <div class="nav-item" onclick="navTo('book')"><i class="fas fa-book"></i></div>
+            <div class="nav-center-btn" onclick="navTo('exam')"><i class="fas fa-graduation-cap"></i></div>
+            <div class="nav-item" onclick="navTo('review')"><i class="fas fa-star"></i></div>
             <div class="nav-item" onclick="navTo('profile')"><i class="fas fa-user"></i></div>
         </div>
     </div>
 
-    <div id="practice-modal" class="full-screen-modal">
-        <div class="modal-header"><h3>Practice</h3><button onclick="document.getElementById('practice-modal').style.display='none'" style="border:none; bg:none; font-size:1.5rem;">&times;</button></div>
-        <div id="practiceContainer" style="padding:20px;"></div>
-        <div style="padding:20px;"><button class="btn" onclick="submitPractice()">Submit</button></div>
+    <div id="admin-panel" class="full-screen-modal">
+        <div class="modal-header">
+            <h3>Admin Panel</h3>
+            <button onclick="document.getElementById('admin-panel').style.display='none'" style="border:none; background:none; font-size:1.5rem;"><i class="fas fa-times"></i></button>
+        </div>
+        <div style="padding:20px;">
+            <div style="display:flex; gap:10px; overflow-x:auto; margin-bottom:20px;">
+                <button class="btn" style="width:auto; padding:8px 15px; font-size:0.8rem;" onclick="showAdminTab('routine')">Routine</button>
+                <button class="btn" style="width:auto; padding:8px 15px; font-size:0.8rem; background:#64748b;" onclick="showAdminTab('study')">Study</button>
+                <button class="btn" style="width:auto; padding:8px 15px; font-size:0.8rem; background:#64748b;" onclick="showAdminTab('slider')">Slider</button>
+            </div>
+
+            <div id="admin-routine-tab">
+                <h4>Manage Routine</h4>
+                <div class="input-group" style="display:flex; gap:10px;">
+                    <input type="text" id="admRoutineTxt" placeholder="Global routine task...">
+                    <input type="time" id="admRoutineTime">
+                    <button class="btn" style="width:auto;" onclick="addAdminRoutine()"><i class="fas fa-plus"></i></button>
+                </div>
+                <div id="adminRoutineList"></div>
+            </div>
+
+            <div id="admin-study-tab" style="display:none;">
+                <h4>Manage Goal</h4>
+                <div class="input-group"><input type="text" id="admGoalTitle" placeholder="Goal Title (e.g. HSC 2026)"></div>
+                <div class="input-group"><input type="datetime-local" id="admGoalDate"></div>
+                <button class="btn" onclick="setGoalData()" style="margin-bottom:20px;">Set Goal Info</button>
+
+                <h4>Add Study Level</h4>
+                <div class="input-group" style="display:flex; gap:10px;">
+                    <input type="text" id="admLevelName" placeholder="Level Name (e.g. Phase 1)">
+                    <button class="btn" style="width:auto;" onclick="addLevel()"><i class="fas fa-plus"></i></button>
+                </div>
+                
+                <h4>Add Study Day Content</h4>
+                <select id="admDayLevelSelect" class="input-group" style="width:100%; padding:15px; border-radius:14px; border:2px solid #e2e8f0;"><option>Select Level First</option></select>
+                <input type="number" id="admDayNum" placeholder="Day Number (e.g. 1)" class="input-group" style="display:block; width:100%; padding:15px; border-radius:14px; border:2px solid #e2e8f0; margin-bottom:10px;">
+                <input type="text" id="admDayTitle" placeholder="Day Title" class="input-group" style="display:block; width:100%; padding:15px; border-radius:14px; border:2px solid #e2e8f0; margin-bottom:10px;">
+                <textarea id="admDayDesc" placeholder="Study Details..." rows="3" style="width:100%; padding:15px; border-radius:14px; border:2px solid #e2e8f0; margin-bottom:10px;"></textarea>
+                <textarea id="admDayJson" placeholder="MCQ JSON: [{q:'..',options:['..'],correct:0}]" rows="3" style="width:100%; padding:15px; border-radius:14px; border:2px solid #e2e8f0; margin-bottom:10px;"></textarea>
+                <button class="btn" onclick="addStudyDay()">Add Day Content</button>
+            </div>
+
+            <div id="admin-slider-tab" style="display:none;">
+                <input type="file" id="sliderFile" style="margin-bottom:10px;">
+                <input type="text" id="sliderLink" placeholder="Link" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:10px;">
+                <button class="btn" onclick="uploadSlider()">Upload</button>
+                <div id="adminSliderList" style="margin-top:20px;"></div>
+            </div>
+        </div>
     </div>
 
-    <div id="admin-panel" class="full-screen-modal">
-        <div class="modal-header"><h3>Admin Dashboard</h3><button onclick="document.getElementById('admin-panel').style.display='none'" style="border:none; bg:none; font-size:1.5rem;">&times;</button></div>
-        <div style="padding:20px; background:#f8fafc; display:flex; gap:10px; overflow-x:auto;">
-            <button class="btn" style="width:auto; padding:8px 15px;" onclick="showAdminTab('routine')">Routine</button>
-            <button class="btn" style="width:auto; padding:8px 15px; background:#94a3b8;" onclick="showAdminTab('study')">Study</button>
+    <div id="active-exam-modal" class="full-screen-modal">
+        <div class="modal-header" style="background:var(--primary); color:white;">
+            <h4 id="activeExamTitle">Practice</h4>
+            <div id="examTimerDisplay" style="background:rgba(255,255,255,0.2); padding:5px 10px; border-radius:8px;"></div>
         </div>
-        
-        <div id="adm-routine" class="admin-section active">
-            <h4>Manage Official Routine</h4>
-            <div class="input-group" style="margin-top:10px;">
-                <input type="time" id="admRoutineTime">
-                <input type="text" id="admRoutineTask" placeholder="Task Description" style="margin-top:5px;">
-                <button class="btn" style="margin-top:5px;" onclick="addAdminRoutine()">Add Routine</button>
-            </div>
-            <div id="admRoutineListUI"></div>
+        <div id="questionContainer" style="padding:20px; padding-bottom:100px;"></div>
+        <div style="position:fixed; bottom:0; width:100%; padding:20px; background:white; border-top:1px solid #eee;">
+            <button class="btn" onclick="submitPractice()">Submit</button>
         </div>
+    </div>
 
-        <div id="adm-study" class="admin-section">
-            <h4>Manage Study Goal</h4>
-            <div class="input-group">
-                <input type="text" id="goalNameInput" placeholder="Goal Name (e.g. HSC 2024)">
-                <input type="date" id="goalDateInput" style="margin-top:5px;">
-                <button class="btn" style="margin-top:5px;" onclick="setGlobalGoal()">Set Goal & Timer</button>
-            </div>
-            <hr style="margin:20px 0;">
-            <h4>Add Study Level</h4>
-            <div class="input-group">
-                <input type="text" id="levelNameInput" placeholder="Level Name (e.g. Day 1)">
-                <textarea id="levelDescInput" placeholder="Study Details / Syllabus" rows="3"></textarea>
-                <textarea id="levelJsonInput" placeholder="MCQ JSON Data" rows="3"></textarea>
-                <button class="btn" onclick="addStudyLevel()">Add Level</button>
-            </div>
-            <div id="admLevelList"></div>
+    <div id="exam-list-modal" class="full-screen-modal">
+        <div class="modal-header">
+            <h3 id="examListTitle">Exams</h3>
+            <button onclick="document.getElementById('exam-list-modal').style.display='none'" style="border:none; background:none; font-size:1.5rem;"><i class="fas fa-arrow-left"></i></button>
         </div>
+        <div id="examListContainer" style="padding:20px;"></div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
@@ -262,287 +325,416 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
+        
         const ADMIN_EMAIL = "mdwld2005@gmail.com";
+        const CLOUD_NAME = "dsmvmq076";
+        const UPLOAD_PRESET = "my_app_upload";
+        let currentUser = null;
 
-        // INIT
+        // --- INIT ---
         document.addEventListener('DOMContentLoaded', () => {
-            const name = "MENTOR"; const con = document.getElementById('appName');
-            name.split('').forEach((l, i) => { const s = document.createElement('span'); s.textContent = l; s.style.animationDelay = `${0.5 + (i*0.1)}s`; con.appendChild(s); });
-            setTimeout(() => document.getElementById('birdIcon').classList.add('fly'), 100);
-            setTimeout(() => document.querySelectorAll('.app-name span').forEach(s => s.classList.add('show')), 100);
+            const n="MENTOR", c=document.getElementById('appName');
+            n.split('').forEach((l,i)=>{const s=document.createElement('span');s.textContent=l;s.style.animationDelay=`${0.5+i*0.1}s`;c.appendChild(s)});
+            setTimeout(()=>document.getElementById('birdIcon').classList.add('fly'),100);
+            setTimeout(()=>document.querySelectorAll('.app-name span').forEach(s=>s.classList.add('show')),100);
 
             auth.onAuthStateChanged(user => {
                 setTimeout(() => {
-                    document.getElementById('loading-screen').style.display = 'none';
-                    if (user) {
-                        document.getElementById('auth-screen').style.display = 'none';
-                        document.getElementById('main-app').style.display = 'flex';
-                        initUserData(user);
-                        initHomeSlider();
+                    document.getElementById('loading-screen').style.display='none';
+                    if(user) {
+                        currentUser = user;
+                        document.getElementById('auth-screen').style.display='none';
+                        document.getElementById('main-app').style.display='flex';
+                        loadUserData(user);
+                        loadHomeSliders();
                     } else {
-                        document.getElementById('auth-screen').style.display = 'block';
+                        document.getElementById('auth-screen').style.display='block';
+                        document.getElementById('main-app').style.display='none';
                     }
                 }, 2500);
             });
         });
 
-        function showToast(type, msg) {
-            const t = document.createElement('div'); t.className = `toast ${type}`;
-            t.innerHTML = `<div><h4>${type.toUpperCase()}</h4><p>${msg}</p></div>`;
-            document.getElementById('toastContainer').appendChild(t);
-            setTimeout(() => t.classList.add('show'), 10);
-            setTimeout(() => { t.classList.remove('show'); setTimeout(()=>t.remove(),400); }, 3000);
+        // --- NOTIFICATION ---
+        function showNotify(type, title, msg) {
+            const c=document.getElementById('toastContainer'), t=document.createElement('div');
+            t.className=`toast ${type}`;
+            t.innerHTML=`<div class="${type==='loading'?'spinner':''}">${type==='success'?'<i class="fas fa-check"></i>':(type==='error'?'<i class="fas fa-times"></i>':'')}</div><div><h4>${title}</h4><p>${msg}</p></div>`;
+            c.appendChild(t); setTimeout(()=>t.classList.add('show'),100);
+            if(type!=='loading') setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),400)},3000);
+            return t;
+        }
+
+        // --- AUTH ---
+        function toggleAuth(t) { document.getElementById('loginForm').style.display=t==='login'?'block':'none'; document.getElementById('regForm').style.display=t==='reg'?'block':'none'; }
+        function handleLogin() {
+            const e=document.getElementById('loginEmail').value, p=document.getElementById('loginPass').value;
+            const noti=showNotify('loading','Logging in...','Please wait');
+            auth.signInWithEmailAndPassword(e,p).then(c=>{ noti.remove(); showWelcome(c.user); }).catch(e=>{ noti.remove(); showNotify('error','Failed',e.message); });
+        }
+        function handleRegister() {
+            const n=document.getElementById('regName').value, e=document.getElementById('regEmail').value, p=document.getElementById('regPass').value;
+            const noti=showNotify('loading','Creating Account...','Please wait');
+            auth.createUserWithEmailAndPassword(e,p).then(c=>{
+                db.collection('students').doc(c.user.uid).set({name:n, email:e, joined:new Date(), points:0, studyProgress:{}});
+                noti.remove(); showWelcome(c.user);
+            }).catch(e=>{ noti.remove(); showNotify('error','Failed',e.message); });
+        }
+        function showWelcome(u) {
+            document.getElementById('welcome-overlay').style.display='flex';
+            document.getElementById('welcomeUserName').innerText = u.displayName || u.email;
+            setTimeout(()=>document.getElementById('welcome-overlay').style.display='none',2000);
+        }
+        function loadUserData(u) {
+            document.getElementById('profileEmail').innerText=u.email;
+            if(u.email===ADMIN_EMAIL) document.getElementById('adminBtn').style.display='block';
+            db.collection('students').doc(u.uid).get().then(d=>{
+                const n=d.exists?d.data().name:'User';
+                document.getElementById('homeWelcomeName').innerText=`Hello, ${n}!`;
+                document.getElementById('profileName').innerText=n;
+            });
         }
 
         // --- NAVIGATION ---
         function navTo(id) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById(id + '-page').classList.add('active');
-            
-            // Highlight Icons
-            const icons = document.querySelectorAll('.nav-item');
-            if(id==='home') icons[0].classList.add('active');
-            if(id==='routine') icons[1].classList.add('active');
-            if(id==='study') document.querySelector('.nav-center-btn').style.transform = 'scale(1.1)';
-            else document.querySelector('.nav-center-btn').style.transform = 'scale(1)';
-            if(id==='rank') icons[3].classList.add('active');
-            if(id==='profile') icons[4].classList.add('active');
-
+            document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+            document.getElementById(id+'-page').classList.add('active');
+            // Logic for specific pages
             if(id==='routine') loadRoutines();
             if(id==='study') loadStudyData();
+            if(id==='rank') loadLeaderboard();
+            // Highlight Icon
+            const map = {'home':0, 'book':1, 'exam':2, 'review':3, 'profile':4};
+            if(map[id]!==undefined) document.querySelectorAll('.nav-item')[map[id]].classList.add('active');
         }
 
-        // --- AUTH & DATA ---
-        function handleLogin() {
-            const e = document.getElementById('loginEmail').value, p = document.getElementById('loginPass').value;
-            auth.signInWithEmailAndPassword(e, p).catch(err => showToast('error', err.message));
-        }
-        function handleRegister() {
-            const n = document.getElementById('regName').value, e = document.getElementById('regEmail').value, p = document.getElementById('regPass').value;
-            auth.createUserWithEmailAndPassword(e, p).then(c => {
-                db.collection('students').doc(c.user.uid).set({ name: n, email: e });
-            }).catch(err => showToast('error', err.message));
-        }
-        function toggleAuth(t) {
-            document.getElementById('loginForm').style.display = t==='login'?'block':'none';
-            document.getElementById('regForm').style.display = t==='reg'?'block':'none';
-        }
-        function initUserData(user) {
-            if(user.email === ADMIN_EMAIL) document.getElementById('adminBtn').style.display = 'inline-block';
-            db.collection('students').doc(user.uid).get().then(d => {
-                const n = d.exists ? d.data().name : user.email.split('@')[0];
-                document.getElementById('homeWelcomeName').innerText = `Hello, ${n}!`;
-                document.getElementById('profileName').innerText = n;
-            });
-        }
-        function initHomeSlider() {
-            db.collection('sliders').orderBy('createdAt','desc').limit(5).get().then(snap => {
-                const wrapper = document.getElementById('homeSlider');
-                if(!snap.empty) {
-                    let html = '';
-                    snap.forEach((d, i) => html += `<div class="slide ${i===0?'active':''}"><img src="${d.data().imageUrl}"></div>`);
-                    wrapper.innerHTML = html;
-                    let idx = 0; const slides = document.querySelectorAll('.slide');
-                    setInterval(() => {
-                        slides[idx].classList.remove('active');
-                        idx = (idx+1)%slides.length;
-                        slides[idx].classList.add('active');
-                    }, 4000);
-                } else wrapper.innerHTML = '<p style="text-align:center; padding-top:20%;">No Sliders</p>';
-            });
-        }
-
-        // --- ROUTINE LOGIC ---
-        function switchRoutineTab(t) {
-            document.getElementById('tab-admin').className = `tab-item ${t==='admin'?'active':''}`;
-            document.getElementById('tab-my').className = `tab-item ${t==='my'?'active':''}`;
-            document.getElementById('adminRoutineList').style.display = t==='admin'?'block':'none';
-            document.getElementById('myRoutineList').style.display = t==='my'?'block':'none';
-        }
+        // --- FEATURE: ROUTINE ---
         function loadRoutines() {
-            // Admin Routine
-            db.collection('routines').orderBy('time').onSnapshot(snap => {
-                let h = '';
-                snap.forEach(d => {
-                    const r = d.data();
-                    h += `<div class="routine-item"><div class="routine-time">${r.time}</div><div>${r.task}</div></div>`;
-                });
-                document.getElementById('adminRoutineList').innerHTML = h || '<p style="text-align:center; color:#94a3b8;">No official routine.</p>';
-            });
-            // User Routine
-            const uid = auth.currentUser.uid;
-            db.collection('students').doc(uid).collection('my_routine').orderBy('time').onSnapshot(snap => {
-                let h = '';
-                snap.forEach(d => {
-                    const r = d.data();
-                    h += `<div class="routine-item" style="border-color:var(--secondary);">
-                        <div style="display:flex; justify-content:space-between;">
-                            <span class="routine-time">${r.time}</span>
-                            <i class="fas fa-trash" style="color:var(--danger); cursor:pointer;" onclick="delUserRoutine('${d.id}')"></i>
+            const list = document.getElementById('routineList');
+            list.innerHTML='Loading...';
+            // Fetch Global Admin Routines & Personal Routines
+            Promise.all([
+                db.collection('routines').where('type','==','admin').get(),
+                db.collection('routines').where('uid','==',currentUser.uid).get()
+            ]).then(res => {
+                const adminR = res[0].docs.map(d=>({id:d.id, ...d.data(), isAdmin:true}));
+                const userR = res[1].docs.map(d=>({id:d.id, ...d.data(), isAdmin:false}));
+                const all = [...adminR, ...userR].sort((a,b) => a.time.localeCompare(b.time));
+                
+                list.innerHTML='';
+                if(all.length===0) list.innerHTML='<p style="text-align:center;color:#aaa">No routines set.</p>';
+                
+                all.forEach(r => {
+                    list.innerHTML += `
+                    <div class="routine-card" style="border-left-color:${r.isAdmin?'var(--primary)':'var(--success)'}">
+                        <div>
+                            <b>${r.task}</b>
+                            <div style="font-size:0.8rem; color:grey;">${tConvert(r.time)} • ${r.isAdmin?'Admin':'Personal'}</div>
                         </div>
-                        <div>${r.task}</div>
+                        ${!r.isAdmin ? `<button class="delete-btn" onclick="delRoutine('${r.id}')"><i class="fas fa-trash"></i></button>` : ''}
                     </div>`;
                 });
-                document.getElementById('userRoutineItems').innerHTML = h || '<p style="text-align:center; color:#94a3b8;">Add your routine above.</p>';
             });
         }
-        function addUserRoutine() {
-            const t = document.getElementById('userRoutineTime').value;
-            const task = document.getElementById('userRoutineTask').value;
-            if(!t || !task) return showToast('error', 'Fill all fields');
-            db.collection('students').doc(auth.currentUser.uid).collection('my_routine').add({
-                time: t, task: task, createdAt: new Date()
-            }).then(() => {
-                document.getElementById('userRoutineTask').value = '';
-                showToast('success', 'Added');
+        function addPersonalRoutine() {
+            const task = document.getElementById('userRoutineInput').value;
+            const time = document.getElementById('userRoutineTime').value;
+            if(!task || !time) return showNotify('error','Error','Fill all fields');
+            db.collection('routines').add({
+                task, time, type:'personal', uid:currentUser.uid, createdAt: new Date()
+            }).then(()=>{
+                document.getElementById('userRoutineInput').value='';
+                loadRoutines();
             });
         }
-        function delUserRoutine(id) {
-            db.collection('students').doc(auth.currentUser.uid).collection('my_routine').doc(id).delete();
+        function delRoutine(id) { if(confirm("Delete?")) db.collection('routines').doc(id).delete().then(loadRoutines); }
+        function tConvert(time) {
+            time = time.toString ().match (/^([01]\d|2[0-3])(:)([0-5]\d)(:[0-5]\d)?$/) || [time];
+            if (time.length > 1) { 
+                time = time.slice (1);  
+                time[5] = +time[0] < 12 ? ' AM' : ' PM'; 
+                time[0] = +time[0] % 12 || 12; 
+            }
+            return time.join (''); 
         }
 
-        // --- STUDY LOGIC (Smart) ---
-        let currentLevelData = null;
-        let studyTimerInt = null;
+        // --- FEATURE: STUDY (Smart Goal) ---
+        let currentLevel = null;
+        let studyDays = [];
+        let userProgress = {};
 
         function loadStudyData() {
-            // Load Global Goal
-            db.collection('app_settings').doc('study_goal').onSnapshot(doc => {
+            // Load Goal Info
+            db.collection('settings').doc('goal').onSnapshot(doc => {
                 if(doc.exists) {
-                    const g = doc.data();
-                    document.getElementById('goalTitle').innerText = g.title;
-                    document.getElementById('goalDate').innerText = g.date;
-                    startTimer(new Date(g.date));
+                    const d = doc.data();
+                    document.getElementById('studyGoalTitle').innerText = d.title;
+                    startTimer(d.targetDate);
                 }
             });
-            // Load Levels
-            const sel = document.getElementById('levelSelect');
-            db.collection('study_levels').orderBy('createdAt').get().then(snap => {
+
+            // Load Levels for Dropdown
+            const sel = document.getElementById('studyLevelSelect');
+            db.collection('study_levels').get().then(snap => {
                 sel.innerHTML = '<option value="">Select Level</option>';
                 snap.forEach(d => {
-                    sel.innerHTML += `<option value="${d.id}">${d.data().title}</option>`;
+                    sel.innerHTML += `<option value="${d.id}">${d.data().name}</option>`;
                 });
             });
+
+            // Load User Progress
+            db.collection('students').doc(currentUser.uid).get().then(doc => {
+                if(doc.exists) userProgress = doc.data().studyProgress || {};
+            });
         }
-        function startTimer(target) {
-            if(studyTimerInt) clearInterval(studyTimerInt);
-            studyTimerInt = setInterval(() => {
+
+        function loadStudyContent(levelId) {
+            if(!levelId) return;
+            currentLevel = levelId;
+            const cont = document.getElementById('studyCardsContainer');
+            cont.innerHTML = 'Loading content...';
+
+            db.collection('study_days').where('levelId','==',levelId).orderBy('dayNum').get().then(snap => {
+                studyDays = snap.docs.map(d=>({id:d.id, ...d.data()}));
+                renderStudyCards();
+            });
+        }
+
+        function renderStudyCards() {
+            const cont = document.getElementById('studyCardsContainer');
+            cont.innerHTML = '';
+            
+            // Determine completed day for this level
+            const completed = userProgress[currentLevel] || 0; 
+            
+            // Calculate Progress Bar
+            const total = studyDays.length;
+            const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+            document.getElementById('studyProgressText').innerText = percent + "%";
+            document.getElementById('studyProgressBar').style.width = percent + "%";
+
+            studyDays.forEach(day => {
+                const isLocked = day.dayNum > (completed + 1);
+                const isCompleted = day.dayNum <= completed;
+                
+                cont.innerHTML += `
+                <div class="study-card ${isLocked ? 'locked' : ''}">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <h3 style="color:var(--primary);">Day ${day.dayNum}: ${day.title}</h3>
+                        ${isCompleted ? '<i class="fas fa-check-circle" style="color:var(--success); font-size:1.5rem;"></i>' : ''}
+                    </div>
+                    <p style="color:var(--text-sub); margin-bottom:15px;">${day.content}</p>
+                    ${!isLocked && !isCompleted ? `<button class="btn" onclick="openPractice('${day.id}')">Start Practice</button>` : ''}
+                    ${isCompleted ? '<small style="color:green;">Completed</small>' : ''}
+                </div>`;
+            });
+        }
+
+        function startTimer(isoDate) {
+            const end = new Date(isoDate).getTime();
+            setInterval(() => {
                 const now = new Date().getTime();
-                const dist = target - now;
-                if(dist < 0) { document.getElementById('goalTimer').innerText = "EXPIRED"; return; }
-                const d = Math.floor(dist / (1000*60*60*24));
-                const h = Math.floor((dist % (1000*60*60*24)) / (1000*60*60));
-                const m = Math.floor((dist % (1000*60*60)) / (1000*60));
-                document.getElementById('goalTimer').innerText = `${d}d ${h}h ${m}m`;
+                const dist = end - now;
+                if(dist < 0) {
+                     document.getElementById('studyTimer').innerText = "EXPIRED";
+                     return;
+                }
+                const d = Math.floor(dist / (1000 * 60 * 60 * 24));
+                const h = Math.floor((dist % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const m = Math.floor((dist % (1000 * 60 * 60)) / (1000 * 60));
+                document.getElementById('studyTimer').innerText = `${d}d ${h}h ${m}m`;
             }, 60000); // update every minute
         }
-        function loadStudyCard() {
-            const id = document.getElementById('levelSelect').value;
-            if(!id) { document.getElementById('studyContentArea').style.display = 'none'; return; }
+
+        // --- PRACTICE MCQ LOGIC ---
+        let activePracticeQuestions = [];
+        let activeDayId = null;
+
+        function openPractice(dayId) {
+            const day = studyDays.find(d => d.id === dayId);
+            if(!day || !day.questions) return showNotify('error','Error','No questions found');
             
-            db.collection('study_levels').doc(id).get().then(doc => {
-                currentLevelData = doc.data();
-                document.getElementById('studyContentArea').style.display = 'block';
-                document.getElementById('studyDescription').innerHTML = currentLevelData.desc.replace(/\n/g, '<br>');
-            });
-        }
-        function startPractice() {
-            if(!currentLevelData || !currentLevelData.questions) return showToast('error', 'No practice data!');
-            document.getElementById('practice-modal').style.display = 'flex';
-            const con = document.getElementById('practiceContainer');
-            con.innerHTML = '';
-            currentLevelData.questions.forEach((q, i) => {
+            activePracticeQuestions = day.questions;
+            activeDayId = dayId;
+            
+            const qc = document.getElementById('questionContainer');
+            qc.innerHTML = '';
+            
+            day.questions.forEach((q, i) => {
                 let opts = '';
-                q.options.forEach((o, j) => opts += `<div style="padding:10px; border:1px solid #ddd; margin:5px 0; cursor:pointer;" onclick="selectOpt(this, ${i})">${j+1}. ${o}</div>`);
-                con.innerHTML += `<div class="q-block" id="q-${i}" data-ans="${q.correct}"><p><b>Q${i+1}:</b> ${q.q}</p>${opts}</div><hr>`;
+                q.options.forEach((o, j) => {
+                    opts += `<div class="p-opt" data-idx="${j}" onclick="selectOpt(this)">${j+1}. ${o}</div>`;
+                });
+                qc.innerHTML += `<div class="q-box" data-correct="${q.correct}"><p><b>Q${i+1}.</b> ${q.q}</p>${opts}</div>`;
             });
+
+            document.getElementById('active-exam-modal').style.display='flex';
+            document.getElementById('activeExamTitle').innerText = "Day " + day.dayNum + " Practice";
+            document.getElementById('examTimerDisplay').style.display='none';
+            // Add style for options
+            const style = document.createElement('style');
+            style.innerHTML = `.p-opt { padding:10px; border:1px solid #eee; margin:5px 0; border-radius:8px; cursor:pointer; } .p-opt.sel { background:#e0e7ff; border-color:var(--primary); }`;
+            document.head.appendChild(style);
         }
-        function selectOpt(el, i) {
-            const p = el.parentNode;
-            p.querySelectorAll('div').forEach(d => d.style.background = 'white');
-            el.style.background = '#dcfce7';
-            el.classList.add('selected-opt');
+
+        window.selectOpt = function(el) {
+            el.parentNode.querySelectorAll('.p-opt').forEach(e=>e.classList.remove('sel'));
+            el.classList.add('sel');
         }
+
         function submitPractice() {
-            const blocks = document.querySelectorAll('.q-block');
+            const qBoxes = document.querySelectorAll('.q-box');
             let score = 0;
-            blocks.forEach(b => {
-                const sel = b.querySelector('.selected-opt');
-                if(sel) {
-                    const ansIndex = Array.from(sel.parentNode.children).indexOf(sel) - 1; // -1 for p tag
-                    if(ansIndex == b.getAttribute('data-ans')) score++;
+            qBoxes.forEach(box => {
+                const selected = box.querySelector('.sel');
+                if(selected && parseInt(selected.dataset.idx) === parseInt(box.dataset.correct)) {
+                    score++;
                 }
             });
-            const percent = (score / blocks.length) * 100;
+
+            const percent = (score / activePracticeQuestions.length) * 100;
+            document.getElementById('active-exam-modal').style.display='none';
+
             if(percent >= 80) {
-                showToast('success', `Awesome! You got ${percent}%`);
-                document.getElementById('practice-modal').style.display = 'none';
-                updateProgress(10); // Dummy increment
+                showNotify('success', 'Great Job!', `You got ${percent}%. Next day unlocked!`);
+                
+                // Update Progress
+                const currentDayNum = studyDays.find(d => d.id === activeDayId).dayNum;
+                // Only update if this is a new progress
+                if((userProgress[currentLevel] || 0) < currentDayNum) {
+                     userProgress[currentLevel] = currentDayNum;
+                     db.collection('students').doc(currentUser.uid).update({
+                         studyProgress: userProgress,
+                         points: firebase.firestore.FieldValue.increment(10) // Give points for rank
+                     }).then(renderStudyCards);
+                }
             } else {
-                showToast('error', `You got ${percent}%. Need 80% to pass.`);
+                showNotify('error', 'Try Again', `You got ${percent}%. Need 80% to pass.`);
             }
         }
-        function updateProgress(inc) {
-            const bar = document.getElementById('studyProgress');
-            const txt = document.getElementById('progressText');
-            let curr = parseInt(txt.innerText);
-            let newV = Math.min(curr + inc, 100);
-            bar.style.width = newV + '%';
-            txt.innerText = newV;
-        }
 
-        // --- ADMIN PANEL FUNCTIONS ---
-        function openAdminPanel() { document.getElementById('admin-panel').style.display = 'flex'; showAdminTab('routine'); }
-        function showAdminTab(t) {
-            document.querySelectorAll('.admin-section').forEach(d => d.style.display = 'none');
-            document.getElementById('adm-'+t).style.display = 'block';
-            if(t==='routine') loadAdminRoutinesUI();
-            if(t==='study') loadAdminLevelsUI();
-        }
-        // Admin Routine
-        function addAdminRoutine() {
-            const t = document.getElementById('admRoutineTime').value;
-            const task = document.getElementById('admRoutineTask').value;
-            if(!t || !task) return;
-            db.collection('routines').add({ time:t, task:task }).then(() => {
-                showToast('success', 'Routine Added');
-                loadAdminRoutinesUI();
-            });
-        }
-        function loadAdminRoutinesUI() {
-            db.collection('routines').orderBy('time').get().then(snap => {
-                let h = '';
-                snap.forEach(d => h += `<div class="admin-card"><span>${d.data().time} - ${d.data().task}</span> <button onclick="db.collection('routines').doc('${d.id}').delete().then(()=>loadAdminRoutinesUI())" style="color:red;">Del</button></div>`);
-                document.getElementById('admRoutineListUI').innerHTML = h;
-            });
-        }
-        // Admin Study
-        function setGlobalGoal() {
-            const t = document.getElementById('goalNameInput').value;
-            const d = document.getElementById('goalDateInput').value;
-            db.collection('app_settings').doc('study_goal').set({ title:t, date:d }).then(()=>showToast('success','Goal Set'));
-        }
-        function addStudyLevel() {
-            const t = document.getElementById('levelNameInput').value;
-            const d = document.getElementById('levelDescInput').value;
-            const j = document.getElementById('levelJsonInput').value;
-            try {
-                const q = JSON.parse(j);
-                db.collection('study_levels').add({ title:t, desc:d, questions:q, createdAt: new Date() }).then(()=>{
-                    showToast('success', 'Level Added');
-                    loadAdminLevelsUI();
+        // --- FEATURE: RANK ---
+        function loadLeaderboard() {
+            const list = document.getElementById('leaderboardList');
+            list.innerHTML = 'Loading...';
+            db.collection('students').orderBy('points', 'desc').limit(20).get().then(snap => {
+                list.innerHTML = '';
+                let rank = 1;
+                snap.forEach(doc => {
+                    const s = doc.data();
+                    const isMe = doc.id === currentUser.uid;
+                    if(isMe) document.getElementById('myRankScore').innerText = (s.points || 0) + " pts";
+                    
+                    list.innerHTML += `
+                    <div class="routine-card" style="border-left-color:${isMe?'#f59e0b':'#ddd'}">
+                        <div style="display:flex; gap:10px;">
+                            <b>#${rank++}</b>
+                            <span>${s.name}</span>
+                        </div>
+                        <div style="font-weight:bold; color:var(--primary);">${s.points||0} pts</div>
+                    </div>`;
                 });
-            } catch(e) { showToast('error', 'Invalid JSON'); }
-        }
-        function loadAdminLevelsUI() {
-            db.collection('study_levels').orderBy('createdAt').get().then(snap => {
-                let h = '';
-                snap.forEach(d => h += `<div class="admin-card"><span>${d.data().title}</span> <button onclick="db.collection('study_levels').doc('${d.id}').delete().then(()=>loadAdminLevelsUI())" style="color:red;">Del</button></div>`);
-                document.getElementById('admLevelList').innerHTML = h;
             });
         }
 
+        // --- ADMIN FUNCTIONS ---
+        function showAdminTab(id) {
+            ['routine','study','slider'].forEach(t => document.getElementById('admin-'+t+'-tab').style.display='none');
+            document.getElementById('admin-'+id+'-tab').style.display='block';
+            if(id==='routine') loadAdminRoutines();
+        }
+
+        function loadAdminRoutines() {
+            const l = document.getElementById('adminRoutineList');
+            l.innerHTML='Loading...';
+            db.collection('routines').where('type','==','admin').get().then(snap=>{
+                l.innerHTML='';
+                snap.forEach(d=>{
+                    l.innerHTML+=`<div class="routine-card"><span>${d.data().task}</span><button class="delete-btn" onclick="delRoutine('${d.id}')"><i class="fas fa-trash"></i></button></div>`;
+                });
+            });
+        }
+        function addAdminRoutine() {
+            const task=document.getElementById('admRoutineTxt').value, time=document.getElementById('admRoutineTime').value;
+            db.collection('routines').add({task,time,type:'admin'}).then(()=>{document.getElementById('admRoutineTxt').value=''; loadAdminRoutines();});
+        }
+        
+        function setGoalData() {
+            db.collection('settings').doc('goal').set({
+                title: document.getElementById('admGoalTitle').value,
+                targetDate: document.getElementById('admGoalDate').value
+            }).then(()=>showNotify('success','Updated','Goal info updated'));
+        }
+        
+        function addLevel() {
+            db.collection('study_levels').add({name: document.getElementById('admLevelName').value}).then(()=>showNotify('success','Added','Level Added'));
+        }
+        
+        // Populate Admin Level Select on click
+        document.getElementById('admin-panel').addEventListener('click', ()=>{
+             const s = document.getElementById('admDayLevelSelect');
+             if(s.children.length<=1) {
+                 db.collection('study_levels').get().then(snap=>{
+                     s.innerHTML='<option>Select Level</option>';
+                     snap.forEach(d=>s.innerHTML+=`<option value="${d.id}">${d.data().name}</option>`);
+                 });
+             }
+        });
+
+        function addStudyDay() {
+            const levelId = document.getElementById('admDayLevelSelect').value;
+            const dayNum = parseInt(document.getElementById('admDayNum').value);
+            const title = document.getElementById('admDayTitle').value;
+            const content = document.getElementById('admDayDesc').value;
+            const json = document.getElementById('admDayJson').value;
+            
+            try {
+                const questions = JSON.parse(json);
+                db.collection('study_days').add({levelId, dayNum, title, content, questions}).then(()=>showNotify('success','Added','Day Content Added'));
+            } catch(e) { showNotify('error','JSON Error','Check JSON format'); }
+        }
+
+        // --- OLD FUNCTIONS (Slider, Exam List) ---
+        let slideInterval; let slideIndex = 0;
+        function loadHomeSliders() {
+            db.collection('sliders').orderBy('createdAt', 'desc').get().then(snap => {
+                const w=document.getElementById('homeSlider');
+                if(snap.empty){ w.innerHTML='<div style="display:flex;justify-content:center;align-items:center;height:100%;color:#aaa;">No News</div>'; return;}
+                let s='',d=''; snap.docs.forEach((doc,i)=>{ const dt=doc.data(); s+=`<div class="slide ${i===0?'active':''}" onclick="window.open('${dt.link||'#'}')"><img src="${dt.imageUrl}"></div>`; d+=`<div class="dot ${i===0?'active':''}"></div>`; });
+                w.innerHTML=s+`<div class="slider-dots">${d}</div>`;
+                if(slideInterval) clearInterval(slideInterval);
+                slideInterval=setInterval(()=>{
+                    const sl=document.querySelectorAll('.slide'), dt=document.querySelectorAll('.dot');
+                    if(sl.length<2)return;
+                    sl[slideIndex].classList.remove('active'); dt[slideIndex].classList.remove('active');
+                    slideIndex=(slideIndex+1)%sl.length;
+                    sl[slideIndex].classList.add('active'); dt[slideIndex].classList.add('active');
+                },4000);
+            });
+        }
+        function uploadSlider() {
+            const f=document.getElementById('sliderFile').files[0], l=document.getElementById('sliderLink').value;
+            if(!f)return showNotify('error','Err','No File');
+            const fd=new FormData(); fd.append("file",f); fd.append("upload_preset",UPLOAD_PRESET);
+            const n=showNotify('loading','Uploading...','');
+            fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:"POST",body:fd}).then(r=>r.json()).then(d=>{
+                db.collection('sliders').add({imageUrl:d.secure_url, link:l, createdAt:new Date()}).then(()=>{ n.remove(); showNotify('success','Done','Slider Added'); loadHomeSliders(); });
+            });
+        }
+        function openAdminPanel() { document.getElementById('admin-panel').style.display='flex'; }
+        function openExamList(type) {
+            const m=document.getElementById('exam-list-modal'), c=document.getElementById('examListContainer');
+            m.style.display='flex'; c.innerHTML='Loading...';
+            let q=db.collection('exams');
+            if(type==='live') q=q.where('createdAt','>=',new Date(Date.now()-86400000));
+            else q=q.where('type','==',type);
+            q.get().then(s=>{
+                c.innerHTML='';
+                if(s.empty) c.innerHTML='<p>No exams found.</p>';
+                s.forEach(d=>c.innerHTML+=`<div class="routine-card"><b>${d.data().title}</b><button class="btn" style="width:auto;padding:5px 10px;" onclick="startExam('${d.id}')">Start</button></div>`);
+            });
+        }
     </script>
 </body>
 </html>
