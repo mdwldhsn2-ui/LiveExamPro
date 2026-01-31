@@ -49,6 +49,34 @@
 
         .card { background: white; padding: 15px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
         
+        /* SLIDER STYLES (16:7 Ratio) */
+        .slider-container {
+            width: 100%;
+            aspect-ratio: 16 / 7; /* 16:7 Ratio */
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            background: #ddd; /* Loading placeholder */
+        }
+        .slide {
+            width: 100%; height: 100%;
+            position: absolute; top: 0; left: 0;
+            opacity: 0; transition: opacity 0.5s ease-in-out;
+            cursor: pointer;
+        }
+        .slide.active { opacity: 1; z-index: 1; }
+        .slide img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* Slider Dots */
+        .slider-dots {
+            position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 5px; z-index: 2;
+        }
+        .dot { width: 8px; height: 8px; background: rgba(255,255,255,0.5); border-radius: 50%; }
+        .dot.active { background: white; width: 20px; border-radius: 10px; }
+
         /* EXAM STYLES */
         .exam-option-card { display: flex; align-items: center; gap: 15px; padding: 20px; background: white; border-radius: 15px; margin-bottom: 15px; cursor: pointer; transition: 0.2s; border: 1px solid #eee; }
         .exam-option-card:active { transform: scale(0.98); background: #f0fdf4; }
@@ -56,7 +84,6 @@
         .exam-list-item { border-left: 4px solid var(--primary); background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .exam-sub-folder { background: #e0e7ff; color: var(--primary); padding: 15px; border-radius: 10px; margin-bottom: 10px; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; }
         
-        /* Exam Paper */
         #active-exam-view { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 500; display: none; flex-direction: column; }
         .exam-header { padding: 15px; background: var(--primary); color: white; display: flex; justify-content: space-between; align-items: center; }
         .question-container { padding: 20px; overflow-y: auto; flex: 1; }
@@ -115,10 +142,15 @@
     <div id="main-app">
         
         <div id="home-page" class="page active">
+            <div class="slider-container" id="homeSlider">
+                <div class="slider-dots" id="sliderDots"></div>
+            </div>
+
             <div class="card" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white;">
                 <h2 id="welcomeName">Hello!</h2>
                 <p>Welcome to Mentor Academy.</p>
             </div>
+            
             <h3>Quick Stats</h3>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
                 <div class="card" style="text-align:center; margin:0;"><i class="fas fa-book fa-2x" style="color:var(--secondary)"></i><p>Library</p></div>
@@ -129,41 +161,10 @@
         <div id="exam-page" class="page">
             <h3>Exam Center</h3>
             <p style="color:grey; margin-bottom:20px;">Select a category to start</p>
-
-            <div class="exam-option-card" onclick="openExamCategory('live')">
-                <div class="exam-icon" style="background: #EF4444;"><i class="fas fa-broadcast-tower"></i></div>
-                <div>
-                    <h4>Live Exam</h4>
-                    <small style="color:grey">Last 24 Hours</small>
-                </div>
-                <i class="fas fa-chevron-right" style="margin-left:auto; color:#ccc;"></i>
-            </div>
-
-            <div class="exam-option-card" onclick="openExamCategory('model')">
-                <div class="exam-icon" style="background: #10B981;"><i class="fas fa-clipboard-list"></i></div>
-                <div>
-                    <h4>Model Test</h4>
-                    <small style="color:grey">Full Syllabus</small>
-                </div>
-                <i class="fas fa-chevron-right" style="margin-left:auto; color:#ccc;"></i>
-            </div>
-
-            <div class="exam-option-card" onclick="openExamCategory('subject')">
-                <div class="exam-icon" style="background: #F59E0B;"><i class="fas fa-book-open"></i></div>
-                <div>
-                    <h4>Subject Wise</h4>
-                    <small style="color:grey">Chapter based</small>
-                </div>
-                <i class="fas fa-chevron-right" style="margin-left:auto; color:#ccc;"></i>
-            </div>
-            
-            <div id="exam-list-container" style="display:none; margin-top:20px;">
-                <div style="display:flex; align-items:center; margin-bottom:15px;">
-                    <i class="fas fa-arrow-left" onclick="resetExamView()" style="padding:10px; cursor:pointer;"></i>
-                    <h4 id="exam-list-title" style="margin-left:10px;">Exams</h4>
-                </div>
-                <div id="exam-items-area"></div>
-            </div>
+            <div class="exam-option-card" onclick="openExamCategory('live')"><div class="exam-icon" style="background: #EF4444;"><i class="fas fa-broadcast-tower"></i></div><div><h4>Live Exam</h4><small>Last 24 Hours</small></div></div>
+            <div class="exam-option-card" onclick="openExamCategory('model')"><div class="exam-icon" style="background: #10B981;"><i class="fas fa-clipboard-list"></i></div><div><h4>Model Test</h4><small>Full Syllabus</small></div></div>
+            <div class="exam-option-card" onclick="openExamCategory('subject')"><div class="exam-icon" style="background: #F59E0B;"><i class="fas fa-book-open"></i></div><div><h4>Subject Wise</h4><small>Chapter based</small></div></div>
+            <div id="exam-list-container" style="display:none; margin-top:20px;"><div style="display:flex; align-items:center; margin-bottom:15px;"><i class="fas fa-arrow-left" onclick="resetExamView()" style="padding:10px; cursor:pointer;"></i><h4 id="exam-list-title" style="margin-left:10px;">Exams</h4></div><div id="exam-items-area"></div></div>
         </div>
 
         <div id="book-page" class="page"><h3>Library</h3><p>Books coming soon...</p></div>
@@ -191,15 +192,9 @@
     </div>
 
     <div id="active-exam-view">
-        <div class="exam-header">
-            <h4 id="activeExamTitle">Exam Title</h4>
-            <div><i class="fas fa-clock"></i> <span id="examTimer">00:00</span></div>
-        </div>
-        <div class="question-container" id="questionArea">
-            </div>
-        <div style="padding:15px; border-top:1px solid #ddd;">
-            <button class="btn" onclick="closeExam()">Submit / Close</button>
-        </div>
+        <div class="exam-header"><h4 id="activeExamTitle">Title</h4><div><i class="fas fa-clock"></i> <span id="examTimer">00:00</span></div></div>
+        <div class="question-container" id="questionArea"></div>
+        <div style="padding:15px; border-top:1px solid #ddd;"><button class="btn" onclick="closeExam()">Submit / Close</button></div>
     </div>
 
     <div id="admin-panel">
@@ -207,44 +202,35 @@
             <h3>Admin Panel</h3> <i class="fas fa-times" onclick="document.getElementById('admin-panel').style.display='none'" style="cursor:pointer; font-size:1.5rem;"></i>
         </div>
         
-        <div style="padding:15px; background:#eee; display:flex;">
+        <div style="padding:15px; background:#eee; display:flex; overflow-x:auto;">
             <button class="tab-btn active-tab" onclick="switchAdminTab('students')">Students</button>
-            <button class="tab-btn" onclick="switchAdminTab('exams')">Manage Exams</button>
+            <button class="tab-btn" onclick="switchAdminTab('exams')">Exams</button>
+            <button class="tab-btn" onclick="switchAdminTab('sliders')">Sliders</button>
         </div>
 
-        <div id="admin-students-tab" style="padding:20px;">
-            <h4>Total Students: <span id="totalStudents">0</span></h4>
-            <div id="studentListContainer" style="margin-top:15px;"></div>
-        </div>
+        <div id="admin-students-tab" style="padding:20px;"><h4>Total: <span id="totalStudents">0</span></h4><div id="studentListContainer"></div></div>
 
         <div id="admin-exams-tab" style="padding:20px; display:none;">
-            <h3>Add New Exam</h3>
-            
-            <label>Exam Type</label>
-            <select id="examTypeInput" onchange="toggleSubjectInput()">
-                <option value="model">Model Test</option>
-                <option value="subject">Subject Wise</option>
-                <option value="live">Live Exam</option> </select>
+            <h3>Add Exam</h3>
+            <select id="examTypeInput" onchange="toggleSubjectInput()"><option value="model">Model Test</option><option value="subject">Subject Wise</option><option value="live">Live Exam</option></select>
+            <div id="subjectInputDiv" style="display:none;"><input type="text" id="examSubjectInput" placeholder="Subject Name"></div>
+            <input type="text" id="examTitleInput" placeholder="Exam Title"><input type="number" id="examTimeInput" placeholder="Time (min)">
+            <textarea id="examJsonInput" rows="4" placeholder='Paste JSON here...'></textarea>
+            <button class="btn" onclick="addNewExam()">Publish</button>
+            <div id="adminExamList" style="margin-top:20px;"></div>
+        </div>
 
-            <div id="subjectInputDiv" style="display:none;">
-                <label>Subject Name</label>
-                <input type="text" id="examSubjectInput" placeholder="e.g., Physics, Bangla">
-            </div>
-
-            <label>Exam Title</label>
-            <input type="text" id="examTitleInput" placeholder="e.g., Model Test 01">
-
-            <label>Time (Minutes)</label>
-            <input type="number" id="examTimeInput" placeholder="e.g., 20">
-
-            <label>MCQ Data (JSON) <span onclick="copyFormat()" style="color:var(--primary); cursor:pointer; font-size:0.8rem; float:right;">(Copy Format)</span></label>
-            <textarea id="examJsonInput" rows="6" placeholder='Paste JSON here...'></textarea>
-
-            <button class="btn" onclick="addNewExam()">Publish Exam</button>
+        <div id="admin-sliders-tab" style="padding:20px; display:none;">
+            <h3>Add Home Slider</h3>
+            <label>Upload Image (16:7 Ratio recommended)</label>
+            <input type="file" id="sliderFileInput" accept="image/*">
+            <input type="text" id="sliderLinkInput" placeholder="Link URL (e.g., https://google.com)">
+            <button class="btn" id="uploadSliderBtn" onclick="uploadSliderImage()">Upload & Add Slider</button>
+            <div id="uploadStatus" style="margin-top:10px; color:var(--primary);"></div>
             
             <hr style="margin:20px 0;">
-            <h3>Existing Exams</h3>
-            <div id="adminExamList">Loading...</div>
+            <h3>Active Sliders</h3>
+            <div id="adminSliderList">Loading...</div>
         </div>
     </div>
 
@@ -260,42 +246,36 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
         const ADMIN_EMAIL = "mdwld2005@gmail.com";
-        let isFirstLoad = true;
+        
+        // Cloudinary Config
+        const CLOUD_NAME = "dsmvmq076";
+        const UPLOAD_PRESET = "my_app_upload";
 
-        // --- INIT ---
         document.addEventListener('DOMContentLoaded', () => {
+            // Anim Setup
             const name = "MENTOR"; const container = document.getElementById('appName');
             name.split('').forEach((l, i) => { const s = document.createElement('span'); s.textContent = l; s.style.animationDelay = `${1.0 + (i*0.1)}s`; container.appendChild(s); });
             setTimeout(() => document.getElementById('birdIcon').classList.add('fly'), 100);
             setTimeout(() => document.querySelectorAll('.app-name span').forEach(s => s.classList.add('show')), 100);
 
+            // AUTH LISTENER
             auth.onAuthStateChanged(user => {
                 setTimeout(() => {
                     document.getElementById('loading-screen').style.display = 'none';
                     if (user) {
                         document.getElementById('auth-screen').style.display = 'none';
-                        if(isFirstLoad) { showWelcomeSequence(user); isFirstLoad = false; } else { document.getElementById('main-app').style.display = 'flex'; }
+                        document.getElementById('main-app').style.display = 'flex'; // Direct entry on reload
                         loadUserData(user);
+                        loadHomeSliders(); // Load sliders
                     } else {
                         document.getElementById('auth-screen').style.display = 'block';
                         document.getElementById('main-app').style.display = 'none';
-                        isFirstLoad = true;
                     }
                 }, 3000);
             });
         });
 
-        // --- NAVIGATION & UI ---
-        function navTo(id) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById(id + '-page').classList.add('active');
-            if(id !== 'exam') event.currentTarget.classList.add('active');
-            
-            // Reset Exam View when leaving tab
-            if(id !== 'exam') resetExamView();
-        }
-
+        // --- WELCOME ONLY ON ACTION ---
         function showWelcomeSequence(user) {
             const overlay = document.getElementById('welcome-overlay');
             const welcomeText = document.getElementById('welcomeOverlayText');
@@ -305,261 +285,244 @@
             setTimeout(() => { overlay.style.display = 'none'; document.getElementById('main-app').style.display = 'flex'; }, 2500);
         }
 
-        function loadUserData(user) {
-            document.getElementById('profileEmail').innerText = user.email;
-            if(user.email === ADMIN_EMAIL) document.getElementById('admin-btn-container').style.display = 'block';
-            
-            db.collection('students').doc(user.uid).get().then(doc => {
-                if(doc.exists) {
-                    const data = doc.data();
-                    document.getElementById('welcomeName').innerText = `Hello, ${data.name}!`;
-                    document.getElementById('profileName').innerText = data.name;
-                    document.getElementById('welcomeOverlayText').innerText = `Welcome, ${data.name.split(' ')[0]}!`;
-                } else {
-                    const tempName = user.email.split('@')[0];
-                    document.getElementById('welcomeName').innerText = `Hello, ${tempName}!`;
-                    document.getElementById('profileName').innerText = tempName;
-                }
-            });
+        function handleLogin() {
+            const e=document.getElementById('loginEmail').value, p=document.getElementById('loginPass').value;
+            auth.signInWithEmailAndPassword(e, p).then(cred => {
+                // Show Welcome ONLY here
+                showWelcomeSequence(cred.user);
+            }).catch(e=>showToast("Login Failed"));
         }
 
-        // --- AUTH ---
-        function toggleAuth(t) { document.getElementById('authContainer').style.transform = t==='register' ? "translateX(-50%)" : "translateX(0%)"; }
-        function showToast(m) { const x = document.getElementById("toast"); x.textContent = m; x.className = "show"; setTimeout(()=>x.className=x.className.replace("show",""), 3000); }
-        function handleLogin() { const e=document.getElementById('loginEmail').value, p=document.getElementById('loginPass').value; auth.signInWithEmailAndPassword(e, p).catch(e=>showToast("Login Failed")); }
         function handleRegister() {
             const e = document.getElementById('regEmail').value, p = document.getElementById('regPass').value, n = document.getElementById('regName').value;
             if(!e||!p||!n) return showToast("Empty Fields");
             auth.createUserWithEmailAndPassword(e, p).then(cred => {
-                return db.collection('students').doc(cred.user.uid).set({ name: n, email: e, joined: firebase.firestore.FieldValue.serverTimestamp() });
-            }).then(() => { showToast("Created!"); setTimeout(() => location.reload(), 1500); }).catch(e=>showToast(e.message));
-        }
-        function handleLogout() { auth.signOut().then(()=>location.reload()); }
-
-        // --- EXAM LOGIC ---
-        let currentExams = [];
-
-        function resetExamView() {
-            document.getElementById('exam-list-container').style.display = 'none';
-            document.querySelectorAll('.exam-option-card').forEach(c => c.style.display = 'flex');
+                db.collection('students').doc(cred.user.uid).set({ name: n, email: e, joined: firebase.firestore.FieldValue.serverTimestamp() });
+                // Show Welcome ONLY here
+                showWelcomeSequence(cred.user); 
+            }).catch(e=>showToast(e.message));
         }
 
-        function openExamCategory(type) {
-            document.querySelectorAll('.exam-option-card').forEach(c => c.style.display = 'none');
-            const container = document.getElementById('exam-list-container');
-            const listArea = document.getElementById('exam-items-area');
-            const title = document.getElementById('exam-list-title');
-            
-            container.style.display = 'block';
-            listArea.innerHTML = '<p>Loading exams...</p>';
+        // --- SLIDER LOGIC ---
+        let currentSlideIndex = 0;
+        let sliderInterval;
 
-            let query = db.collection('exams');
-            
-            if(type === 'live') {
-                title.innerText = "Live Exams (Last 24h)";
-                // Get timestamp for 24 hours ago
-                const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
-                query = query.where('createdAt', '>=', yesterday);
-            } else if (type === 'model') {
-                title.innerText = "Model Tests";
-                query = query.where('type', '==', 'model');
-            } else if (type === 'subject') {
-                title.innerText = "Subject Wise";
-                query = query.where('type', '==', 'subject');
-            }
-
-            query.get().then(snap => {
-                listArea.innerHTML = '';
+        function loadHomeSliders() {
+            db.collection('sliders').orderBy('createdAt', 'desc').get().then(snap => {
+                const sliderContainer = document.getElementById('homeSlider');
+                const dotsContainer = document.getElementById('sliderDots');
+                
+                // Keep dots container, clear rest
+                const dotsHTML = '<div class="slider-dots" id="sliderDots"></div>';
+                
                 if(snap.empty) {
-                    listArea.innerHTML = '<p style="text-align:center; color:grey;">No exams found.</p>';
+                    sliderContainer.innerHTML = '<p style="text-align:center; padding-top:40px; color:grey;">No slides yet</p>';
                     return;
                 }
+                
+                sliderContainer.innerHTML = dotsHTML; // Reset
+                const newDotsContainer = document.getElementById('sliderDots');
 
-                currentExams = [];
-                snap.forEach(doc => currentExams.push({id: doc.id, ...doc.data()}));
+                let slidesHTML = '';
+                let dotsRender = '';
+                
+                snap.docs.forEach((doc, index) => {
+                    const d = doc.data();
+                    slidesHTML += `
+                    <div class="slide ${index === 0 ? 'active' : ''}" onclick="window.open('${d.link || '#'}', '_blank')">
+                        <img src="${d.imageUrl}">
+                    </div>`;
+                    dotsRender += `<div class="dot ${index === 0 ? 'active' : ''}"></div>`;
+                });
 
-                if(type === 'subject') {
-                    // Group by Subject
-                    const subjects = [...new Set(currentExams.map(e => e.subject))];
-                    subjects.forEach(sub => {
-                        listArea.innerHTML += `
-                        <div class="exam-sub-folder" onclick="showSubjectExams('${sub}')">
-                            <span>${sub}</span> <i class="fas fa-folder"></i>
-                        </div>`;
+                sliderContainer.innerHTML += slidesHTML;
+                newDotsContainer.innerHTML = dotsRender;
+
+                // Start Auto Slide
+                if(sliderInterval) clearInterval(sliderInterval);
+                sliderInterval = setInterval(nextSlide, 4000);
+            });
+        }
+
+        function nextSlide() {
+            const slides = document.querySelectorAll('.slide');
+            const dots = document.querySelectorAll('.dot');
+            if(slides.length === 0) return;
+
+            slides[currentSlideIndex].classList.remove('active');
+            dots[currentSlideIndex].classList.remove('active');
+
+            currentSlideIndex = (currentSlideIndex + 1) % slides.length;
+
+            slides[currentSlideIndex].classList.add('active');
+            dots[currentSlideIndex].classList.add('active');
+        }
+
+        // --- CLOUDINARY UPLOAD ---
+        function uploadSliderImage() {
+            const fileInput = document.getElementById('sliderFileInput');
+            const link = document.getElementById('sliderLinkInput').value;
+            const status = document.getElementById('uploadStatus');
+            const btn = document.getElementById('uploadSliderBtn');
+
+            if(fileInput.files.length === 0) return showToast("Select an image first!");
+            
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("upload_preset", UPLOAD_PRESET);
+
+            status.innerText = "Uploading to Cloud...";
+            btn.disabled = true;
+
+            fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.secure_url) {
+                    status.innerText = "Saving to Database...";
+                    // Save to Firebase
+                    db.collection('sliders').add({
+                        imageUrl: data.secure_url,
+                        link: link,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }).then(() => {
+                        showToast("Slider Added!");
+                        status.innerText = "";
+                        fileInput.value = "";
+                        document.getElementById('sliderLinkInput').value = "";
+                        btn.disabled = false;
+                        loadAdminSliders();
+                        loadHomeSliders(); // Refresh Home
                     });
                 } else {
-                    // List Exams Directly
-                    currentExams.forEach(exam => renderExamItem(exam, listArea));
+                    throw new Error("Upload Failed");
                 }
+            })
+            .catch(err => {
+                console.error(err);
+                status.innerText = "Error Uploading";
+                btn.disabled = false;
             });
         }
 
-        function showSubjectExams(subject) {
-            const listArea = document.getElementById('exam-items-area');
-            const title = document.getElementById('exam-list-title');
-            title.innerText = subject + " Exams";
-            listArea.innerHTML = '';
-            
-            const filtered = currentExams.filter(e => e.subject === subject);
-            filtered.forEach(exam => renderExamItem(exam, listArea));
-        }
-
-        function renderExamItem(exam, container) {
-            container.innerHTML += `
-            <div class="exam-list-item" onclick="startExam('${exam.id}')">
-                <div>
-                    <b>${exam.title}</b><br>
-                    <small>${exam.time} Minutes • ${exam.questions.length} Questions</small>
-                </div>
-                <button class="btn" style="width:auto; padding:5px 15px; margin:0;">Start</button>
-            </div>`;
-        }
-
-        function startExam(examId) {
-            const exam = currentExams.find(e => e.id === examId);
-            if(!exam) return;
-
-            document.getElementById('active-exam-view').style.display = 'flex';
-            document.getElementById('activeExamTitle').innerText = exam.title;
-            document.getElementById('examTimer').innerText = exam.time + ":00";
-            
-            const qArea = document.getElementById('questionArea');
-            qArea.innerHTML = '';
-            
-            exam.questions.forEach((q, index) => {
-                let optionsHtml = '';
-                q.options.forEach((opt, i) => {
-                    optionsHtml += `<div class="option-box" onclick="selectOption(this)">${i+1}. ${opt}</div>`;
-                });
-                
-                qArea.innerHTML += `
-                <div style="margin-bottom:20px;">
-                    <p><b>Q${index+1}:</b> ${q.q}</p>
-                    ${optionsHtml}
-                </div><hr style="border:0; border-bottom:1px solid #eee; margin:10px 0;">`;
-            });
-        }
-
-        function selectOption(el) {
-            // Visual selection logic only for demo
-            const parent = el.parentNode;
-            parent.querySelectorAll('.option-box').forEach(b => b.classList.remove('selected'));
-            el.classList.add('selected');
-        }
-
-        function closeExam() {
-            if(confirm("Submit and exit exam?")) {
-                document.getElementById('active-exam-view').style.display = 'none';
-            }
-        }
-
-        // --- ADMIN PANEL ---
-        function switchAdminTab(tab) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab'));
-            event.target.classList.add('active-tab');
-            
-            document.getElementById('admin-students-tab').style.display = 'none';
-            document.getElementById('admin-exams-tab').style.display = 'none';
-            document.getElementById('admin-' + tab + '-tab').style.display = 'block';
-
-            if(tab === 'exams') loadAdminExams();
-        }
-
-        function toggleSubjectInput() {
-            const type = document.getElementById('examTypeInput').value;
-            document.getElementById('subjectInputDiv').style.display = (type === 'subject') ? 'block' : 'none';
-        }
-
-        function copyFormat() {
-            const format = `[
-  {
-    "q": "What is the capital of Bangladesh?",
-    "options": ["Dhaka", "Chittagong", "Sylhet", "Khulna"],
-    "correct": 0
-  },
-  {
-    "q": "2 + 2 = ?",
-    "options": ["3", "4", "5", "6"],
-    "correct": 1
-  }
-]`;
-            navigator.clipboard.writeText(format);
-            showToast("JSON Format Copied!");
-        }
-
-        function addNewExam() {
-            const type = document.getElementById('examTypeInput').value;
-            const title = document.getElementById('examTitleInput').value;
-            const time = document.getElementById('examTimeInput').value;
-            const jsonStr = document.getElementById('examJsonInput').value;
-            let subject = document.getElementById('examSubjectInput').value;
-
-            if(type !== 'subject') subject = null; // Clear subject if not subject-wise
-
-            if(!title || !time || !jsonStr) return showToast("Fill all fields");
-            if(type === 'subject' && !subject) return showToast("Enter Subject Name");
-
-            try {
-                const questions = JSON.parse(jsonStr);
-                
-                db.collection('exams').add({
-                    title: title,
-                    type: type,
-                    subject: subject,
-                    time: parseInt(time),
-                    questions: questions,
-                    createdAt: new Date() // Use client date for simpler Live Logic
-                }).then(() => {
-                    showToast("Exam Published!");
-                    document.getElementById('examTitleInput').value = '';
-                    document.getElementById('examJsonInput').value = '';
-                    loadAdminExams();
-                });
-
-            } catch(e) {
-                showToast("Invalid JSON Format!");
-            }
-        }
-
-        function loadAdminExams() {
-            const list = document.getElementById('adminExamList');
+        // --- ADMIN: SLIDER MANAGEMENT ---
+        function loadAdminSliders() {
+            const list = document.getElementById('adminSliderList');
             list.innerHTML = 'Loading...';
-            db.collection('exams').orderBy('createdAt', 'desc').get().then(snap => {
+            db.collection('sliders').orderBy('createdAt', 'desc').get().then(snap => {
                 list.innerHTML = '';
                 snap.forEach(doc => {
                     const d = doc.data();
                     list.innerHTML += `
                     <div class="student-card">
-                        <div><b>${d.title}</b> <small>(${d.type})</small><br>${d.questions.length} Qs • ${d.time} mins</div>
-                        <button onclick="deleteExam('${doc.id}')" style="background:red; color:white; border:none; padding:5px 10px;">Del</button>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <img src="${d.imageUrl}" style="width:60px; height:30px; object-fit:cover; border-radius:5px;">
+                            <small>${d.link ? 'Has Link' : 'No Link'}</small>
+                        </div>
+                        <button onclick="deleteSlider('${doc.id}')" style="background:red; color:white; border:none; padding:5px 10px;">Del</button>
                     </div>`;
                 });
             });
         }
 
-        function deleteExam(id) {
-            if(confirm("Delete this exam?")) db.collection('exams').doc(id).delete().then(()=>loadAdminExams());
+        function deleteSlider(id) {
+            if(confirm("Delete this slider?")) {
+                db.collection('sliders').doc(id).delete().then(() => {
+                    loadAdminSliders();
+                    loadHomeSliders();
+                });
+            }
         }
 
-        // --- OLD ADMIN FUNCTIONS (Students) ---
-        function openAdminPanel() {
-            document.getElementById('admin-panel').style.display = 'block';
-            switchAdminTab('students'); // Default tab
-            
-            const list = document.getElementById('studentListContainer');
-            list.innerHTML = 'Loading...';
-            db.collection('students').get().then(snap => {
-                let html = '';
-                document.getElementById('totalStudents').innerText = snap.size;
-                snap.forEach(d => {
-                    const s = d.data();
-                    html += `<div class="student-card"><div><b>${s.name}</b><br><small>${s.email}</small></div><button onclick="delStu('${d.id}')" style="background:red; color:white; padding:5px;">Del</button></div>`;
-                });
-                list.innerHTML = html;
+        // --- STANDARD FUNCTIONS (Existing) ---
+        function loadUserData(user) {
+            document.getElementById('profileEmail').innerText = user.email;
+            if(user.email === ADMIN_EMAIL) document.getElementById('admin-btn-container').style.display = 'block';
+            db.collection('students').doc(user.uid).get().then(doc => {
+                if(doc.exists) {
+                    const data = doc.data();
+                    document.getElementById('welcomeName').innerText = `Hello, ${data.name}!`;
+                    document.getElementById('profileName').innerText = data.name;
+                    document.getElementById('welcomeOverlayText').innerText = `Welcome, ${data.name}!`;
+                } else {
+                    const temp = user.email.split('@')[0];
+                    document.getElementById('welcomeName').innerText = `Hello, ${temp}!`;
+                    document.getElementById('profileName').innerText = temp;
+                }
             });
         }
-        function delStu(id) { if(confirm("Delete?")) db.collection('students').doc(id).delete().then(()=>openAdminPanel()); }
+        function toggleAuth(t) { document.getElementById('authContainer').style.transform = t==='register' ? "translateX(-50%)" : "translateX(0%)"; }
+        function showToast(m) { const x = document.getElementById("toast"); x.textContent = m; x.className = "show"; setTimeout(()=>x.className=x.className.replace("show",""), 3000); }
+        function handleLogout() { auth.signOut().then(()=>location.reload()); }
+        function navTo(id) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(id + '-page').classList.add('active');
+            if(id !== 'exam') event.currentTarget.classList.add('active');
+            if(id !== 'exam') resetExamView();
+        }
 
+        // Exam & Admin Tabs
+        let currentExams = [];
+        function resetExamView() { document.getElementById('exam-list-container').style.display = 'none'; document.querySelectorAll('.exam-option-card').forEach(c => c.style.display = 'flex'); }
+        function openExamCategory(type) {
+            document.querySelectorAll('.exam-option-card').forEach(c => c.style.display = 'none');
+            const c = document.getElementById('exam-list-container'), l = document.getElementById('exam-items-area'), t = document.getElementById('exam-list-title');
+            c.style.display = 'block'; l.innerHTML = 'Loading...';
+            let q = db.collection('exams');
+            if(type === 'live') { t.innerText="Live Exams"; q=q.where('createdAt','>=',new Date(Date.now()-86400000)); }
+            else if(type==='model'){ t.innerText="Model Tests"; q=q.where('type','==','model'); }
+            else { t.innerText="Subject Wise"; q=q.where('type','==','subject'); }
+            q.get().then(s => {
+                l.innerHTML = s.empty ? '<p>No exams.</p>' : '';
+                currentExams=[]; s.forEach(d=>currentExams.push({id:d.id,...d.data()}));
+                if(type==='subject'){ [...new Set(currentExams.map(e=>e.subject))].forEach(sub=>{ l.innerHTML+=`<div class="exam-sub-folder" onclick="showSubExams('${sub}')"><span>${sub}</span></div>`; }); }
+                else { currentExams.forEach(e=>renderExamItem(e,l)); }
+            });
+        }
+        function showSubExams(sub) { 
+            const l=document.getElementById('exam-items-area'); l.innerHTML=''; 
+            currentExams.filter(e=>e.subject===sub).forEach(e=>renderExamItem(e,l)); 
+        }
+        function renderExamItem(e,c) { c.innerHTML+=`<div class="exam-list-item" onclick="startExam('${e.id}')"><div><b>${e.title}</b><br><small>${e.time}m</small></div><button class="btn" style="width:auto;margin:0;">Start</button></div>`; }
+        function startExam(id) {
+            const e = currentExams.find(x=>x.id===id);
+            document.getElementById('active-exam-view').style.display='flex'; document.getElementById('activeExamTitle').innerText=e.title; document.getElementById('examTimer').innerText=e.time+":00";
+            const q = document.getElementById('questionArea'); q.innerHTML='';
+            e.questions.forEach((qu,i) => {
+                let opt = ''; qu.options.forEach((o,j)=>opt+=`<div class="option-box" onclick="this.parentNode.querySelectorAll('.option-box').forEach(b=>b.classList.remove('selected'));this.classList.add('selected')">${j+1}. ${o}</div>`);
+                q.innerHTML+=`<div style="margin-bottom:20px;"><p><b>Q${i+1}:</b> ${qu.q}</p>${opt}</div><hr>`;
+            });
+        }
+        function closeExam() { if(confirm("Exit?")) document.getElementById('active-exam-view').style.display='none'; }
+
+        function openAdminPanel() { document.getElementById('admin-panel').style.display='block'; switchAdminTab('students'); }
+        function switchAdminTab(t) {
+            document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active-tab')); event.target.classList.add('active-tab');
+            ['students','exams','sliders'].forEach(x=>document.getElementById('admin-'+x+'-tab').style.display='none');
+            document.getElementById('admin-'+t+'-tab').style.display='block';
+            if(t==='students') loadAdminStudents(); if(t==='exams') loadAdminExams(); if(t==='sliders') loadAdminSliders();
+        }
+        function loadAdminStudents() {
+            const l=document.getElementById('studentListContainer'); l.innerHTML='Loading...';
+            db.collection('students').get().then(s=>{ l.innerHTML=''; document.getElementById('totalStudents').innerText=s.size; s.forEach(d=>l.innerHTML+=`<div class="student-card"><div><b>${d.data().name}</b><br><small>${d.data().email}</small></div><button onclick="delStu('${d.id}')" style="background:red; color:white; padding:5px;">Del</button></div>`); });
+        }
+        function delStu(id){ if(confirm("Del?")) db.collection('students').doc(id).delete().then(()=>loadAdminStudents()); }
+        function loadAdminExams(){
+            const l=document.getElementById('adminExamList'); l.innerHTML='Loading...';
+            db.collection('exams').orderBy('createdAt','desc').get().then(s=>{ l.innerHTML=''; s.forEach(d=>l.innerHTML+=`<div class="student-card"><div><b>${d.data().title}</b></div><button onclick="delExam('${d.id}')" style="background:red; color:white; padding:5px;">Del</button></div>`); });
+        }
+        function delExam(id){ if(confirm("Del?")) db.collection('exams').doc(id).delete().then(()=>loadAdminExams()); }
+        function toggleSubjectInput(){ document.getElementById('subjectInputDiv').style.display = document.getElementById('examTypeInput').value==='subject'?'block':'none'; }
+        function addNewExam(){
+            const type=document.getElementById('examTypeInput').value, title=document.getElementById('examTitleInput').value, time=document.getElementById('examTimeInput').value, json=document.getElementById('examJsonInput').value;
+            let sub=document.getElementById('examSubjectInput').value; if(type!=='subject') sub=null;
+            if(!title||!time||!json) return showToast("Error");
+            try { db.collection('exams').add({title:title, type:type, subject:sub, time:parseInt(time), questions:JSON.parse(json), createdAt:new Date()}).then(()=>{showToast("Published"); loadAdminExams();}); } catch(e){showToast("Bad JSON");}
+        }
     </script>
 </body>
 </html>
