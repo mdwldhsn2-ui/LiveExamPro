@@ -19,8 +19,13 @@
             --success: #10b981;
             --danger: #ef4444;
             --warning: #f59e0b;
+            --info: #3b82f6;
             --shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.2);
             --glass: rgba(255, 255, 255, 0.9);
+            --gradient-primary: linear-gradient(135deg, #6366f1, #8b5cf6);
+            --gradient-success: linear-gradient(135deg, #10b981, #34d399);
+            --gradient-warning: linear-gradient(135deg, #f59e0b, #fbbf24);
+            --gradient-danger: linear-gradient(135deg, #ef4444, #f87171);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -111,9 +116,31 @@
         .dot { width: 6px; height: 6px; background: rgba(255,255,255,0.4); border-radius: 10px; transition: 0.3s; }
         .dot.active { background: white; width: 18px; }
 
+        /* --- TEXT SLIDER (NEWS TICKER) --- */
+        .text-slider-container {
+            background: var(--surface); border-radius: 16px; padding: 15px; margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03); position: relative; overflow: hidden;
+            border-left: 4px solid var(--info);
+        }
+        .text-slider-header {
+            display: flex; align-items: center; margin-bottom: 10px; color: var(--info);
+        }
+        .text-slider-header i { margin-right: 10px; font-size: 1.2rem; }
+        .text-slider {
+            overflow: hidden; position: relative; height: 24px;
+        }
+        .text-slider-content {
+            position: absolute; white-space: nowrap; animation: ticker 20s linear infinite;
+            font-size: 0.9rem; color: var(--text-sub);
+        }
+        @keyframes ticker {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
         /* --- HOME PAGE OPTIONS --- */
         .home-options {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px;
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 15px;
         }
         .home-option {
             background: var(--surface); padding: 20px; border-radius: 16px; text-align: center;
@@ -122,6 +149,15 @@
         .home-option:active { transform: scale(0.97); }
         .home-option i { font-size: 1.8rem; margin-bottom: 10px; color: var(--primary); }
         .home-option h3 { font-size: 1rem; margin-bottom: 5px; }
+
+        /* --- MEMORIZING OPTION --- */
+        .memorizing-option {
+            background: linear-gradient(135deg, #8b5cf6, #a78bfa); padding: 20px; border-radius: 16px;
+            text-align: center; color: white; margin-bottom: 20px; cursor: pointer;
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3); transition: 0.3s;
+        }
+        .memorizing-option:active { transform: scale(0.98); }
+        .memorizing-option i { font-size: 2rem; margin-bottom: 10px; }
 
         /* --- ROUTINE PAGE --- */
         .routine-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -175,6 +211,107 @@
             background: var(--primary); color: white; padding: 10px 20px;
             border-radius: 10px; border: none; font-weight: 600; cursor: pointer;
             display: block; width: 100%; margin-top: 15px;
+        }
+
+        /* --- MEMORIZING PAGE --- */
+        .memorizing-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;
+        }
+        .memorizing-card {
+            background: var(--surface); border-radius: 16px; padding: 20px; text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05); cursor: pointer; transition: 0.3s;
+            position: relative; overflow: hidden; border: 2px solid transparent;
+        }
+        .memorizing-card:active { transform: scale(0.98); }
+        .memorizing-card:hover { border-color: var(--primary); }
+        
+        .circle-progress {
+            position: relative; width: 80px; height: 80px; margin: 0 auto 15px;
+        }
+        .circle-progress-svg {
+            width: 100%; height: 100%; transform: rotate(-90deg);
+        }
+        .circle-progress-bg {
+            fill: none; stroke: #e2e8f0; stroke-width: 6;
+        }
+        .circle-progress-fill {
+            fill: none; stroke: var(--success); stroke-width: 6; stroke-linecap: round;
+            stroke-dasharray: 251.2; stroke-dashoffset: 251.2; transition: stroke-dashoffset 1s ease;
+        }
+        .circle-progress-text {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 1.2rem; font-weight: 700; color: var(--text-main);
+        }
+        
+        .memorizing-card-title {
+            font-size: 1rem; font-weight: 600; margin-bottom: 5px;
+        }
+        .memorizing-card-desc {
+            font-size: 0.8rem; color: var(--text-sub); margin-bottom: 10px;
+        }
+        .memorizing-card-stats {
+            display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-sub);
+        }
+
+        /* --- MEMORIZING DETAIL PAGE --- */
+        .memorizing-header {
+            display: flex; align-items: center; margin-bottom: 20px; padding: 10px 0;
+        }
+        .back-button {
+            width: 40px; height: 40px; border-radius: 50%; background: var(--surface);
+            display: flex; justify-content: center; align-items: center; margin-right: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); cursor: pointer;
+        }
+        
+        .flashcard-container {
+            perspective: 1000px; margin-bottom: 20px; height: 300px;
+        }
+        .flashcard {
+            width: 100%; height: 100%; position: relative; transform-style: preserve-3d;
+            transition: transform 0.6s; border-radius: 20px; cursor: pointer;
+        }
+        .flashcard.flipped { transform: rotateY(180deg); }
+        .flashcard-front, .flashcard-back {
+            position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
+            border-radius: 20px; padding: 30px; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        .flashcard-front {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white;
+        }
+        .flashcard-back {
+            background: white; color: var(--text-main); transform: rotateY(180deg);
+        }
+        .flashcard-number {
+            position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2);
+            color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem;
+        }
+        .flashcard-back .flashcard-number {
+            background: rgba(99, 102, 241, 0.1); color: var(--primary);
+        }
+        .flashcard-content {
+            font-size: 1.4rem; font-weight: 500; margin-bottom: 10px;
+        }
+        .flashcard-hint {
+            font-size: 0.9rem; opacity: 0.8; margin-top: 20px;
+        }
+        .flashcard-back .flashcard-hint {
+            color: var(--text-sub);
+        }
+        
+        .flashcard-nav {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px;
+        }
+        .flashcard-counter {
+            font-size: 0.9rem; color: var(--text-sub);
+        }
+        
+        .complete-btn {
+            background: var(--success); color: white; padding: 15px; border-radius: 12px;
+            border: none; font-weight: 600; cursor: pointer; display: block; width: 100%;
+            margin-top: 20px; font-size: 1rem; box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
         }
 
         /* --- MCQ PRACTICE MODAL --- */
@@ -254,6 +391,12 @@
             width: 40px; height: 40px; border-radius: 50%; background: var(--primary);
             color: white; display: flex; justify-content: center; align-items: center;
             font-weight: bold;
+        }
+
+        /* --- ADMIN TEXT SLIDER --- */
+        .admin-text-slider-item {
+            background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px;
+            border-left: 4px solid var(--info);
         }
     </style>
 </head>
@@ -341,6 +484,26 @@
                     <p style="font-size:0.8rem; color:var(--text-sub);">Top 10%</p>
                 </div>
             </div>
+
+            <!-- Text Slider (News Ticker) -->
+            <div class="text-slider-container">
+                <div class="text-slider-header">
+                    <i class="fas fa-bullhorn"></i>
+                    <span>Latest Updates</span>
+                </div>
+                <div class="text-slider">
+                    <div class="text-slider-content" id="textSliderContent">
+                        Loading news...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Memorizing Option -->
+            <div class="memorizing-option" onclick="navTo('memorizing')">
+                <i class="fas fa-brain"></i>
+                <h3>Memorizing</h3>
+                <p style="opacity:0.9; font-size:0.9rem;">Improve memory with flashcards</p>
+            </div>
         </div>
 
         <div id="routine-page" class="page">
@@ -398,6 +561,58 @@
             <div id="studyCardsContainer">
                 <!-- Study cards will be loaded here -->
             </div>
+        </div>
+
+        <div id="memorizing-page" class="page">
+            <h2 style="margin-bottom:20px;">Memorizing</h2>
+            <p style="color:var(--text-sub); margin-bottom:20px;">Select a category to practice with flashcards</p>
+            
+            <div class="memorizing-grid" id="memorizingGrid">
+                <!-- Memorizing cards will be loaded here -->
+            </div>
+        </div>
+
+        <div id="memorizing-detail-page" class="page">
+            <div class="memorizing-header">
+                <div class="back-button" onclick="navTo('memorizing')">
+                    <i class="fas fa-arrow-left"></i>
+                </div>
+                <div>
+                    <h2 id="memorizingDetailTitle">Flashcards</h2>
+                    <p style="color:var(--text-sub); font-size:0.9rem;" id="memorizingDetailDesc">Day 1 of 10</p>
+                </div>
+            </div>
+
+            <div class="flashcard-nav">
+                <button class="btn btn-outline" style="width:auto; padding:10px 20px;" onclick="prevFlashcard()">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+                <div class="flashcard-counter">
+                    Card <span id="currentCard">1</span> of <span id="totalCards">10</span>
+                </div>
+                <button class="btn btn-outline" style="width:auto; padding:10px 20px;" onclick="nextFlashcard()">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+
+            <div class="flashcard-container">
+                <div class="flashcard" id="flashcard" onclick="flipCard()">
+                    <div class="flashcard-front">
+                        <div class="flashcard-number">Front</div>
+                        <div class="flashcard-content" id="flashcardFront">Loading...</div>
+                        <div class="flashcard-hint">Tap to flip</div>
+                    </div>
+                    <div class="flashcard-back">
+                        <div class="flashcard-number">Back</div>
+                        <div class="flashcard-content" id="flashcardBack">Loading...</div>
+                        <div class="flashcard-hint">Tap to flip back</div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="complete-btn" onclick="completeMemorizingDay()">
+                <i class="fas fa-check-circle"></i> Complete Day
+            </button>
         </div>
 
         <div id="rank-page" class="page">
@@ -496,6 +711,8 @@
                 <button class="btn" style="padding:10px 20px; font-size:0.9rem; width:auto; background:#94a3b8;" onclick="showAdminSection('exams')">Exams</button>
                 <button class="btn" style="padding:10px 20px; font-size:0.9rem; width:auto; background:#94a3b8;" onclick="showAdminSection('routine')">Routine</button>
                 <button class="btn" style="padding:10px 20px; font-size:0.9rem; width:auto; background:#94a3b8;" onclick="showAdminSection('study')">Study</button>
+                <button class="btn" style="padding:10px 20px; font-size:0.9rem; width:auto; background:#94a3b8;" onclick="showAdminSection('textslider')">Text Slider</button>
+                <button class="btn" style="padding:10px 20px; font-size:0.9rem; width:auto; background:#94a3b8;" onclick="showAdminSection('memorizing')">Memorizing</button>
             </div>
 
             <div id="admin-slider-sec">
@@ -544,6 +761,52 @@
                 <button class="btn" onclick="addStudyLevel()">Add Level</button>
                 
                 <div id="studyLevelsList" style="margin-top:20px;"></div>
+            </div>
+            
+            <div id="admin-textslider-sec" style="display:none;">
+                <div class="input-group">
+                    <input type="text" id="textSliderInput" placeholder="Enter text slide message">
+                </div>
+                <button class="btn" onclick="addTextSlide()">Add Text Slide</button>
+                
+                <h4 style="margin:25px 0 15px 0;">Active Text Slides</h4>
+                <div id="adminTextSliderList">Loading...</div>
+            </div>
+            
+            <div id="admin-memorizing-sec" style="display:none;">
+                <h4>Add Memorizing Category</h4>
+                <div class="input-group">
+                    <input type="text" id="memorizingCategoryName" placeholder="Category Name">
+                </div>
+                <div class="input-group">
+                    <textarea id="memorizingCategoryDesc" placeholder="Category Description" rows="2"></textarea>
+                </div>
+                <div class="input-group">
+                    <input type="number" id="memorizingTotalDays" placeholder="Total Days (e.g., 10)" min="1" value="10">
+                </div>
+                <button class="btn" onclick="addMemorizingCategory()">Add Category</button>
+                
+                <h4 style="margin:25px 0 15px 0;">Manage Categories</h4>
+                <div id="adminMemorizingList">Loading...</div>
+                
+                <h4 style="margin:25px 0 15px 0;">Add Flashcards to Category</h4>
+                <div class="input-group">
+                    <select id="memorizingCategorySelect" onchange="loadCategoryDays()">
+                        <option value="">Select Category</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <select id="memorizingDaySelect">
+                        <option value="">Select Day</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="flashcardFront" placeholder="Front Text (Question/Word)">
+                </div>
+                <div class="input-group">
+                    <textarea id="flashcardBack" placeholder="Back Text (Answer/Meaning)" rows="3"></textarea>
+                </div>
+                <button class="btn" onclick="addFlashcard()">Add Flashcard</button>
             </div>
         </div>
     </div>
@@ -653,6 +916,13 @@
         let currentQuestionIndex = 0;
         let userAnswers = [];
         let studyProgress = 0;
+        
+        // Memorizing Variables
+        let currentMemorizingCategory = null;
+        let currentMemorizingDay = 1;
+        let flashcards = [];
+        let currentFlashcardIndex = 0;
+        let memorizingProgress = {};
 
         // 2. NOTIFICATION SYSTEM
         function showNotify(type, title, msg) {
@@ -711,6 +981,9 @@
                         loadUserRoutines();
                         loadStudyGoal();
                         loadStudyLevels();
+                        loadTextSlides();
+                        loadMemorizingCategories();
+                        loadMemorizingProgress();
                     } else {
                         document.getElementById('auth-screen').style.display = 'block';
                         document.getElementById('main-app').style.display = 'none';
@@ -795,7 +1068,10 @@
             document.getElementById(id + '-page').classList.add('active');
             
             // Highlight nav icon
-            if(id === 'home') document.querySelectorAll('.nav-item')[0].classList.add('active');
+            if(id === 'home') {
+                document.querySelectorAll('.nav-item')[0].classList.add('active');
+                loadTextSlides();
+            }
             if(id === 'book') document.querySelectorAll('.nav-item')[1].classList.add('active');
             if(id === 'review') document.querySelectorAll('.nav-item')[3].classList.add('active');
             if(id === 'profile') document.querySelectorAll('.nav-item')[4].classList.add('active');
@@ -803,9 +1079,367 @@
             // Load specific page data
             if(id === 'routine') loadUserRoutines();
             if(id === 'study') loadStudyProgress();
+            if(id === 'memorizing') loadMemorizingCategories();
         }
 
-        // 6. ROUTINE SYSTEM
+        // 6. TEXT SLIDER SYSTEM
+        function loadTextSlides() {
+            db.collection('textSlides').orderBy('createdAt', 'desc').limit(5).get().then(snap => {
+                const container = document.getElementById('textSliderContent');
+                
+                if(snap.empty) {
+                    container.innerText = "No updates yet. Check back later!";
+                    return;
+                }
+                
+                const messages = snap.docs.map(doc => doc.data().message);
+                container.innerText = messages.join(' ••• ');
+                
+                // Restart animation
+                container.style.animation = 'none';
+                setTimeout(() => {
+                    container.style.animation = 'ticker 20s linear infinite';
+                }, 10);
+            });
+        }
+
+        function addTextSlide() {
+            const message = document.getElementById('textSliderInput').value;
+            if(!message) return showNotify('error', 'Error', 'Please enter a message');
+            
+            db.collection('textSlides').add({
+                message: message,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                showNotify('success', 'Added', 'Text slide added');
+                document.getElementById('textSliderInput').value = '';
+                loadTextSlides();
+                loadAdminTextSlides();
+                
+                // Auto add notification when new exam added
+                if(message.toLowerCase().includes('exam') || message.toLowerCase().includes('test')) {
+                    addTextSlideAuto("New exam available! Check exam center for details.");
+                }
+            });
+        }
+
+        function addTextSlideAuto(message) {
+            db.collection('textSlides').add({
+                message: message,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                auto: true
+            }).then(() => {
+                loadTextSlides();
+                loadAdminTextSlides();
+            });
+        }
+
+        function loadAdminTextSlides() {
+            const container = document.getElementById('adminTextSliderList');
+            container.innerHTML = 'Loading...';
+            
+            db.collection('textSlides').orderBy('createdAt', 'desc').get().then(snap => {
+                container.innerHTML = '';
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    container.innerHTML += `
+                    <div class="admin-text-slider-item">
+                        <p>${data.message}</p>
+                        <small style="color:var(--text-sub);">${new Date(data.createdAt?.toDate()).toLocaleDateString()}</small>
+                        <button class="delete-btn" onclick="deleteTextSlide('${doc.id}')" style="float:right;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>`;
+                });
+            });
+        }
+
+        function deleteTextSlide(id) {
+            if(confirm("Delete this text slide?")) {
+                db.collection('textSlides').doc(id).delete().then(() => {
+                    showNotify('success', 'Deleted', 'Text slide removed');
+                    loadTextSlides();
+                    loadAdminTextSlides();
+                });
+            }
+        }
+
+        // 7. MEMORIZING SYSTEM
+        function loadMemorizingCategories() {
+            const container = document.getElementById('memorizingGrid');
+            container.innerHTML = '<p style="text-align:center; color:#94a3b8; grid-column:span 2;">Loading...</p>';
+            
+            db.collection('memorizingCategories').orderBy('createdAt', 'desc').limit(5).get().then(snap => {
+                container.innerHTML = '';
+                
+                if(snap.empty) {
+                    container.innerHTML = '<div style="text-align:center; color:#94a3b8; grid-column:span 2;"><i class="fas fa-brain" style="font-size:3rem;"></i><p>No categories yet</p></div>';
+                    return;
+                }
+                
+                snap.forEach((doc, index) => {
+                    const data = doc.data();
+                    const categoryId = doc.id;
+                    const progress = memorizingProgress[categoryId] || 0;
+                    const percentage = Math.round((progress / data.totalDays) * 100);
+                    
+                    container.innerHTML += `
+                    <div class="memorizing-card" onclick="openMemorizingCategory('${categoryId}')">
+                        <div class="circle-progress">
+                            <svg class="circle-progress-svg">
+                                <circle class="circle-progress-bg" cx="40" cy="40" r="38"></circle>
+                                <circle class="circle-progress-fill" cx="40" cy="40" r="38" 
+                                    style="stroke-dashoffset: ${251.2 - (251.2 * percentage / 100)}"></circle>
+                            </svg>
+                            <div class="circle-progress-text">${percentage}%</div>
+                        </div>
+                        <div class="memorizing-card-title">${data.name}</div>
+                        <div class="memorizing-card-desc">${data.description}</div>
+                        <div class="memorizing-card-stats">
+                            <span>${progress}/${data.totalDays} days</span>
+                            <span><i class="fas fa-cards"></i> ${data.totalDays * 10} cards</span>
+                        </div>
+                    </div>`;
+                });
+            });
+        }
+
+        function openMemorizingCategory(categoryId) {
+            currentMemorizingCategory = categoryId;
+            db.collection('memorizingCategories').doc(categoryId).get().then(doc => {
+                if(doc.exists) {
+                    const data = doc.data();
+                    currentMemorizingDay = memorizingProgress[categoryId] ? memorizingProgress[categoryId] + 1 : 1;
+                    
+                    document.getElementById('memorizingDetailTitle').innerText = data.name;
+                    document.getElementById('memorizingDetailDesc').innerText = `Day ${currentMemorizingDay} of ${data.totalDays}`;
+                    
+                    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                    document.getElementById('memorizing-detail-page').classList.add('active');
+                    
+                    loadFlashcards();
+                }
+            });
+        }
+
+        function loadFlashcards() {
+            if(!currentMemorizingCategory) return;
+            
+            db.collection('memorizingFlashcards')
+                .where('categoryId', '==', currentMemorizingCategory)
+                .where('day', '==', currentMemorizingDay)
+                .orderBy('order')
+                .get()
+                .then(snap => {
+                    flashcards = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    currentFlashcardIndex = 0;
+                    
+                    if(flashcards.length > 0) {
+                        updateFlashcard();
+                        document.getElementById('totalCards').innerText = flashcards.length;
+                    } else {
+                        document.getElementById('flashcardFront').innerText = "No flashcards for today";
+                        document.getElementById('flashcardBack').innerText = "Please add flashcards in admin panel";
+                    }
+                });
+        }
+
+        function updateFlashcard() {
+            if(flashcards.length === 0) return;
+            
+            const card = flashcards[currentFlashcardIndex];
+            document.getElementById('flashcardFront').innerText = card.front;
+            document.getElementById('flashcardBack').innerText = card.back;
+            document.getElementById('currentCard').innerText = currentFlashcardIndex + 1;
+            
+            // Reset flip state
+            document.getElementById('flashcard').classList.remove('flipped');
+        }
+
+        function flipCard() {
+            document.getElementById('flashcard').classList.toggle('flipped');
+        }
+
+        function prevFlashcard() {
+            if(currentFlashcardIndex > 0) {
+                currentFlashcardIndex--;
+                updateFlashcard();
+            }
+        }
+
+        function nextFlashcard() {
+            if(currentFlashcardIndex < flashcards.length - 1) {
+                currentFlashcardIndex++;
+                updateFlashcard();
+            }
+        }
+
+        function completeMemorizingDay() {
+            if(!currentMemorizingCategory) return;
+            
+            // Update progress
+            memorizingProgress[currentMemorizingCategory] = currentMemorizingDay;
+            
+            // Save to database
+            if(currentUser) {
+                db.collection('userMemorizingProgress').doc(currentUser.uid).set({
+                    [currentMemorizingCategory]: currentMemorizingDay,
+                    lastUpdated: new Date()
+                }, { merge: true });
+            }
+            
+            // Show success message
+            showNotify('success', 'Completed!', `Day ${currentMemorizingDay} completed successfully`);
+            
+            // Check if all days completed
+            db.collection('memorizingCategories').doc(currentMemorizingCategory).get().then(doc => {
+                const data = doc.data();
+                if(currentMemorizingDay >= data.totalDays) {
+                    setTimeout(() => {
+                        showNotify('success', 'Congratulations!', 'You have completed all days in this category!');
+                        navTo('memorizing');
+                    }, 1000);
+                } else {
+                    // Go to next day
+                    currentMemorizingDay++;
+                    loadFlashcards();
+                    document.getElementById('memorizingDetailDesc').innerText = `Day ${currentMemorizingDay} of ${data.totalDays}`;
+                }
+            });
+        }
+
+        function loadMemorizingProgress() {
+            if(!currentUser) return;
+            
+            db.collection('userMemorizingProgress').doc(currentUser.uid).get().then(doc => {
+                if(doc.exists) {
+                    memorizingProgress = doc.data();
+                }
+            });
+        }
+
+        // 8. ADMIN MEMORIZING FUNCTIONS
+        function addMemorizingCategory() {
+            const name = document.getElementById('memorizingCategoryName').value;
+            const desc = document.getElementById('memorizingCategoryDesc').value;
+            const totalDays = parseInt(document.getElementById('memorizingTotalDays').value) || 10;
+            
+            if(!name || !desc) {
+                return showNotify('error', 'Error', 'Please fill all fields');
+            }
+            
+            db.collection('memorizingCategories').add({
+                name: name,
+                description: desc,
+                totalDays: totalDays,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                showNotify('success', 'Added', 'Memorizing category added');
+                document.getElementById('memorizingCategoryName').value = '';
+                document.getElementById('memorizingCategoryDesc').value = '';
+                loadMemorizingCategories();
+                loadAdminMemorizingCategories();
+                updateMemorizingCategorySelect();
+            });
+        }
+
+        function loadAdminMemorizingCategories() {
+            const container = document.getElementById('adminMemorizingList');
+            container.innerHTML = 'Loading...';
+            
+            db.collection('memorizingCategories').orderBy('createdAt', 'desc').get().then(snap => {
+                container.innerHTML = '';
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    container.innerHTML += `
+                    <div class="admin-item">
+                        <div>
+                            <h4>${data.name}</h4>
+                            <p>${data.description}</p>
+                            <small>${data.totalDays} days, ${data.totalDays * 10} cards</small>
+                        </div>
+                        <button class="delete-btn" onclick="deleteMemorizingCategory('${doc.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>`;
+                });
+            });
+        }
+
+        function deleteMemorizingCategory(id) {
+            if(confirm("Delete this memorizing category? All flashcards will be deleted.")) {
+                db.collection('memorizingCategories').doc(id).delete().then(() => {
+                    showNotify('success', 'Deleted', 'Category removed');
+                    loadAdminMemorizingCategories();
+                    loadMemorizingCategories();
+                    updateMemorizingCategorySelect();
+                });
+            }
+        }
+
+        function updateMemorizingCategorySelect() {
+            const select = document.getElementById('memorizingCategorySelect');
+            select.innerHTML = '<option value="">Select Category</option>';
+            
+            db.collection('memorizingCategories').orderBy('name').get().then(snap => {
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    select.innerHTML += `<option value="${doc.id}">${data.name}</option>`;
+                });
+            });
+        }
+
+        function loadCategoryDays() {
+            const categoryId = document.getElementById('memorizingCategorySelect').value;
+            const select = document.getElementById('memorizingDaySelect');
+            select.innerHTML = '<option value="">Select Day</option>';
+            
+            if(!categoryId) return;
+            
+            db.collection('memorizingCategories').doc(categoryId).get().then(doc => {
+                if(doc.exists) {
+                    const totalDays = doc.data().totalDays;
+                    for(let i = 1; i <= totalDays; i++) {
+                        select.innerHTML += `<option value="${i}">Day ${i}</option>`;
+                    }
+                }
+            });
+        }
+
+        function addFlashcard() {
+            const categoryId = document.getElementById('memorizingCategorySelect').value;
+            const day = parseInt(document.getElementById('memorizingDaySelect').value);
+            const front = document.getElementById('flashcardFront').value;
+            const back = document.getElementById('flashcardBack').value;
+            
+            if(!categoryId || !day || !front || !back) {
+                return showNotify('error', 'Error', 'Please fill all fields');
+            }
+            
+            // Get current count for order
+            db.collection('memorizingFlashcards')
+                .where('categoryId', '==', categoryId)
+                .where('day', '==', day)
+                .get()
+                .then(snap => {
+                    const order = snap.size + 1;
+                    
+                    db.collection('memorizingFlashcards').add({
+                        categoryId: categoryId,
+                        day: day,
+                        front: front,
+                        back: back,
+                        order: order,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }).then(() => {
+                        showNotify('success', 'Added', 'Flashcard added');
+                        document.getElementById('flashcardFront').value = '';
+                        document.getElementById('flashcardBack').value = '';
+                    });
+                });
+        }
+
+        // 9. ROUTINE SYSTEM
         function openRoutineModal() {
             document.getElementById('routine-modal').style.display = 'flex';
         }
@@ -882,7 +1516,7 @@
             }
         }
 
-        // 7. STUDY SYSTEM
+        // 10. STUDY SYSTEM
         function loadStudyGoal() {
             db.collection('studyGoals').orderBy('createdAt', 'desc').limit(1).get().then(snap => {
                 if(!snap.empty) {
@@ -966,7 +1600,7 @@
             });
         }
 
-        // 8. TIMER FUNCTIONS
+        // 11. TIMER FUNCTIONS
         function startTimer() {
             if(studyTimer) return;
             
@@ -1015,7 +1649,7 @@
             }
         }
 
-        // 9. MCQ PRACTICE SYSTEM
+        // 12. MCQ PRACTICE SYSTEM
         function startPracticeTest(syllabusId) {
             // Load practice questions for this syllabus
             db.collection('practiceQuestions').where('syllabusId', '==', syllabusId).get().then(snap => {
@@ -1134,16 +1768,19 @@
             document.getElementById('resultMessage').style.display = 'none';
         }
 
-        // 10. ADMIN FUNCTIONS
+        // 13. ADMIN FUNCTIONS
         function openAdminPanel() {
             document.getElementById('admin-panel').style.display = 'flex';
             loadAdminSliders();
             loadAdminRoutines();
             loadAdminStudyLevels();
+            loadAdminTextSlides();
+            loadAdminMemorizingCategories();
+            updateMemorizingCategorySelect();
         }
 
         function showAdminSection(sec) {
-            ['slider', 'students', 'exams', 'routine', 'study'].forEach(s => {
+            ['slider', 'students', 'exams', 'routine', 'study', 'textslider', 'memorizing'].forEach(s => {
                 document.getElementById(`admin-${s}-sec`).style.display = s === sec ? 'block' : 'none';
             });
             
@@ -1247,7 +1884,7 @@
             }
         }
 
-        // 11. SLIDER FUNCTIONS (Existing)
+        // 14. SLIDER FUNCTIONS
         let slideInterval;
         let slideIndex = 0;
 
@@ -1323,6 +1960,9 @@
                         document.getElementById('fileNameDisplay').innerText = '';
                         loadAdminSliders();
                         loadHomeSliders();
+                        
+                        // Auto add text slide
+                        addTextSlideAuto("New slider image added! Check out the latest updates.");
                     });
                 }
             })
@@ -1361,7 +2001,7 @@
             }
         }
 
-        // 12. EXAM FUNCTIONS (Existing)
+        // 15. EXAM FUNCTIONS
         function openExamList(type) {
             document.getElementById('exam-list-modal').style.display = 'flex';
             document.getElementById('examListTitle').innerText = type.toUpperCase() + " Exams";
@@ -1418,4 +2058,4 @@
 
     </script>
 </body>
-</html>
+    </html>
