@@ -3,71 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>মশা মারার গেম 3D</title>
+    <title>গোপাল ভাঁড় বনাম মশা (3D Prototype)</title>
     <style>
-        body { margin: 0; overflow: hidden; font-family: 'Arial', sans-serif; background-color: #87CEEB; }
+        body { margin: 0; overflow: hidden; font-family: 'Arial', sans-serif; background: linear-gradient(to bottom, #87CEEB, #E0F7FA); }
         #ui-container {
             position: absolute;
             top: 10px;
-            left: 10px;
-            color: white;
-            text-shadow: 2px 2px 4px #000;
-            pointer-events: none; /* যাতে গেমের ক্লিকে সমস্যা না করে */
+            left: 20px;
+            color: #333;
+            font-weight: bold;
+            pointer-events: none;
+            background: rgba(255, 255, 255, 0.6);
+            padding: 10px;
+            border-radius: 8px;
         }
-        h1 { margin: 0; font-size: 24px; }
-        p { margin: 5px 0; font-size: 18px; }
+        h1 { margin: 0; font-size: 22px; color: #d35400; }
+        p { margin: 5px 0; font-size: 16px; }
         
         #blood-bar-container {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 20px;
+            right: 20px;
             width: 200px;
-            height: 20px;
-            background: #333;
-            border: 2px solid white;
-            border-radius: 10px;
+            height: 25px;
+            background: #2c3e50;
+            border: 3px solid #ecf0f1;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
         #blood-bar {
             width: 100%;
             height: 100%;
-            background: red;
-            border-radius: 8px;
-            transition: width 0.2s;
+            background: linear-gradient(to right, #c0392b, #e74c3c);
+            transition: width 0.3s ease-in-out;
         }
 
-        #game-over {
+        #game-over, #loading-screen {
             display: none;
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 30px;
             text-align: center;
-            border-radius: 10px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
             pointer-events: auto;
+            z-index: 10;
         }
+        #loading-screen { display: block; } /* শুরুতে লোডিং দেখাবে */
         button {
-            padding: 10px 20px;
+            padding: 12px 24px;
             font-size: 18px;
-            background: #ff4757;
+            background: #27ae60;
             color: white;
             border: none;
             cursor: pointer;
-            border-radius: 5px;
-            margin-top: 10px;
+            border-radius: 8px;
+            margin-top: 15px;
+            transition: background 0.3s;
         }
-        button:hover { background: #ff6b81; }
+        button:hover { background: #2ecc71; }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 </head>
 <body>
 
+    <div id="loading-screen">
+        <h1>গেম লোড হচ্ছে...</h1>
+    </div>
+
     <div id="ui-container">
-        <h1>মশা মারার গেম</h1>
-        <p>পয়েন্ট: <span id="score">0</span></p>
-        <p>পাওয়ার লেভেল: <span id="power">1</span></p>
+        <h1>গোপাল ভাঁড় বনাম মশা</h1>
+        <p>স্কোর: <span id="score">0</span></p>
+        <p>থাপ্পড় পাওয়ার: <span id="power">1</span></p>
     </div>
 
     <div id="blood-bar-container">
@@ -75,268 +88,272 @@
     </div>
 
     <div id="game-over">
-        <h1 style="color: red;">খেলা শেষ!</h1>
-        <p>মশা সব রক্ত খেয়ে ফেলেছে!</p>
-        <p>আপনার স্কোর: <span id="final-score">0</span></p>
-        <button onclick="location.reload()">আবার খেলুন</button>
+        <h1 style="color: #c0392b;">সর্বনাশ! গোপাল দা অজ্ঞান!</h1>
+        <p>মশা সব রক্ত খেয়ে ফেলেছে।</p>
+        <p>আপনার চূড়ান্ত স্কোর: <span id="final-score">0</span></p>
+        <button onclick="location.reload()">আবার চেষ্টা করুন</button>
     </div>
 
     <script>
         // --- গেম ভেরিয়েবল ---
-        let scene, camera, renderer;
-        let player, rightArm, leftArm;
+        let scene, camera, renderer, clock;
+        let gopalPlaceholder, slapIndicator;
         let mosquitoes = [];
         let score = 0;
         let blood = 100;
         let power = 1;
         let isGameOver = false;
-        let mosquitoSpeed = 0.03;
-        let spawnRate = 60; // ফ্রেম কাউন্ট
+        let isGameLoaded = false;
+        let mosquitoSpeed = 0.025;
+        let spawnRate = 80;
         let frame = 0;
         
-        // মাউস এবং রে-কাস্টার (ক্লিক ডিটেকশনের জন্য)
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
+        // const loader = new THREE.GLTFLoader(); // আসল মডেল থাকলে এটি ব্যবহার করতে হবে
 
-        // --- ইনিশিয়ালাইজেশন ---
         function init() {
-            // সিন তৈরি
+            clock = new THREE.Clock();
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x87CEEB); // আকাশী রং
-            scene.fog = new THREE.Fog(0x87CEEB, 10, 50);
+            // কুয়াশা এবং ব্যাকগ্রাউন্ড কালার
+            scene.background = new THREE.Color(0xa0d8ef);
+            scene.fog = new THREE.Fog(0xa0d8ef, 15, 60);
 
-            // ক্যামেরা
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 2, 5);
-            camera.lookAt(0, 1, 0);
+            // ক্যামেরা সেটআপ
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 3, 8); // একটু দূর থেকে দেখা
+            camera.lookAt(0, 1.5, 0);
 
-            // রেন্ডারার
+            // রেন্ডারার সেটআপ (উন্নত ছায়ার জন্য)
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             document.body.appendChild(renderer.domElement);
 
-            // আলো
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-            scene.add(ambientLight);
-            
-            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            dirLight.position.set(5, 10, 7);
+            // --- লাইটিং (বাস্তবসম্মত করার জন্য) ---
+            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6); // আকাশ ও মাটির আলো
+            hemiLight.position.set(0, 20, 0);
+            scene.add(hemiLight);
+
+            const dirLight = new THREE.DirectionalLight(0xffdfa7, 0.8); // সূর্যের আলো
+            dirLight.position.set(10, 20, 10);
             dirLight.castShadow = true;
+            dirLight.shadow.camera.top = 10;
+            dirLight.shadow.camera.bottom = -10;
+            dirLight.shadow.camera.left = -10;
+            dirLight.shadow.camera.right = 10;
+            dirLight.shadow.mapSize.width = 2048;
+            dirLight.shadow.mapSize.height = 2048;
             scene.add(dirLight);
 
             // মাটি (Ground)
-            const planeGeometry = new THREE.PlaneGeometry(50, 50);
-            const planeMaterial = new THREE.MeshLambertMaterial({ color: 0x228B22 });
+            const planeGeometry = new THREE.PlaneGeometry(100, 100);
+            const planeMaterial = new THREE.MeshStandardMaterial({ color: 0x578a3d, roughness: 0.8 });
             const ground = new THREE.Mesh(planeGeometry, planeMaterial);
             ground.rotation.x = -Math.PI / 2;
             ground.receiveShadow = true;
             scene.add(ground);
 
-            createPlayer();
+            // ক্যারেক্টার লোড (এখানে আমরা প্লেসহোল্ডার ব্যবহার করছি)
+            loadCharacters();
 
             // ইভেন্ট লিসেনার
             window.addEventListener('resize', onWindowResize, false);
             window.addEventListener('pointerdown', onDocumentMouseDown, false);
 
+            // লোডিং শেষ
+            document.getElementById('loading-screen').style.display = 'none';
+            isGameLoaded = true;
             animate();
         }
 
-        // --- প্লেয়ার তৈরি (কার্টুন) ---
-        function createPlayer() {
-            player = new THREE.Group();
+        function loadCharacters() {
+            // ==============================================================================
+            // বি:দ্র: আপনার কাছে যদি গোপাল ভাঁড়ের আসল 3D মডেল (.glb/.gltf) থাকে,
+            // তবে নিচের প্লেসহোল্ডার কোডটুকু মুছে দিয়ে এই কমেন্ট করা অংশটি ব্যবহার করবেন:
+            /*
+            loader.load('path/to/gopal_bhar.glb', function (gltf) {
+                gopalModel = gltf.scene;
+                gopalModel.scale.set(1.5, 1.5, 1.5); // সাইজ ঠিক করা
+                gopalModel.position.set(0, 0, 0);
+                
+                gopalModel.traverse(function (child) {
+                    if (child.isMesh) {
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                    }
+                });
+                scene.add(gopalModel);
+                // এখানে অ্যানিমেশন মিক্সারও সেট করা যেতে পারে
+            });
+            */
+            // ==============================================================================
 
-            // শরীর
-            const bodyGeo = new THREE.BoxGeometry(0.8, 1.2, 0.5);
-            const bodyMat = new THREE.MeshStandardMaterial({ color: 0x0000ff }); // নীল শার্ট
+            // --- গোপাল ভাঁড় প্লেসহোল্ডার (আসল মডেল না থাকায়) ---
+            gopalPlaceholder = new THREE.Group();
+
+            // শরীর (মোটা সিলিন্ডার)
+            const bodyGeo = new THREE.CylinderGeometry(0.7, 0.6, 1.5, 12);
+            const bodyMat = new THREE.MeshStandardMaterial({ color: 0xffffff }); // সাদা কুর্তা
             const body = new THREE.Mesh(bodyGeo, bodyMat);
-            body.position.y = 1.2;
+            body.position.y = 0.75;
             body.castShadow = true;
-            player.add(body);
+            gopalPlaceholder.add(body);
 
-            // মাথা
-            const headGeo = new THREE.BoxGeometry(0.6, 0.6, 0.6);
-            const skinMat = new THREE.MeshStandardMaterial({ color: 0xffccaa }); // গায়ের রং
-            const head = new THREE.Mesh(headGeo, skinMat);
-            head.position.y = 2.2;
-            head.castShadow = true;
-            player.add(head);
-
-            // ডান হাত (Pivot পয়েন্ট সহ যাতে ঘুরতে পারে)
-            rightArm = new THREE.Group();
-            const armGeo = new THREE.BoxGeometry(0.2, 0.8, 0.2);
-            const armMesh = new THREE.Mesh(armGeo, skinMat);
-            armMesh.position.y = -0.3; // পিভট থেকে নিচে
-            rightArm.add(armMesh);
-            rightArm.position.set(0.5, 1.7, 0);
-            player.add(rightArm);
-
-            // বাম হাত
-            leftArm = new THREE.Group();
-            const armMeshL = new THREE.Mesh(armGeo, skinMat);
-            armMeshL.position.y = -0.3;
-            leftArm.add(armMeshL);
-            leftArm.position.set(-0.5, 1.7, 0);
-            player.add(leftArm);
-
-            // পা
-            const legGeo = new THREE.BoxGeometry(0.25, 1, 0.25);
-            const pantsMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
+            // ধুতি (নিচের অংশ)
+            const dhotiGeo = new THREE.CylinderGeometry(0.6, 0.8, 0.8, 12);
+            const dhotiMat = new THREE.MeshStandardMaterial({ color: 0xfed330 }); // হলুদ ধুতি
+            const dhoti = new THREE.Mesh(dhotiGeo, dhotiMat);
+            dhoti.position.y = -0.4;
+            body.add(dhoti);
             
-            const legR = new THREE.Mesh(legGeo, pantsMat);
-            legR.position.set(0.2, 0.5, 0);
-            player.add(legR);
+            // মাথা (গোলগাল)
+            const headGeo = new THREE.SphereGeometry(0.5, 16, 16);
+            const skinMat = new THREE.MeshStandardMaterial({ color: 0xffdbac }); // গায়ের রঙ
+            const head = new THREE.Mesh(headGeo, skinMat);
+            head.position.y = 1.6;
+            head.castShadow = true;
+            gopalPlaceholder.add(head);
+            
+            // টিকি (To represent Gopal Bhar style)
+            const tikiGeo = new THREE.ConeGeometry(0.1, 0.3, 8);
+            const hairMat = new THREE.MeshStandardMaterial({ color: 0x000000 });
+            const tiki = new THREE.Mesh(tikiGeo, hairMat);
+            tiki.position.set(0, 0.5, -0.3);
+            tiki.rotation.x = -0.5;
+            head.add(tiki);
 
-            const legL = new THREE.Mesh(legGeo, pantsMat);
-            legL.position.set(-0.2, 0.5, 0);
-            player.add(legL);
+            scene.add(gopalPlaceholder);
 
-            scene.add(player);
+            // থাপ্পড়ের ভিজুয়াল এফেক্ট (একটি লাল গোলক যা ক্লিকে দেখা যাবে)
+            const slapGeo = new THREE.SphereGeometry(0.4, 8, 8);
+            const slapMat = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0 });
+            slapIndicator = new THREE.Mesh(slapGeo, slapMat);
+            scene.add(slapIndicator);
         }
 
-        // --- মশা তৈরি ---
-        function spawnMosquito() {
-            if (isGameOver) return;
 
-            const mosquitoGeo = new THREE.SphereGeometry(0.1, 8, 8);
-            const mosquitoMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+        function spawnMosquito() {
+            if (isGameOver || !isGameLoaded) return;
+
+             // ==============================================================================
+            // আসল মশার মডেল থাকলে এখানে লোড করবেন। এখন আমরা ছোট কালো স্ফিয়ার ব্যবহার করছি।
+            // ==============================================================================
+
+            const mosquitoGeo = new THREE.SphereGeometry(0.08, 6, 6); // খুব ছোট
+            const mosquitoMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.5 }); // প্রায় কালো
             const mosquito = new THREE.Mesh(mosquitoGeo, mosquitoMat);
 
-            // র‍্যান্ডম পজিশন থেকে আসবে
+            // র‍্যান্ডম পজিশন (দূরে)
             const angle = Math.random() * Math.PI * 2;
-            const radius = 6;
+            const radius = 7 + Math.random() * 3;
             const x = Math.cos(angle) * radius;
             const z = Math.sin(angle) * radius;
-            const y = 1 + Math.random() * 2; // মাটির উপরে
+            const y = 1 + Math.random() * 2.5;
 
             mosquito.position.set(x, y, z);
+            mosquito.castShadow = true;
+            
             mosquito.userData = { 
                 isDead: false, 
-                velocity: new THREE.Vector3(),
-                id: Math.random()
+                buzzOffset: Math.random() * 10 // উড়ার সময় একটু কাঁপার জন্য
             };
             
-            // পাখা (Visual only)
-            const wingGeo = new THREE.PlaneGeometry(0.2, 0.1);
-            const wingMat = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, transparent: true, opacity: 0.6 });
-            const wing = new THREE.Mesh(wingGeo, wingMat);
-            wing.rotation.x = Math.PI / 2;
-            mosquito.add(wing);
-
             scene.add(mosquito);
             mosquitoes.push(mosquito);
         }
 
-        // --- ক্লিক হ্যান্ডলিং (থাপ্পড় মারা) ---
-        function onDocumentMouseDown(event) {
-            if (isGameOver) return;
 
-            // মাউস পজিশন নরমালাইজ করা
+        function onDocumentMouseDown(event) {
+            if (isGameOver || !isGameLoaded) return;
+
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
             raycaster.setFromCamera(mouse, camera);
-
-            // মশাগুলোর সাথে ইন্টারসেকশন চেক
             const intersects = raycaster.intersectObjects(mosquitoes);
 
-            // থাপ্পড় অ্যানিমেশন (Visual)
-            slapAnimation();
-
+            // যেখানে ক্লিক হয়েছে সেখানে একটি থাপ্পড়ের এফেক্ট দেখানো
+            const clickPoint = new THREE.Vector3();
+            raycaster.ray.at(3, clickPoint); // ক্যামেরা থেকে ৩ ইউনিট দূরে
+            showSlapEffect(intersects.length > 0 ? intersects[0].point : clickPoint);
+            
             if (intersects.length > 0) {
                 const hitMosquito = intersects[0].object;
-                
-                // যদি মশাটা ইতিমধ্যেই মারা না গিয়ে থাকে
                 if (!hitMosquito.userData.isDead) {
                     killMosquito(hitMosquito);
                 }
             }
         }
 
-        function slapAnimation() {
-            // ডান হাত উপরে তোলা
-            let up = true;
-            const slapSpeed = 0.2 + (power * 0.01); // পাওয়ার বাড়লে স্পিড বাড়ে
-            
-            const interval = setInterval(() => {
-                if(up) {
-                    rightArm.rotation.z += slapSpeed;
-                    rightArm.rotation.x -= slapSpeed;
-                    if(rightArm.rotation.z > 2) up = false;
-                } else {
-                    rightArm.rotation.z -= slapSpeed;
-                    rightArm.rotation.x += slapSpeed;
-                    if(rightArm.rotation.z <= 0) {
-                        rightArm.rotation.z = 0;
-                        rightArm.rotation.x = 0;
-                        clearInterval(interval);
-                    }
+        function showSlapEffect(position) {
+            slapIndicator.position.copy(position);
+            slapIndicator.material.opacity = 0.6;
+            let fadeOut = setInterval(() => {
+                slapIndicator.material.opacity -= 0.05;
+                if(slapIndicator.material.opacity <= 0) {
+                    clearInterval(fadeOut);
                 }
-            }, 16);
+            }, 20);
         }
 
         function killMosquito(mosquito) {
             mosquito.userData.isDead = true;
-            mosquito.material.color.setHex(0xff0000); // মরে লাল হয়ে যাবে
+            mosquito.material.color.setHex(0x8b0000); // গাঢ় লাল (রক্ত)
+            mosquito.material.emissive.setHex(0xff0000);
             
             score++;
             document.getElementById('score').innerText = score;
 
-            // পাওয়ার লজিক
-            if (score % 5 === 0) {
+            if (score % 8 === 0) {
                 power++;
                 document.getElementById('power').innerText = power;
-                // মশার স্পিড ও একটু বাড়ে কঠিন করার জন্য
-                mosquitoSpeed += 0.002;
+                mosquitoSpeed += 0.003; 
+                spawnRate = Math.max(30, spawnRate - 5); // মশা আসার হার বাড়বে
             }
         }
 
-        // --- গেম লুপ ---
         function animate() {
             requestAnimationFrame(animate);
-
-            if (!isGameOver) {
+            if (!isGameOver && isGameLoaded) {
+                const delta = clock.getDelta();
                 frame++;
                 
-                // মশা স্পন করা (সময়ের সাথে কঠিন হবে)
-                if (frame % Math.max(20, (spawnRate - power)) === 0) {
-                    spawnMosquito();
-                }
-
-                updateMosquitoes();
+                if (frame % spawnRate === 0) spawnMosquito();
+                updateMosquitoes(delta);
                 checkGameOver();
             }
-            
             renderer.render(scene, camera);
         }
 
-        function updateMosquitoes() {
+        function updateMosquitoes(delta) {
+            const target = new THREE.Vector3(0, 1.8, 0); // গোপালের মাথা/ঘাড় টার্গেট
+
             for (let i = mosquitoes.length - 1; i >= 0; i--) {
                 const m = mosquitoes[i];
                 
                 if (m.userData.isDead) {
-                    // মরে গেলে নিচে পড়বে (Gravity)
-                    m.position.y -= 0.1;
-                    m.rotation.x += 0.1;
+                    m.position.y -= 3 * delta; // দ্রুত নিচে পড়বে
+                    m.rotation.x += 5 * delta;
                     if (m.position.y < 0) {
                         scene.remove(m);
                         mosquitoes.splice(i, 1);
                     }
                 } else {
-                    // বেঁচে থাকলে প্লেয়ারের দিকে আসবে
-                    const direction = new THREE.Vector3();
-                    // টার্গেট (প্লেয়ারের মাথা বা শরীর)
-                    const target = new THREE.Vector3(0, 1.5, 0); 
-                    direction.subVectors(target, m.position).normalize();
-                    
                     const dist = m.position.distanceTo(target);
+                    
+                    // বাস্তবসম্মত উড়া (একটু আঁকাবাঁকা/ Buzzing effect)
+                    const time = clock.getElapsedTime();
+                    m.position.x += Math.sin(time * 10 + m.userData.buzzOffset) * 0.01;
+                    m.position.y += Math.cos(time * 15 + m.userData.buzzOffset) * 0.005;
 
-                    if (dist > 0.8) {
+                    if (dist > 0.7) {
+                        const direction = new THREE.Vector3().subVectors(target, m.position).normalize();
                         m.position.add(direction.multiplyScalar(mosquitoSpeed));
                     } else {
-                        // কাছে চলে এসেছে, এখন রক্ত খাবে
-                        m.position.x += (Math.random() - 0.5) * 0.05; // একটু কাঁপবে
-                        blood -= 0.2; // রক্ত কমার রেট
+                        // রক্ত খাওয়া শুরু
+                        blood -= (0.15 * delta * 60); // ফ্রেমরেট ইন্ডিপেন্ডেন্ট রক্ত কমা
                         updateBloodBar();
                     }
                 }
@@ -346,6 +363,10 @@
         function updateBloodBar() {
             const bar = document.getElementById('blood-bar');
             bar.style.width = Math.max(0, blood) + '%';
+             // রক্ত কমে গেলে বার এর রঙ পরিবর্তন হবে
+             if(blood < 30) {
+                bar.style.background = 'linear-gradient(to right, #c0392b, #800000)';
+            }
         }
 
         function checkGameOver() {
@@ -362,9 +383,7 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         }
 
-        // স্টার্ট
         init();
-
     </script>
 </body>
 </html>
