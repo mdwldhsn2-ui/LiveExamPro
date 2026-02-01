@@ -1,389 +1,3240 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>গোপাল ভাঁড় বনাম মশা (3D Prototype)</title>
+    <title>AR Pixelgram</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+    <link rel="manifest" id="manifest">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📱</text></svg>">
     <style>
-        body { margin: 0; overflow: hidden; font-family: 'Arial', sans-serif; background: linear-gradient(to bottom, #87CEEB, #E0F7FA); }
-        #ui-container {
-            position: absolute;
-            top: 10px;
-            left: 20px;
-            color: #333;
-            font-weight: bold;
-            pointer-events: none;
-            background: rgba(255, 255, 255, 0.6);
-            padding: 10px;
-            border-radius: 8px;
+        :root {
+            /* Light Theme Variables */
+            --primary: #4f46e5;
+            --primary-light: #6366f1;
+            --secondary: #ec4899;
+            --bg-color: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-bg-solid: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: rgba(0, 0, 0, 0.08);
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            --shadow-strong: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --radius: 16px;
+            --radius-sm: 12px;
+            --radius-lg: 24px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --header-height: 60px;
+            --nav-height: 70px;
         }
-        h1 { margin: 0; font-size: 22px; color: #d35400; }
-        p { margin: 5px 0; font-size: 16px; }
-        
-        #blood-bar-container {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 200px;
-            height: 25px;
-            background: #2c3e50;
-            border: 3px solid #ecf0f1;
-            border-radius: 15px;
+
+        /* Dark Theme Variables */
+        .dark-theme {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --secondary: #f472b6;
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.85);
+            --card-bg-solid: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+            --shadow-strong: 0 20px 40px -10px rgba(0, 0, 0, 0.3);
+            --glass-bg: rgba(30, 41, 59, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.5;
+            overflow-x: hidden;
+            transition: var(--transition);
+        }
+
+        /* App Container */
+        .app-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: var(--bg-color);
+            min-height: 100vh;
+            position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
-        #blood-bar {
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            max-width: 600px;
+            margin: 0 auto;
+            height: var(--header-height);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 24px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo i {
+            font-size: 22px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--danger);
+            color: white;
+            font-size: 10px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 600px;
+            margin: 0 auto;
+            height: var(--nav-height);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 12px;
+            gap: 4px;
+            transition: var(--transition);
+            position: relative;
+            padding: 8px 12px;
+            border-radius: var(--radius);
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            background-color: rgba(79, 70, 229, 0.1);
+        }
+
+        .nav-item i {
+            font-size: 20px;
+        }
+
+        .nav-item .notification-dot {
+            position: absolute;
+            top: 2px;
+            right: 5px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--danger);
+        }
+
+        /* Main Content */
+        .main-content {
+            padding-top: var(--header-height);
+            padding-bottom: var(--nav-height);
+            min-height: 100vh;
+        }
+
+        /* Pages */
+        .page {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin: 15px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-strong);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border-radius: var(--radius);
+            border: none;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(79, 70, 229, 0.1);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--bg-color);
+            border-color: var(--text-secondary);
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-size: 16px;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        /* Stories */
+        .stories-container {
+            padding: 15px 15px 5px;
+            display: flex;
+            overflow-x: auto;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .story-item {
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .story-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            padding: 3px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .story-avatar img {
             width: 100%;
             height: 100%;
-            background: linear-gradient(to right, #c0392b, #e74c3c);
-            transition: width 0.3s ease-in-out;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--card-bg-solid);
         }
 
-        #game-over, #loading-screen {
-            display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(255, 255, 255, 0.95);
-            color: #333;
-            padding: 30px;
-            text-align: center;
-            border-radius: 15px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-            pointer-events: auto;
-            z-index: 10;
+        .story-username {
+            font-size: 12px;
+            color: var(--text-secondary);
+            max-width: 70px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
-        #loading-screen { display: block; } /* শুরুতে লোডিং দেখাবে */
-        button {
-            padding: 12px 24px;
+
+        /* Posts */
+        .post {
+            margin-bottom: 20px;
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px 10px;
+        }
+
+        .post-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .post-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .post-user-info h4 {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .post-user-info p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .verified-badge {
+            color: var(--primary);
+            font-size: 14px;
+            margin-left: 4px;
+        }
+
+        .post-image {
+            width: 100%;
+            height: auto;
+            max-height: 500px;
+            object-fit: cover;
+        }
+
+        .post-actions {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 20px 10px;
+        }
+
+        .post-actions-left {
+            display: flex;
+            gap: 15px;
+        }
+
+        .post-action {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 24px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .post-action.liked {
+            color: var(--danger);
+        }
+
+        .post-action.saved {
+            color: var(--warning);
+        }
+
+        .post-likes {
+            padding: 0 20px 10px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .post-caption {
+            padding: 0 20px 10px;
+            font-size: 15px;
+        }
+
+        .post-caption-username {
+            font-weight: 600;
+            margin-right: 5px;
+        }
+
+        .post-comments {
+            padding: 0 20px 15px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .post-time {
+            padding: 0 20px 20px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        /* Chat */
+        .chat-list {
+            padding: 10px;
+        }
+
+        .chat-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-radius: var(--radius);
+            margin-bottom: 10px;
+            background-color: var(--card-bg);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .chat-item:hover {
+            background-color: var(--bg-color);
+        }
+
+        .chat-item.active {
+            background-color: rgba(79, 70, 229, 0.1);
+        }
+
+        .chat-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 15px;
+        }
+
+        .chat-info {
+            flex: 1;
+        }
+
+        .chat-info-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .chat-user {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .chat-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .chat-last-message {
+            font-size: 14px;
+            color: var(--text-secondary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 200px;
+        }
+
+        .chat-unread {
+            background-color: var(--primary);
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Chat Window */
+        .chat-window {
+            display: none;
+            flex-direction: column;
+            height: calc(100vh - var(--header-height) - var(--nav-height));
+        }
+
+        .chat-window.active {
+            display: flex;
+        }
+
+        .chat-header {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .chat-header-info {
+            margin-left: 15px;
+            flex: 1;
+        }
+
+        .chat-header-user {
+            font-weight: 600;
             font-size: 18px;
-            background: #27ae60;
+        }
+
+        .chat-header-status {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .chat-header-status.online {
+            color: var(--success);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 75%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            position: relative;
+            word-wrap: break-word;
+        }
+
+        .message-sent {
+            align-self: flex-end;
+            background-color: var(--primary);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-received {
+            align-self: flex-start;
+            background-color: var(--card-bg);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-time {
+            font-size: 11px;
+            opacity: 0.8;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .message-seen {
+            font-size: 12px;
+            color: var(--primary);
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .chat-input-container {
+            display: flex;
+            padding: 15px 20px;
+            background-color: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 18px;
+            border-radius: 24px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-size: 15px;
+            resize: none;
+            max-height: 120px;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .chat-send-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--primary);
             color: white;
             border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            border-radius: 8px;
-            margin-top: 15px;
-            transition: background 0.3s;
+            transition: var(--transition);
         }
-        button:hover { background: #2ecc71; }
+
+        .chat-send-btn:hover {
+            background-color: var(--primary-light);
+        }
+
+        .typing-indicator {
+            font-size: 13px;
+            color: var(--text-secondary);
+            padding: 5px 20px;
+            font-style: italic;
+        }
+
+        /* Search */
+        .search-container {
+            padding: 20px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 20px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg);
+            color: var(--text-primary);
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .search-results {
+            display: none;
+        }
+
+        .search-results.active {
+            display: block;
+        }
+
+        .search-user {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-radius: var(--radius);
+            margin-bottom: 10px;
+            background-color: var(--card-bg);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .search-user:hover {
+            background-color: var(--bg-color);
+        }
+
+        /* Profile */
+        .profile-header {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 15px;
+            border: 4px solid var(--card-bg-solid);
+        }
+
+        .profile-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .profile-username {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+
+        .profile-bio {
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            max-width: 400px;
+        }
+
+        .profile-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .profile-stat {
+            text-align: center;
+        }
+
+        .profile-stat-value {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .profile-stat-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .profile-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .profile-posts {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2px;
+        }
+
+        .profile-post {
+            aspect-ratio: 1;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .profile-post img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+
+        .profile-post:hover img {
+            transform: scale(1.05);
+        }
+
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg-solid);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-strong);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            background-color: var(--bg-color);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        /* Story Viewer */
+        .story-viewer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: black;
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+        }
+
+        .story-viewer.active {
+            display: flex;
+        }
+
+        .story-progress {
+            display: flex;
+            gap: 5px;
+            padding: 20px 15px 10px;
+        }
+
+        .story-progress-bar {
+            flex: 1;
+            height: 3px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .story-progress-fill {
+            height: 100%;
+            background-color: white;
+            width: 0%;
+            transition: width linear;
+        }
+
+        .story-viewer-header {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            color: white;
+        }
+
+        .story-viewer-user {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            gap: 10px;
+        }
+
+        .story-viewer-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .story-viewer-username {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .story-viewer-time {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .story-viewer-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .story-viewer-close:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .story-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .story-content img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        /* Notifications */
+        .notification-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-radius: var(--radius);
+            margin-bottom: 10px;
+            background-color: var(--card-bg);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .notification-item:hover {
+            background-color: var(--bg-color);
+        }
+
+        .notification-item.unread {
+            background-color: rgba(79, 70, 229, 0.1);
+        }
+
+        .notification-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 15px;
+        }
+
+        .notification-text {
+            flex: 1;
+            font-size: 15px;
+        }
+
+        .notification-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        /* Verification Badge */
+        .verification-badge {
+            background-color: var(--primary);
+            color: white;
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-left: 8px;
+        }
+
+        /* Utility Classes */
+        .hidden {
+            display: none !important;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-muted {
+            color: var(--text-secondary);
+        }
+
+        .mt-1 { margin-top: 10px; }
+        .mt-2 { margin-top: 20px; }
+        .mt-3 { margin-top: 30px; }
+        .mb-1 { margin-bottom: 10px; }
+        .mb-2 { margin-bottom: 20px; }
+        .mb-3 { margin-bottom: 30px; }
+        .p-1 { padding: 10px; }
+        .p-2 { padding: 20px; }
+        .p-3 { padding: 30px; }
+
+        /* Responsive Adjustments */
+        @media (max-width: 480px) {
+            :root {
+                --radius: 14px;
+                --radius-sm: 10px;
+                --radius-lg: 20px;
+            }
+            
+            .card {
+                margin: 10px;
+                padding: 16px;
+            }
+            
+            .header {
+                padding: 0 15px;
+            }
+            
+            .profile-stats {
+                gap: 20px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .app-container {
+                box-shadow: var(--shadow-strong);
+                margin-top: 20px;
+                margin-bottom: 20px;
+                min-height: calc(100vh - 40px);
+                border-radius: var(--radius-lg);
+                overflow: hidden;
+            }
+            
+            .bottom-nav {
+                border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+            }
+        }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 </head>
 <body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-camera"></i>
+                <span>AR Pixelgram</span>
+            </div>
+            <div class="header-actions">
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="notification-btn" id="notificationBtn" aria-label="Notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge" id="notificationBadge">3</span>
+                </button>
+            </div>
+        </header>
 
-    <div id="loading-screen">
-        <h1>গেম লোড হচ্ছে...</h1>
-    </div>
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Home Page -->
+            <section id="homePage" class="page active">
+                <div class="stories-container">
+                    <!-- Stories will be dynamically generated here -->
+                </div>
+                <div class="posts-container">
+                    <!-- Posts will be dynamically generated here -->
+                </div>
+            </section>
 
-    <div id="ui-container">
-        <h1>গোপাল ভাঁড় বনাম মশা</h1>
-        <p>স্কোর: <span id="score">0</span></p>
-        <p>থাপ্পড় পাওয়ার: <span id="power">1</span></p>
-    </div>
+            <!-- Search Page -->
+            <section id="searchPage" class="page">
+                <div class="search-container">
+                    <input type="text" class="search-input" placeholder="Search users..." id="searchInput">
+                    <div class="search-results" id="searchResults">
+                        <!-- Search results will appear here -->
+                    </div>
+                    <div class="card">
+                        <h3 class="mb-2">Suggested for you</h3>
+                        <div id="suggestedUsers">
+                            <!-- Suggested users will appear here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-    <div id="blood-bar-container">
-        <div id="blood-bar"></div>
-    </div>
+            <!-- Add Post Page -->
+            <section id="addPostPage" class="page">
+                <div class="card">
+                    <h2 class="text-center mb-3">Create New Post</h2>
+                    <div class="form-group">
+                        <label class="form-label" for="postImage">Upload Image</label>
+                        <div class="image-upload-container" id="imageUploadContainer">
+                            <div class="image-upload-placeholder">
+                                <i class="fas fa-cloud-upload-alt" style="font-size: 48px; color: var(--text-secondary); margin-bottom: 15px;"></i>
+                                <p>Click to upload an image</p>
+                                <p class="text-muted">JPEG, PNG up to 10MB</p>
+                            </div>
+                            <input type="file" id="postImage" accept="image/*" class="hidden">
+                        </div>
+                        <div class="image-preview" id="imagePreview"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="postCaption">Caption</label>
+                        <textarea class="form-control" id="postCaption" rows="4" placeholder="Write a caption..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="postPublic">
+                            <span style="margin-left: 8px;">Public post (visible to everyone)</span>
+                        </label>
+                    </div>
+                    <button class="btn btn-primary w-100" id="createPostBtn">
+                        <i class="fas fa-share"></i> Share Post
+                    </button>
+                </div>
+            </section>
 
-    <div id="game-over">
-        <h1 style="color: #c0392b;">সর্বনাশ! গোপাল দা অজ্ঞান!</h1>
-        <p>মশা সব রক্ত খেয়ে ফেলেছে।</p>
-        <p>আপনার চূড়ান্ত স্কোর: <span id="final-score">0</span></p>
-        <button onclick="location.reload()">আবার চেষ্টা করুন</button>
+            <!-- Stories Page -->
+            <section id="storiesPage" class="page">
+                <div class="card">
+                    <h2 class="mb-3">Your Stories</h2>
+                    <div class="form-group">
+                        <label class="form-label" for="storyImage">Add to Your Story</label>
+                        <div class="image-upload-container" id="storyUploadContainer">
+                            <div class="image-upload-placeholder">
+                                <i class="fas fa-plus-circle" style="font-size: 48px; color: var(--text-secondary); margin-bottom: 15px;"></i>
+                                <p>Add to your story</p>
+                                <p class="text-muted">Stories disappear after 24 hours</p>
+                            </div>
+                            <input type="file" id="storyImage" accept="image/*" class="hidden">
+                        </div>
+                        <div class="image-preview" id="storyPreview"></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 class="mb-2">Recent Stories from Friends</h3>
+                    <div id="friendsStories">
+                        <!-- Friends stories will appear here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Chat Page -->
+            <section id="chatPage" class="page">
+                <div class="chat-list" id="chatList">
+                    <!-- Chat list will be dynamically generated here -->
+                </div>
+                
+                <!-- Chat Window (hidden by default) -->
+                <div class="chat-window" id="chatWindow">
+                    <div class="chat-header">
+                        <button class="back-to-chats" id="backToChats">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <div class="chat-header-info">
+                            <div class="chat-header-user">
+                                <span id="chatWithUser">Loading...</span>
+                                <i class="fas fa-check-circle verified-badge hidden" id="chatVerifiedBadge"></i>
+                            </div>
+                            <div class="chat-header-status" id="chatUserStatus">Online</div>
+                        </div>
+                        <button class="chat-menu-btn">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="chat-messages" id="chatMessages">
+                        <!-- Messages will be dynamically generated here -->
+                    </div>
+                    
+                    <div class="typing-indicator hidden" id="typingIndicator">
+                        <span id="typingUser">Someone</span> is typing...
+                    </div>
+                    
+                    <div class="chat-input-container">
+                        <textarea class="chat-input" id="chatInput" placeholder="Type a message..." rows="1"></textarea>
+                        <button class="chat-send-btn" id="sendMessageBtn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Profile Page -->
+            <section id="profilePage" class="page">
+                <div class="profile-header">
+                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="Profile" class="profile-avatar" id="profileAvatar">
+                    <div>
+                        <h1 class="profile-name" id="profileName">Alex Rivera</h1>
+                        <div class="profile-username" id="profileUsername">@alexrivera
+                            <span class="verification-badge hidden" id="profileVerifiedBadge">
+                                <i class="fas fa-check"></i> Verified
+                            </span>
+                        </div>
+                    </div>
+                    <p class="profile-bio" id="profileBio">Digital creator & photography enthusiast. Capturing moments, one pixel at a time. 📸✨</p>
+                    
+                    <div class="profile-stats">
+                        <div class="profile-stat">
+                            <div class="profile-stat-value" id="postCount">42</div>
+                            <div class="profile-stat-label">Posts</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="profile-stat-value" id="followerCount">1.2K</div>
+                            <div class="profile-stat-label">Followers</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="profile-stat-value" id="followingCount">356</div>
+                            <div class="profile-stat-label">Following</div>
+                        </div>
+                    </div>
+                    
+                    <div class="profile-actions">
+                        <button class="btn btn-outline" id="editProfileBtn">
+                            <i class="fas fa-edit"></i> Edit Profile
+                        </button>
+                        <button class="btn btn-outline" id="shareProfileBtn">
+                            <i class="fas fa-share-alt"></i> Share Profile
+                        </button>
+                        <button class="btn btn-secondary" id="switchAccountBtn">
+                            <i class="fas fa-user-cog"></i> Settings
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="profile-posts" id="profilePosts">
+                    <!-- User posts will be dynamically generated here -->
+                </div>
+            </section>
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <a href="#" class="nav-item active" data-page="homePage">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </a>
+            <a href="#" class="nav-item" data-page="searchPage">
+                <i class="fas fa-search"></i>
+                <span>Search</span>
+            </a>
+            <a href="#" class="nav-item" data-page="addPostPage">
+                <i class="fas fa-plus-square"></i>
+                <span>Post</span>
+            </a>
+            <a href="#" class="nav-item" data-page="storiesPage">
+                <i class="fas fa-history"></i>
+                <span>Stories</span>
+                <span class="notification-dot" id="storiesNotification"></span>
+            </a>
+            <a href="#" class="nav-item" data-page="chatPage">
+                <i class="fas fa-comment"></i>
+                <span>Chat</span>
+                <span class="notification-dot" id="chatNotification"></span>
+            </a>
+            <a href="#" class="nav-item" data-page="profilePage">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </a>
+        </nav>
+
+        <!-- Story Viewer Modal -->
+        <div class="story-viewer" id="storyViewer">
+            <div class="story-progress" id="storyProgress">
+                <!-- Progress bars will be added dynamically -->
+            </div>
+            <div class="story-viewer-header">
+                <div class="story-viewer-user">
+                    <img src="" alt="" class="story-viewer-avatar" id="storyViewerAvatar">
+                    <div>
+                        <div class="story-viewer-username" id="storyViewerUsername">Username</div>
+                        <div class="story-viewer-time" id="storyViewerTime">2 hours ago</div>
+                    </div>
+                </div>
+                <button class="story-viewer-close" id="closeStoryViewer">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="story-content">
+                <img src="" alt="" id="storyViewerImage">
+            </div>
+        </div>
+
+        <!-- Notifications Modal -->
+        <div class="modal" id="notificationsModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Notifications</h3>
+                    <button class="modal-close" id="closeNotifications">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="notificationsList">
+                        <!-- Notifications will be dynamically generated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Profile Modal -->
+        <div class="modal" id="editProfileModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Edit Profile</h3>
+                    <button class="modal-close" id="closeEditProfile">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="editName">Full Name</label>
+                        <input type="text" class="form-control" id="editName" value="Alex Rivera">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="editUsername">Username</label>
+                        <input type="text" class="form-control" id="editUsername" value="alexrivera">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="editBio">Bio</label>
+                        <textarea class="form-control" id="editBio" rows="3">Digital creator & photography enthusiast. Capturing moments, one pixel at a time. 📸✨</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="editProfilePic">Profile Picture</label>
+                        <input type="file" class="form-control" id="editProfilePic" accept="image/*">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="editPrivateAccount">
+                            <span style="margin-left: 8px;">Private account (approve followers)</span>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="editVerifiedRequest">
+                            <span style="margin-left: 8px;">Request verified badge</span>
+                        </label>
+                        <p class="text-muted" style="font-size: 14px; margin-top: 5px;">Submit a request for a verified badge. This will be reviewed by our team.</p>
+                    </div>
+                    <button class="btn btn-primary w-100 mt-2" id="saveProfileBtn">Save Changes</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div class="modal" id="settingsModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Settings</h3>
+                    <button class="modal-close" id="closeSettings">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="settings-section">
+                        <h4 class="mb-2">Appearance</h4>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <input type="checkbox" id="darkModeToggle">
+                                <span style="margin-left: 8px;">Dark mode</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section mt-3">
+                        <h4 class="mb-2">Privacy</h4>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <input type="checkbox" id="privateAccountToggle">
+                                <span style="margin-left: 8px;">Private account</span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <input type="checkbox" id="showActivityStatus">
+                                <span style="margin-left: 8px;">Show activity status</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section mt-3">
+                        <h4 class="mb-2">Support</h4>
+                        <button class="btn btn-outline w-100 mb-1" id="helpCenterBtn">
+                            <i class="fas fa-question-circle"></i> Help Center
+                        </button>
+                        <button class="btn btn-outline w-100 mb-1" id="reportProblemBtn">
+                            <i class="fas fa-flag"></i> Report a Problem
+                        </button>
+                    </div>
+                    
+                    <div class="settings-section mt-3">
+                        <h4 class="mb-2">Account</h4>
+                        <button class="btn btn-outline w-100 mb-1" id="switchAccountsBtn">
+                            <i class="fas fa-exchange-alt"></i> Switch Accounts
+                        </button>
+                        <button class="btn btn-outline w-100 mb-1" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i> Log Out
+                        </button>
+                        <button class="btn btn-outline w-100" id="deleteAccountBtn" style="color: var(--danger); border-color: var(--danger);">
+                            <i class="fas fa-trash"></i> Delete Account
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report Problem Modal -->
+        <div class="modal" id="reportModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Report a Problem</h3>
+                    <button class="modal-close" id="closeReport">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="reportType">Type of Problem</label>
+                        <select class="form-control" id="reportType">
+                            <option value="">Select a problem type</option>
+                            <option value="bug">Bug or Crash</option>
+                            <option value="spam">Spam or Abuse</option>
+                            <option value="content">Inappropriate Content</option>
+                            <option value="account">Account Issue</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="reportDescription">Description</label>
+                        <textarea class="form-control" id="reportDescription" rows="5" placeholder="Please describe the problem in detail..."></textarea>
+                    </div>
+                    <button class="btn btn-primary w-100 mt-2" id="submitReportBtn">Submit Report</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Account Confirmation Modal -->
+        <div class="modal" id="deleteAccountModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Delete Account</h3>
+                    <button class="modal-close" id="closeDeleteAccount">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: var(--danger); margin-bottom: 20px;"></i>
+                        <h3 class="mb-2">Are you sure?</h3>
+                        <p class="text-muted mb-3">This will permanently delete your account, posts, stories, and all data. This action cannot be undone.</p>
+                        <div class="form-group">
+                            <label class="form-label" for="confirmDeleteText">Type "DELETE" to confirm</label>
+                            <input type="text" class="form-control" id="confirmDeleteText" placeholder="DELETE">
+                        </div>
+                        <div class="flex gap-2 mt-3">
+                            <button class="btn btn-outline flex-1" id="cancelDeleteBtn">Cancel</button>
+                            <button class="btn btn-primary flex-1" id="confirmDeleteBtn" style="background-color: var(--danger);" disabled>Delete Account</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login/Register Modal (shown on first load) -->
+        <div class="modal active" id="authModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Welcome to AR Pixelgram</h3>
+                </div>
+                <div class="modal-body">
+                    <div id="loginForm">
+                        <h3 class="text-center mb-3">Sign In</h3>
+                        <div class="form-group">
+                            <label class="form-label" for="loginEmail">Email or Username</label>
+                            <input type="text" class="form-control" id="loginEmail" placeholder="Enter email or username">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="loginPassword">Password</label>
+                            <input type="password" class="form-control" id="loginPassword" placeholder="Enter password">
+                        </div>
+                        <button class="btn btn-primary w-100 mt-2" id="loginBtn">Sign In</button>
+                        <p class="text-center mt-2">
+                            <a href="#" id="switchToRegister">Don't have an account? Sign up</a>
+                        </p>
+                    </div>
+                    
+                    <div id="registerForm" class="hidden">
+                        <h3 class="text-center mb-3">Create Account</h3>
+                        <div class="form-group">
+                            <label class="form-label" for="registerName">Full Name</label>
+                            <input type="text" class="form-control" id="registerName" placeholder="Enter your full name">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="registerEmail">Email</label>
+                            <input type="email" class="form-control" id="registerEmail" placeholder="Enter email">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="registerUsername">Username</label>
+                            <input type="text" class="form-control" id="registerUsername" placeholder="Choose a username">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="registerPassword">Password</label>
+                            <input type="password" class="form-control" id="registerPassword" placeholder="Create a password">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="registerDob">Date of Birth</label>
+                            <input type="date" class="form-control" id="registerDob">
+                        </div>
+                        <button class="btn btn-primary w-100 mt-2" id="registerBtn">Create Account</button>
+                        <p class="text-center mt-2">
+                            <a href="#" id="switchToLogin">Already have an account? Sign in</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // --- গেম ভেরিয়েবল ---
-        let scene, camera, renderer, clock;
-        let gopalPlaceholder, slapIndicator;
-        let mosquitoes = [];
-        let score = 0;
-        let blood = 100;
-        let power = 1;
-        let isGameOver = false;
-        let isGameLoaded = false;
-        let mosquitoSpeed = 0.025;
-        let spawnRate = 80;
-        let frame = 0;
-        
-        const raycaster = new THREE.Raycaster();
-        const mouse = new THREE.Vector2();
-        // const loader = new THREE.GLTFLoader(); // আসল মডেল থাকলে এটি ব্যবহার করতে হবে
+        // App State
+        const appState = {
+            currentUser: null,
+            users: [],
+            posts: [],
+            stories: [],
+            chats: [],
+            notifications: [],
+            currentPage: 'homePage',
+            currentChat: null,
+            isDarkMode: false,
+            isAuthenticated: false,
+            // Sample data for demonstration
+            sampleUsers: [
+                {
+                    id: 1,
+                    name: "Alex Rivera",
+                    username: "@alexrivera",
+                    bio: "Digital creator & photography enthusiast. Capturing moments, one pixel at a time. 📸✨",
+                    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+                    isPrivate: false,
+                    isVerified: false,
+                    hasRequestedVerification: false,
+                    followers: 1200,
+                    following: 356,
+                    posts: 42
+                },
+                {
+                    id: 2,
+                    name: "Maya Chen",
+                    username: "@mayachen",
+                    bio: "UI/UX designer & digital artist. Exploring the intersection of art and technology.",
+                    avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+                    isPrivate: true,
+                    isVerified: true,
+                    followers: 850,
+                    following: 210,
+                    posts: 28
+                },
+                {
+                    id: 3,
+                    name: "Jordan Lee",
+                    username: "@jordanlee",
+                    bio: "Travel photographer | Adventure seeker | Storyteller",
+                    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+                    isPrivate: false,
+                    isVerified: true,
+                    followers: 3200,
+                    following: 540,
+                    posts: 156
+                },
+                {
+                    id: 4,
+                    name: "Sofia Rodriguez",
+                    username: "@sofiarodriguez",
+                    bio: "Fashion & lifestyle content creator",
+                    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+                    isPrivate: false,
+                    isVerified: false,
+                    followers: 540,
+                    following: 420,
+                    posts: 67
+                }
+            ],
+            samplePosts: [
+                {
+                    id: 1,
+                    userId: 1,
+                    image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+                    caption: "Chasing sunsets and finding peace in nature's beauty. There's something magical about golden hour light. ✨ #sunset #nature #photography",
+                    likes: 245,
+                    comments: 24,
+                    time: "2 hours ago",
+                    isLiked: false,
+                    isSaved: false
+                },
+                {
+                    id: 2,
+                    userId: 2,
+                    image: "https://images.unsplash.com/photo-1558655146-364adaf1fcc9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+                    caption: "New design project coming soon! Exploring minimalist aesthetics and functional beauty. #design #uiux #minimalism",
+                    likes: 189,
+                    comments: 18,
+                    time: "5 hours ago",
+                    isLiked: true,
+                    isSaved: true
+                },
+                {
+                    id: 3,
+                    userId: 3,
+                    image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+                    caption: "Mountain adventures are the best therapy. This view was worth every step of the hike! 🏔️ #adventure #travel #mountains",
+                    likes: 542,
+                    comments: 42,
+                    time: "1 day ago",
+                    isLiked: false,
+                    isSaved: false
+                }
+            ],
+            sampleStories: [
+                {
+                    id: 1,
+                    userId: 2,
+                    image: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
+                    time: "4 hours ago"
+                },
+                {
+                    id: 2,
+                    userId: 3,
+                    image: "https://images.unsplash.com/photo-1519681393784-d120267933ba?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
+                    time: "6 hours ago"
+                },
+                {
+                    id: 3,
+                    userId: 4,
+                    image: "https://images.unsplash.com/photo-1492684223066-dd23140edf6d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80",
+                    time: "12 hours ago"
+                }
+            ],
+            sampleChats: [
+                {
+                    id: 1,
+                    userId: 2,
+                    lastMessage: "Hey! Did you see the new design I posted?",
+                    lastMessageTime: "10:30 AM",
+                    unread: 2,
+                    isOnline: true
+                },
+                {
+                    id: 2,
+                    userId: 3,
+                    lastMessage: "The mountains were incredible! You should come next time",
+                    lastMessageTime: "Yesterday",
+                    unread: 0,
+                    isOnline: false
+                },
+                {
+                    id: 3,
+                    userId: 4,
+                    lastMessage: "Thanks for the feedback on my latest post! 😊",
+                    lastMessageTime: "2 days ago",
+                    unread: 1,
+                    isOnline: true
+                }
+            ],
+            sampleNotifications: [
+                {
+                    id: 1,
+                    userId: 2,
+                    type: "like",
+                    text: "liked your post",
+                    time: "5 min ago",
+                    isRead: false
+                },
+                {
+                    id: 2,
+                    userId: 3,
+                    type: "comment",
+                    text: "commented: 'Amazing shot! Where was this taken?'",
+                    time: "1 hour ago",
+                    isRead: false
+                },
+                {
+                    id: 3,
+                    userId: 4,
+                    type: "follow",
+                    text: "started following you",
+                    time: "3 hours ago",
+                    isRead: true
+                },
+                {
+                    id: 4,
+                    userId: 2,
+                    type: "request",
+                    text: "sent you a follow request",
+                    time: "1 day ago",
+                    isRead: true
+                }
+            ]
+        };
 
-        function init() {
-            clock = new THREE.Clock();
-            scene = new THREE.Scene();
-            // কুয়াশা এবং ব্যাকগ্রাউন্ড কালার
-            scene.background = new THREE.Color(0xa0d8ef);
-            scene.fog = new THREE.Fog(0xa0d8ef, 15, 60);
+        // DOM Elements
+        const elements = {
+            // Pages
+            pages: document.querySelectorAll('.page'),
+            
+            // Navigation
+            navItems: document.querySelectorAll('.nav-item'),
+            bottomNav: document.querySelector('.bottom-nav'),
+            
+            // Header
+            themeToggle: document.getElementById('themeToggle'),
+            notificationBtn: document.getElementById('notificationBtn'),
+            notificationBadge: document.getElementById('notificationBadge'),
+            
+            // Home Page
+            storiesContainer: document.querySelector('.stories-container'),
+            postsContainer: document.querySelector('.posts-container'),
+            
+            // Search Page
+            searchInput: document.getElementById('searchInput'),
+            searchResults: document.getElementById('searchResults'),
+            suggestedUsers: document.getElementById('suggestedUsers'),
+            
+            // Add Post Page
+            postImage: document.getElementById('postImage'),
+            imageUploadContainer: document.getElementById('imageUploadContainer'),
+            imagePreview: document.getElementById('imagePreview'),
+            postCaption: document.getElementById('postCaption'),
+            createPostBtn: document.getElementById('createPostBtn'),
+            
+            // Stories Page
+            storyImage: document.getElementById('storyImage'),
+            storyUploadContainer: document.getElementById('storyUploadContainer'),
+            storyPreview: document.getElementById('storyPreview'),
+            friendsStories: document.getElementById('friendsStories'),
+            
+            // Chat Page
+            chatList: document.getElementById('chatList'),
+            chatWindow: document.getElementById('chatWindow'),
+            backToChats: document.getElementById('backToChats'),
+            chatWithUser: document.getElementById('chatWithUser'),
+            chatVerifiedBadge: document.getElementById('chatVerifiedBadge'),
+            chatUserStatus: document.getElementById('chatUserStatus'),
+            chatMessages: document.getElementById('chatMessages'),
+            typingIndicator: document.getElementById('typingIndicator'),
+            typingUser: document.getElementById('typingUser'),
+            chatInput: document.getElementById('chatInput'),
+            sendMessageBtn: document.getElementById('sendMessageBtn'),
+            
+            // Profile Page
+            profileAvatar: document.getElementById('profileAvatar'),
+            profileName: document.getElementById('profileName'),
+            profileUsername: document.getElementById('profileUsername'),
+            profileBio: document.getElementById('profileBio'),
+            profileVerifiedBadge: document.getElementById('profileVerifiedBadge'),
+            postCount: document.getElementById('postCount'),
+            followerCount: document.getElementById('followerCount'),
+            followingCount: document.getElementById('followingCount'),
+            editProfileBtn: document.getElementById('editProfileBtn'),
+            shareProfileBtn: document.getElementById('shareProfileBtn'),
+            switchAccountBtn: document.getElementById('switchAccountBtn'),
+            profilePosts: document.getElementById('profilePosts'),
+            
+            // Modals
+            authModal: document.getElementById('authModal'),
+            notificationsModal: document.getElementById('notificationsModal'),
+            editProfileModal: document.getElementById('editProfileModal'),
+            settingsModal: document.getElementById('settingsModal'),
+            reportModal: document.getElementById('reportModal'),
+            deleteAccountModal: document.getElementById('deleteAccountModal'),
+            
+            // Story Viewer
+            storyViewer: document.getElementById('storyViewer'),
+            storyProgress: document.getElementById('storyProgress'),
+            storyViewerAvatar: document.getElementById('storyViewerAvatar'),
+            storyViewerUsername: document.getElementById('storyViewerUsername'),
+            storyViewerTime: document.getElementById('storyViewerTime'),
+            storyViewerImage: document.getElementById('storyViewerImage'),
+            closeStoryViewer: document.getElementById('closeStoryViewer'),
+            
+            // Notification dots
+            storiesNotification: document.getElementById('storiesNotification'),
+            chatNotification: document.getElementById('chatNotification')
+        };
 
-            // ক্যামেরা সেটআপ
-            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 3, 8); // একটু দূর থেকে দেখা
-            camera.lookAt(0, 1.5, 0);
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', () => {
+            initApp();
+            setupEventListeners();
+            loadSampleData();
+            updateUI();
+            
+            // Check if user is already logged in (in a real app, this would check localStorage/tokens)
+            const isLoggedIn = localStorage.getItem('arPixelgramLoggedIn') === 'true';
+            if (isLoggedIn) {
+                // Simulate login
+                appState.isAuthenticated = true;
+                appState.currentUser = appState.sampleUsers[0];
+                elements.authModal.classList.remove('active');
+                showNotification('Welcome back to AR Pixelgram!', 'success');
+            }
+        });
 
-            // রেন্ডারার সেটআপ (উন্নত ছায়ার জন্য)
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            document.body.appendChild(renderer.domElement);
-
-            // --- লাইটিং (বাস্তবসম্মত করার জন্য) ---
-            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6); // আকাশ ও মাটির আলো
-            hemiLight.position.set(0, 20, 0);
-            scene.add(hemiLight);
-
-            const dirLight = new THREE.DirectionalLight(0xffdfa7, 0.8); // সূর্যের আলো
-            dirLight.position.set(10, 20, 10);
-            dirLight.castShadow = true;
-            dirLight.shadow.camera.top = 10;
-            dirLight.shadow.camera.bottom = -10;
-            dirLight.shadow.camera.left = -10;
-            dirLight.shadow.camera.right = 10;
-            dirLight.shadow.mapSize.width = 2048;
-            dirLight.shadow.mapSize.height = 2048;
-            scene.add(dirLight);
-
-            // মাটি (Ground)
-            const planeGeometry = new THREE.PlaneGeometry(100, 100);
-            const planeMaterial = new THREE.MeshStandardMaterial({ color: 0x578a3d, roughness: 0.8 });
-            const ground = new THREE.Mesh(planeGeometry, planeMaterial);
-            ground.rotation.x = -Math.PI / 2;
-            ground.receiveShadow = true;
-            scene.add(ground);
-
-            // ক্যারেক্টার লোড (এখানে আমরা প্লেসহোল্ডার ব্যবহার করছি)
-            loadCharacters();
-
-            // ইভেন্ট লিসেনার
-            window.addEventListener('resize', onWindowResize, false);
-            window.addEventListener('pointerdown', onDocumentMouseDown, false);
-
-            // লোডিং শেষ
-            document.getElementById('loading-screen').style.display = 'none';
-            isGameLoaded = true;
-            animate();
+        // Initialize App State
+        function initApp() {
+            // Set initial theme
+            const savedTheme = localStorage.getItem('arPixelgramTheme');
+            if (savedTheme === 'dark') {
+                enableDarkMode();
+            }
+            
+            // Set current user to first sample user if logged in
+            if (appState.isAuthenticated) {
+                appState.currentUser = appState.sampleUsers[0];
+            }
         }
 
-        function loadCharacters() {
-            // ==============================================================================
-            // বি:দ্র: আপনার কাছে যদি গোপাল ভাঁড়ের আসল 3D মডেল (.glb/.gltf) থাকে,
-            // তবে নিচের প্লেসহোল্ডার কোডটুকু মুছে দিয়ে এই কমেন্ট করা অংশটি ব্যবহার করবেন:
-            /*
-            loader.load('path/to/gopal_bhar.glb', function (gltf) {
-                gopalModel = gltf.scene;
-                gopalModel.scale.set(1.5, 1.5, 1.5); // সাইজ ঠিক করা
-                gopalModel.position.set(0, 0, 0);
+        // Setup Event Listeners
+        function setupEventListeners() {
+            // Navigation
+            elements.navItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const pageId = item.getAttribute('data-page');
+                    switchPage(pageId);
+                    
+                    // Update active nav item
+                    elements.navItems.forEach(navItem => navItem.classList.remove('active'));
+                    item.classList.add('active');
+                });
+            });
+            
+            // Theme toggle
+            elements.themeToggle.addEventListener('click', toggleTheme);
+            
+            // Notifications
+            elements.notificationBtn.addEventListener('click', () => {
+                showNotificationsModal();
+            });
+            
+            // Close notifications modal
+            document.getElementById('closeNotifications').addEventListener('click', () => {
+                elements.notificationsModal.classList.remove('active');
+            });
+            
+            // Search functionality
+            elements.searchInput.addEventListener('input', handleSearch);
+            
+            // Image upload for posts
+            elements.imageUploadContainer.addEventListener('click', () => {
+                elements.postImage.click();
+            });
+            
+            elements.postImage.addEventListener('change', function() {
+                handleImageUpload(this, elements.imagePreview);
+            });
+            
+            // Create post
+            elements.createPostBtn.addEventListener('click', createPost);
+            
+            // Image upload for stories
+            elements.storyUploadContainer.addEventListener('click', () => {
+                elements.storyImage.click();
+            });
+            
+            elements.storyImage.addEventListener('change', function() {
+                handleImageUpload(this, elements.storyPreview);
+                // In a real app, this would upload the story
+                setTimeout(() => {
+                    showNotification('Story added successfully!', 'success');
+                    elements.storyPreview.innerHTML = '';
+                }, 1000);
+            });
+            
+            // Profile edit
+            elements.editProfileBtn.addEventListener('click', () => {
+                elements.editProfileModal.classList.add('active');
+            });
+            
+            // Close edit profile modal
+            document.getElementById('closeEditProfile').addEventListener('click', () => {
+                elements.editProfileModal.classList.remove('active');
+            });
+            
+            // Save profile
+            document.getElementById('saveProfileBtn').addEventListener('click', saveProfile);
+            
+            // Settings
+            elements.switchAccountBtn.addEventListener('click', () => {
+                elements.settingsModal.classList.add('active');
+            });
+            
+            // Close settings modal
+            document.getElementById('closeSettings').addEventListener('click', () => {
+                elements.settingsModal.classList.remove('active');
+            });
+            
+            // Dark mode toggle in settings
+            document.getElementById('darkModeToggle').addEventListener('change', function() {
+                if (this.checked) {
+                    enableDarkMode();
+                } else {
+                    disableDarkMode();
+                }
+            });
+            
+            // Report problem
+            document.getElementById('reportProblemBtn').addEventListener('click', () => {
+                elements.settingsModal.classList.remove('active');
+                setTimeout(() => {
+                    elements.reportModal.classList.add('active');
+                }, 300);
+            });
+            
+            // Close report modal
+            document.getElementById('closeReport').addEventListener('click', () => {
+                elements.reportModal.classList.remove('active');
+            });
+            
+            // Submit report
+            document.getElementById('submitReportBtn').addEventListener('click', () => {
+                const reportType = document.getElementById('reportType').value;
+                const reportDescription = document.getElementById('reportDescription').value;
                 
-                gopalModel.traverse(function (child) {
-                    if (child.isMesh) {
-                        child.castShadow = true;
-                        child.receiveShadow = true;
+                if (!reportType || !reportDescription) {
+                    showNotification('Please fill all fields', 'error');
+                    return;
+                }
+                
+                elements.reportModal.classList.remove('active');
+                showNotification('Report submitted successfully. We\'ll review it shortly.', 'success');
+                
+                // Reset form
+                document.getElementById('reportType').value = '';
+                document.getElementById('reportDescription').value = '';
+            });
+            
+            // Delete account
+            document.getElementById('deleteAccountBtn').addEventListener('click', () => {
+                elements.settingsModal.classList.remove('active');
+                setTimeout(() => {
+                    elements.deleteAccountModal.classList.add('active');
+                }, 300);
+            });
+            
+            // Close delete account modal
+            document.getElementById('closeDeleteAccount').addEventListener('click', () => {
+                elements.deleteAccountModal.classList.remove('active');
+            });
+            
+            // Cancel delete
+            document.getElementById('cancelDeleteBtn').addEventListener('click', () => {
+                elements.deleteAccountModal.classList.remove('active');
+            });
+            
+            // Confirm delete account
+            document.getElementById('confirmDeleteText').addEventListener('input', function() {
+                document.getElementById('confirmDeleteBtn').disabled = this.value !== 'DELETE';
+            });
+            
+            document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+                elements.deleteAccountModal.classList.remove('active');
+                elements.authModal.classList.add('active');
+                appState.isAuthenticated = false;
+                localStorage.removeItem('arPixelgramLoggedIn');
+                showNotification('Account deleted successfully', 'success');
+            });
+            
+            // Logout
+            document.getElementById('logoutBtn').addEventListener('click', () => {
+                elements.settingsModal.classList.remove('active');
+                appState.isAuthenticated = false;
+                localStorage.removeItem('arPixelgramLoggedIn');
+                elements.authModal.classList.add('active');
+                showNotification('Logged out successfully', 'success');
+            });
+            
+            // Help center
+            document.getElementById('helpCenterBtn').addEventListener('click', () => {
+                showNotification('Help center would open in a real app', 'info');
+            });
+            
+            // Share profile
+            elements.shareProfileBtn.addEventListener('click', () => {
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'AR Pixelgram Profile',
+                        text: `Check out ${appState.currentUser.name}'s profile on AR Pixelgram`,
+                        url: window.location.href
+                    });
+                } else {
+                    showNotification('Profile link copied to clipboard!', 'success');
+                    // In a real app, you would copy the profile URL to clipboard
+                }
+            });
+            
+            // Story viewer close
+            elements.closeStoryViewer.addEventListener('click', () => {
+                elements.storyViewer.classList.remove('active');
+            });
+            
+            // Chat functionality
+            elements.backToChats.addEventListener('click', () => {
+                elements.chatWindow.classList.remove('active');
+                elements.chatList.classList.remove('hidden');
+                appState.currentChat = null;
+            });
+            
+            elements.sendMessageBtn.addEventListener('click', sendMessage);
+            elements.chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+            // Typing indicator simulation
+            elements.chatInput.addEventListener('input', () => {
+                if (appState.currentChat) {
+                    // Simulate typing indicator from other user
+                    if (Math.random() > 0.7 && elements.chatInput.value.length > 0) {
+                        showTypingIndicator();
+                    }
+                }
+            });
+            
+            // Authentication
+            document.getElementById('loginBtn').addEventListener('click', handleLogin);
+            document.getElementById('registerBtn').addEventListener('click', handleRegister);
+            document.getElementById('switchToRegister').addEventListener('click', (e) => {
+                e.preventDefault();
+                document.getElementById('loginForm').classList.add('hidden');
+                document.getElementById('registerForm').classList.remove('hidden');
+            });
+            document.getElementById('switchToLogin').addEventListener('click', (e) => {
+                e.preventDefault();
+                document.getElementById('registerForm').classList.add('hidden');
+                document.getElementById('loginForm').classList.remove('hidden');
+            });
+            
+            // Close modals when clicking outside
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.remove('active');
                     }
                 });
-                scene.add(gopalModel);
-                // এখানে অ্যানিমেশন মিক্সারও সেট করা যেতে পারে
             });
-            */
-            // ==============================================================================
-
-            // --- গোপাল ভাঁড় প্লেসহোল্ডার (আসল মডেল না থাকায়) ---
-            gopalPlaceholder = new THREE.Group();
-
-            // শরীর (মোটা সিলিন্ডার)
-            const bodyGeo = new THREE.CylinderGeometry(0.7, 0.6, 1.5, 12);
-            const bodyMat = new THREE.MeshStandardMaterial({ color: 0xffffff }); // সাদা কুর্তা
-            const body = new THREE.Mesh(bodyGeo, bodyMat);
-            body.position.y = 0.75;
-            body.castShadow = true;
-            gopalPlaceholder.add(body);
-
-            // ধুতি (নিচের অংশ)
-            const dhotiGeo = new THREE.CylinderGeometry(0.6, 0.8, 0.8, 12);
-            const dhotiMat = new THREE.MeshStandardMaterial({ color: 0xfed330 }); // হলুদ ধুতি
-            const dhoti = new THREE.Mesh(dhotiGeo, dhotiMat);
-            dhoti.position.y = -0.4;
-            body.add(dhoti);
-            
-            // মাথা (গোলগাল)
-            const headGeo = new THREE.SphereGeometry(0.5, 16, 16);
-            const skinMat = new THREE.MeshStandardMaterial({ color: 0xffdbac }); // গায়ের রঙ
-            const head = new THREE.Mesh(headGeo, skinMat);
-            head.position.y = 1.6;
-            head.castShadow = true;
-            gopalPlaceholder.add(head);
-            
-            // টিকি (To represent Gopal Bhar style)
-            const tikiGeo = new THREE.ConeGeometry(0.1, 0.3, 8);
-            const hairMat = new THREE.MeshStandardMaterial({ color: 0x000000 });
-            const tiki = new THREE.Mesh(tikiGeo, hairMat);
-            tiki.position.set(0, 0.5, -0.3);
-            tiki.rotation.x = -0.5;
-            head.add(tiki);
-
-            scene.add(gopalPlaceholder);
-
-            // থাপ্পড়ের ভিজুয়াল এফেক্ট (একটি লাল গোলক যা ক্লিকে দেখা যাবে)
-            const slapGeo = new THREE.SphereGeometry(0.4, 8, 8);
-            const slapMat = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0 });
-            slapIndicator = new THREE.Mesh(slapGeo, slapMat);
-            scene.add(slapIndicator);
         }
 
-
-        function spawnMosquito() {
-            if (isGameOver || !isGameLoaded) return;
-
-             // ==============================================================================
-            // আসল মশার মডেল থাকলে এখানে লোড করবেন। এখন আমরা ছোট কালো স্ফিয়ার ব্যবহার করছি।
-            // ==============================================================================
-
-            const mosquitoGeo = new THREE.SphereGeometry(0.08, 6, 6); // খুব ছোট
-            const mosquitoMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.5 }); // প্রায় কালো
-            const mosquito = new THREE.Mesh(mosquitoGeo, mosquitoMat);
-
-            // র‍্যান্ডম পজিশন (দূরে)
-            const angle = Math.random() * Math.PI * 2;
-            const radius = 7 + Math.random() * 3;
-            const x = Math.cos(angle) * radius;
-            const z = Math.sin(angle) * radius;
-            const y = 1 + Math.random() * 2.5;
-
-            mosquito.position.set(x, y, z);
-            mosquito.castShadow = true;
+        // Load Sample Data
+        function loadSampleData() {
+            // Set app state with sample data
+            appState.users = appState.sampleUsers;
+            appState.posts = appState.samplePosts;
+            appState.stories = appState.sampleStories;
+            appState.chats = appState.sampleChats;
+            appState.notifications = appState.sampleNotifications;
             
-            mosquito.userData = { 
-                isDead: false, 
-                buzzOffset: Math.random() * 10 // উড়ার সময় একটু কাঁপার জন্য
+            // Render initial data
+            renderStories();
+            renderPosts();
+            renderSuggestedUsers();
+            renderChatList();
+            renderNotifications();
+            renderProfilePosts();
+        }
+
+        // Update UI based on state
+        function updateUI() {
+            // Update notification badge
+            const unreadNotifications = appState.notifications.filter(n => !n.isRead).length;
+            elements.notificationBadge.textContent = unreadNotifications > 0 ? unreadNotifications : '';
+            elements.notificationBadge.style.display = unreadNotifications > 0 ? 'flex' : 'none';
+            
+            // Update chat notification dot
+            const unreadChats = appState.chats.filter(c => c.unread > 0).length;
+            elements.chatNotification.style.display = unreadChats > 0 ? 'block' : 'none';
+            
+            // Update stories notification dot (if there are new stories)
+            const newStories = appState.stories.length > 0;
+            elements.storiesNotification.style.display = newStories ? 'block' : 'none';
+            
+            // Update profile info if user is logged in
+            if (appState.currentUser) {
+                elements.profileName.textContent = appState.currentUser.name;
+                elements.profileUsername.textContent = appState.currentUser.username;
+                elements.profileBio.textContent = appState.currentUser.bio;
+                elements.postCount.textContent = appState.currentUser.posts;
+                elements.followerCount.textContent = formatNumber(appState.currentUser.followers);
+                elements.followingCount.textContent = appState.currentUser.following;
+                
+                // Show verified badge if user is verified
+                if (appState.currentUser.isVerified) {
+                    elements.profileVerifiedBadge.classList.remove('hidden');
+                } else {
+                    elements.profileVerifiedBadge.classList.add('hidden');
+                }
+                
+                // Update edit profile form
+                document.getElementById('editName').value = appState.currentUser.name;
+                document.getElementById('editUsername').value = appState.currentUser.username;
+                document.getElementById('editBio').value = appState.currentUser.bio;
+                document.getElementById('editPrivateAccount').checked = appState.currentUser.isPrivate;
+                document.getElementById('editVerifiedRequest').checked = appState.currentUser.hasRequestedVerification;
+                
+                // Update settings form
+                document.getElementById('privateAccountToggle').checked = appState.currentUser.isPrivate;
+                document.getElementById('darkModeToggle').checked = appState.isDarkMode;
+            }
+        }
+
+        // Switch between pages
+        function switchPage(pageId) {
+            // Hide all pages
+            elements.pages.forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show selected page
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+                appState.currentPage = pageId;
+                
+                // Special handling for certain pages
+                if (pageId === 'chatPage') {
+                    elements.chatList.classList.remove('hidden');
+                    elements.chatWindow.classList.remove('active');
+                }
+                
+                // Lazy load content for pages if needed
+                if (pageId === 'homePage') {
+                    // Already loaded
+                } else if (pageId === 'searchPage') {
+                    renderSuggestedUsers();
+                } else if (pageId === 'storiesPage') {
+                    renderFriendsStories();
+                }
+            }
+        }
+
+        // Theme Management
+        function toggleTheme() {
+            if (appState.isDarkMode) {
+                disableDarkMode();
+            } else {
+                enableDarkMode();
+            }
+        }
+
+        function enableDarkMode() {
+            document.body.classList.add('dark-theme');
+            appState.isDarkMode = true;
+            localStorage.setItem('arPixelgramTheme', 'dark');
+            elements.themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            updateUI();
+        }
+
+        function disableDarkMode() {
+            document.body.classList.remove('dark-theme');
+            appState.isDarkMode = false;
+            localStorage.setItem('arPixelgramTheme', 'light');
+            elements.themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+            updateUI();
+        }
+
+        // Handle Search
+        function handleSearch() {
+            const query = elements.searchInput.value.toLowerCase().trim();
+            
+            if (query.length === 0) {
+                elements.searchResults.classList.remove('active');
+                return;
+            }
+            
+            // Filter users based on search query
+            const filteredUsers = appState.users.filter(user => 
+                user.name.toLowerCase().includes(query) || 
+                user.username.toLowerCase().includes(query)
+            );
+            
+            // Render search results
+            renderSearchResults(filteredUsers);
+            elements.searchResults.classList.add('active');
+        }
+
+        // Render Functions
+        function renderStories() {
+            if (!elements.storiesContainer) return;
+            
+            elements.storiesContainer.innerHTML = '';
+            
+            // Add current user's story (add story button)
+            const currentUserStory = document.createElement('div');
+            currentUserStory.className = 'story-item';
+            currentUserStory.innerHTML = `
+                <div class="story-avatar">
+                    <img src="${appState.currentUser ? appState.currentUser.avatar : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80'}" alt="Your story">
+                    <div class="add-story-icon" style="position: absolute; bottom: 0; right: 0; background: var(--primary); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid var(--card-bg-solid);">
+                        <i class="fas fa-plus" style="font-size: 12px;"></i>
+                    </div>
+                </div>
+                <div class="story-username">Your story</div>
+            `;
+            currentUserStory.addEventListener('click', () => {
+                switchPage('storiesPage');
+            });
+            elements.storiesContainer.appendChild(currentUserStory);
+            
+            // Add stories from other users
+            appState.stories.forEach(story => {
+                const user = appState.users.find(u => u.id === story.userId);
+                if (!user) return;
+                
+                const storyElement = document.createElement('div');
+                storyElement.className = 'story-item';
+                storyElement.innerHTML = `
+                    <div class="story-avatar">
+                        <img src="${user.avatar}" alt="${user.name}">
+                    </div>
+                    <div class="story-username">${user.name.split(' ')[0]}</div>
+                `;
+                
+                storyElement.addEventListener('click', () => {
+                    openStoryViewer(story.id);
+                });
+                
+                elements.storiesContainer.appendChild(storyElement);
+            });
+        }
+
+        function renderPosts() {
+            if (!elements.postsContainer) return;
+            
+            elements.postsContainer.innerHTML = '';
+            
+            appState.posts.forEach(post => {
+                const user = appState.users.find(u => u.id === post.userId);
+                if (!user) return;
+                
+                const postElement = document.createElement('div');
+                postElement.className = 'card post';
+                postElement.innerHTML = `
+                    <div class="post-header">
+                        <div class="post-user">
+                            <img src="${user.avatar}" alt="${user.name}" class="post-avatar">
+                            <div class="post-user-info">
+                                <h4>${user.name} ${user.isVerified ? '<i class="fas fa-check-circle verified-badge"></i>' : ''}</h4>
+                                <p>${user.username} • ${post.time}</p>
+                            </div>
+                        </div>
+                        <button class="post-more">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                    </div>
+                    <img src="${post.image}" alt="Post image" class="post-image">
+                    <div class="post-actions">
+                        <div class="post-actions-left">
+                            <button class="post-action like-btn ${post.isLiked ? 'liked' : ''}" data-post-id="${post.id}">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                            <button class="post-action comment-btn" data-post-id="${post.id}">
+                                <i class="fas fa-comment"></i>
+                            </button>
+                            <button class="post-action share-btn" data-post-id="${post.id}">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <button class="post-action save-btn ${post.isSaved ? 'saved' : ''}" data-post-id="${post.id}">
+                            <i class="fas fa-bookmark"></i>
+                        </button>
+                    </div>
+                    <div class="post-likes">${formatNumber(post.likes)} likes</div>
+                    <div class="post-caption">
+                        <span class="post-caption-username">${user.username}</span>
+                        ${post.caption}
+                    </div>
+                    <div class="post-comments">View all ${post.comments} comments</div>
+                    <div class="post-time">${post.time}</div>
+                `;
+                
+                elements.postsContainer.appendChild(postElement);
+            });
+            
+            // Add event listeners for post actions
+            document.querySelectorAll('.like-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const postId = parseInt(this.getAttribute('data-post-id'));
+                    toggleLikePost(postId);
+                });
+            });
+            
+            document.querySelectorAll('.save-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const postId = parseInt(this.getAttribute('data-post-id'));
+                    toggleSavePost(postId);
+                });
+            });
+            
+            document.querySelectorAll('.comment-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const postId = parseInt(this.getAttribute('data-post-id'));
+                    showNotification('Comment functionality would open in a real app', 'info');
+                });
+            });
+            
+            document.querySelectorAll('.share-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const postId = parseInt(this.getAttribute('data-post-id'));
+                    if (navigator.share) {
+                        navigator.share({
+                            title: 'AR Pixelgram Post',
+                            text: 'Check out this post on AR Pixelgram',
+                            url: window.location.href
+                        });
+                    } else {
+                        showNotification('Post link copied to clipboard!', 'success');
+                    }
+                });
+            });
+        }
+
+        function renderSuggestedUsers() {
+            if (!elements.suggestedUsers) return;
+            
+            elements.suggestedUsers.innerHTML = '';
+            
+            // Get users not followed by current user
+            const suggested = appState.users.filter(user => 
+                user.id !== (appState.currentUser ? appState.currentUser.id : 1)
+            ).slice(0, 3);
+            
+            suggested.forEach(user => {
+                const userElement = document.createElement('div');
+                userElement.className = 'search-user';
+                userElement.innerHTML = `
+                    <img src="${user.avatar}" alt="${user.name}" class="chat-avatar">
+                    <div class="chat-info">
+                        <div class="chat-info-header">
+                            <div class="chat-user">${user.name} ${user.isVerified ? '<i class="fas fa-check-circle verified-badge"></i>' : ''}</div>
+                        </div>
+                        <div class="chat-last-message">${user.bio.substring(0, 50)}...</div>
+                    </div>
+                    <button class="btn btn-outline follow-btn" data-user-id="${user.id}">Follow</button>
+                `;
+                
+                elements.suggestedUsers.appendChild(userElement);
+            });
+            
+            // Add follow button functionality
+            document.querySelectorAll('.follow-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const userId = parseInt(this.getAttribute('data-user-id'));
+                    const user = appState.users.find(u => u.id === userId);
+                    
+                    if (user) {
+                        if (user.isPrivate) {
+                            this.textContent = 'Requested';
+                            this.classList.remove('btn-outline');
+                            this.classList.add('btn-secondary');
+                            this.disabled = true;
+                            showNotification(`Follow request sent to ${user.name}`, 'success');
+                        } else {
+                            this.textContent = 'Following';
+                            this.classList.remove('btn-outline');
+                            this.classList.add('btn-secondary');
+                            this.disabled = true;
+                            showNotification(`You are now following ${user.name}`, 'success');
+                        }
+                    }
+                });
+            });
+        }
+
+        function renderSearchResults(users) {
+            if (!elements.searchResults) return;
+            
+            elements.searchResults.innerHTML = '';
+            
+            if (users.length === 0) {
+                elements.searchResults.innerHTML = '<div class="text-center p-3 text-muted">No users found</div>';
+                return;
+            }
+            
+            users.forEach(user => {
+                const userElement = document.createElement('div');
+                userElement.className = 'search-user';
+                userElement.innerHTML = `
+                    <img src="${user.avatar}" alt="${user.name}" class="chat-avatar">
+                    <div class="chat-info">
+                        <div class="chat-info-header">
+                            <div class="chat-user">${user.name} ${user.isVerified ? '<i class="fas fa-check-circle verified-badge"></i>' : ''}</div>
+                        </div>
+                        <div class="chat-last-message">${user.username} • ${user.followers} followers</div>
+                    </div>
+                    <button class="btn btn-outline follow-btn" data-user-id="${user.id}">Follow</button>
+                `;
+                
+                elements.searchResults.appendChild(userElement);
+            });
+            
+            // Add follow button functionality
+            document.querySelectorAll('.follow-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const userId = parseInt(this.getAttribute('data-user-id'));
+                    const user = appState.users.find(u => u.id === userId);
+                    
+                    if (user) {
+                        if (user.isPrivate) {
+                            this.textContent = 'Requested';
+                            this.classList.remove('btn-outline');
+                            this.classList.add('btn-secondary');
+                            this.disabled = true;
+                            showNotification(`Follow request sent to ${user.name}`, 'success');
+                        } else {
+                            this.textContent = 'Following';
+                            this.classList.remove('btn-outline');
+                            this.classList.add('btn-secondary');
+                            this.disabled = true;
+                            showNotification(`You are now following ${user.name}`, 'success');
+                        }
+                    }
+                });
+            });
+        }
+
+        function renderFriendsStories() {
+            if (!elements.friendsStories) return;
+            
+            elements.friendsStories.innerHTML = '';
+            
+            appState.stories.forEach(story => {
+                const user = appState.users.find(u => u.id === story.userId);
+                if (!user) return;
+                
+                const storyElement = document.createElement('div');
+                storyElement.className = 'search-user';
+                storyElement.innerHTML = `
+                    <img src="${user.avatar}" alt="${user.name}" class="chat-avatar">
+                    <div class="chat-info">
+                        <div class="chat-info-header">
+                            <div class="chat-user">${user.name} ${user.isVerified ? '<i class="fas fa-check-circle verified-badge"></i>' : ''}</div>
+                            <div class="chat-time">${story.time}</div>
+                        </div>
+                        <div class="chat-last-message">Tap to view story</div>
+                    </div>
+                `;
+                
+                storyElement.addEventListener('click', () => {
+                    openStoryViewer(story.id);
+                });
+                
+                elements.friendsStories.appendChild(storyElement);
+            });
+        }
+
+        function renderChatList() {
+            if (!elements.chatList) return;
+            
+            elements.chatList.innerHTML = '';
+            
+            appState.chats.forEach(chat => {
+                const user = appState.users.find(u => u.id === chat.userId);
+                if (!user) return;
+                
+                const chatElement = document.createElement('div');
+                chatElement.className = 'chat-item';
+                chatElement.innerHTML = `
+                    <img src="${user.avatar}" alt="${user.name}" class="chat-avatar">
+                    <div class="chat-info">
+                        <div class="chat-info-header">
+                            <div class="chat-user">${user.name} ${user.isVerified ? '<i class="fas fa-check-circle verified-badge"></i>' : ''}</div>
+                            <div class="chat-time">${chat.lastMessageTime}</div>
+                        </div>
+                        <div class="chat-last-message">${chat.lastMessage}</div>
+                    </div>
+                    ${chat.unread > 0 ? `<div class="chat-unread">${chat.unread}</div>` : ''}
+                `;
+                
+                chatElement.addEventListener('click', () => {
+                    openChat(chat.id);
+                });
+                
+                elements.chatList.appendChild(chatElement);
+            });
+        }
+
+        function renderNotifications() {
+            if (!elements.notificationsList) return;
+            
+            elements.notificationsList.innerHTML = '';
+            
+            appState.notifications.forEach(notification => {
+                const user = appState.users.find(u => u.id === notification.userId);
+                if (!user) return;
+                
+                const notificationElement = document.createElement('div');
+                notificationElement.className = `notification-item ${notification.isRead ? '' : 'unread'}`;
+                notificationElement.innerHTML = `
+                    <img src="${user.avatar}" alt="${user.name}" class="notification-avatar">
+                    <div class="notification-text">
+                        <strong>${user.name}</strong> ${notification.text}
+                        <div class="notification-time">${notification.time}</div>
+                    </div>
+                    ${notification.type === 'request' ? `
+                        <div class="notification-actions">
+                            <button class="btn btn-primary btn-sm accept-request-btn" data-notification-id="${notification.id}">Accept</button>
+                            <button class="btn btn-outline btn-sm reject-request-btn" data-notification-id="${notification.id}">Reject</button>
+                        </div>
+                    ` : ''}
+                `;
+                
+                elements.notificationsList.appendChild(notificationElement);
+            });
+            
+            // Add event listeners for notification actions
+            document.querySelectorAll('.accept-request-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const notificationId = parseInt(this.getAttribute('data-notification-id'));
+                    // In a real app, this would accept the follow request
+                    showNotification('Follow request accepted', 'success');
+                    // Remove the notification
+                    appState.notifications = appState.notifications.filter(n => n.id !== notificationId);
+                    renderNotifications();
+                    updateUI();
+                });
+            });
+            
+            document.querySelectorAll('.reject-request-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const notificationId = parseInt(this.getAttribute('data-notification-id'));
+                    // In a real app, this would reject the follow request
+                    showNotification('Follow request rejected', 'info');
+                    // Remove the notification
+                    appState.notifications = appState.notifications.filter(n => n.id !== notificationId);
+                    renderNotifications();
+                    updateUI();
+                });
+            });
+        }
+
+        function renderProfilePosts() {
+            if (!elements.profilePosts) return;
+            
+            elements.profilePosts.innerHTML = '';
+            
+            // Get posts by current user
+            const userPosts = appState.posts.filter(post => 
+                post.userId === (appState.currentUser ? appState.currentUser.id : 1)
+            );
+            
+            // If no posts, show placeholder
+            if (userPosts.length === 0) {
+                elements.profilePosts.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px 20px;">
+                        <i class="fas fa-camera" style="font-size: 48px; color: var(--text-secondary); margin-bottom: 15px;"></i>
+                        <h3>No posts yet</h3>
+                        <p class="text-muted">When you share photos, they will appear here.</p>
+                        <button class="btn btn-primary mt-2" id="createFirstPost">Share your first photo</button>
+                    </div>
+                `;
+                
+                document.getElementById('createFirstPost')?.addEventListener('click', () => {
+                    switchPage('addPostPage');
+                });
+                return;
+            }
+            
+            // Show user's posts in grid
+            userPosts.forEach(post => {
+                const postElement = document.createElement('div');
+                postElement.className = 'profile-post';
+                postElement.innerHTML = `
+                    <img src="${post.image}" alt="Post">
+                `;
+                
+                postElement.addEventListener('click', () => {
+                    // In a real app, this would open the post detail view
+                    showNotification('Post detail view would open here', 'info');
+                });
+                
+                elements.profilePosts.appendChild(postElement);
+            });
+        }
+
+        // Image Upload Handler
+        function handleImageUpload(input, previewContainer) {
+            const file = input.files[0];
+            
+            if (!file) return;
+            
+            // Check if file is an image
+            if (!file.type.match('image.*')) {
+                showNotification('Please select an image file', 'error');
+                return;
+            }
+            
+            // Check file size (max 10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                showNotification('Image size should be less than 10MB', 'error');
+                return;
+            }
+            
+            // Create preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewContainer.innerHTML = `
+                    <div style="position: relative; margin-top: 15px;">
+                        <img src="${e.target.result}" alt="Preview" style="width: 100%; border-radius: var(--radius);">
+                        <button class="remove-image-btn" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                
+                // Add event listener to remove button
+                previewContainer.querySelector('.remove-image-btn').addEventListener('click', () => {
+                    previewContainer.innerHTML = '';
+                    input.value = '';
+                });
             };
             
-            scene.add(mosquito);
-            mosquitoes.push(mosquito);
+            reader.readAsDataURL(file);
         }
 
-
-        function onDocumentMouseDown(event) {
-            if (isGameOver || !isGameLoaded) return;
-
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-            raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObjects(mosquitoes);
-
-            // যেখানে ক্লিক হয়েছে সেখানে একটি থাপ্পড়ের এফেক্ট দেখানো
-            const clickPoint = new THREE.Vector3();
-            raycaster.ray.at(3, clickPoint); // ক্যামেরা থেকে ৩ ইউনিট দূরে
-            showSlapEffect(intersects.length > 0 ? intersects[0].point : clickPoint);
+        // Create Post
+        function createPost() {
+            const caption = elements.postCaption.value.trim();
+            const isPublic = document.getElementById('postPublic').checked;
             
-            if (intersects.length > 0) {
-                const hitMosquito = intersects[0].object;
-                if (!hitMosquito.userData.isDead) {
-                    killMosquito(hitMosquito);
-                }
+            // Check if image is selected
+            if (!elements.postImage.files[0]) {
+                showNotification('Please select an image to post', 'error');
+                return;
             }
-        }
-
-        function showSlapEffect(position) {
-            slapIndicator.position.copy(position);
-            slapIndicator.material.opacity = 0.6;
-            let fadeOut = setInterval(() => {
-                slapIndicator.material.opacity -= 0.05;
-                if(slapIndicator.material.opacity <= 0) {
-                    clearInterval(fadeOut);
-                }
-            }, 20);
-        }
-
-        function killMosquito(mosquito) {
-            mosquito.userData.isDead = true;
-            mosquito.material.color.setHex(0x8b0000); // গাঢ় লাল (রক্ত)
-            mosquito.material.emissive.setHex(0xff0000);
             
-            score++;
-            document.getElementById('score').innerText = score;
-
-            if (score % 8 === 0) {
-                power++;
-                document.getElementById('power').innerText = power;
-                mosquitoSpeed += 0.003; 
-                spawnRate = Math.max(30, spawnRate - 5); // মশা আসার হার বাড়বে
+            // Create new post object
+            const newPost = {
+                id: appState.posts.length + 1,
+                userId: appState.currentUser ? appState.currentUser.id : 1,
+                image: URL.createObjectURL(elements.postImage.files[0]), // In real app, this would be uploaded to server
+                caption: caption || 'No caption',
+                likes: 0,
+                comments: 0,
+                time: 'Just now',
+                isLiked: false,
+                isSaved: false
+            };
+            
+            // Add to posts array
+            appState.posts.unshift(newPost);
+            
+            // Update user's post count
+            if (appState.currentUser) {
+                appState.currentUser.posts += 1;
             }
+            
+            // Clear form
+            elements.postCaption.value = '';
+            elements.imagePreview.innerHTML = '';
+            elements.postImage.value = '';
+            
+            // Show success message
+            showNotification('Post shared successfully!', 'success');
+            
+            // Switch to home page to see the new post
+            switchPage('homePage');
+            
+            // Re-render posts
+            renderPosts();
+            renderProfilePosts();
+            updateUI();
         }
 
-        function animate() {
-            requestAnimationFrame(animate);
-            if (!isGameOver && isGameLoaded) {
-                const delta = clock.getDelta();
-                frame++;
+        // Toggle Like Post
+        function toggleLikePost(postId) {
+            const post = appState.posts.find(p => p.id === postId);
+            if (!post) return;
+            
+            post.isLiked = !post.isLiked;
+            post.likes += post.isLiked ? 1 : -1;
+            
+            // Update UI
+            const likeBtn = document.querySelector(`.like-btn[data-post-id="${postId}"]`);
+            if (likeBtn) {
+                likeBtn.classList.toggle('liked');
+                likeBtn.innerHTML = `<i class="fas fa-heart"></i>`;
                 
-                if (frame % spawnRate === 0) spawnMosquito();
-                updateMosquitoes(delta);
-                checkGameOver();
+                // Update likes count
+                const likesElement = likeBtn.closest('.post').querySelector('.post-likes');
+                if (likesElement) {
+                    likesElement.textContent = `${formatNumber(post.likes)} likes`;
+                }
             }
-            renderer.render(scene, camera);
-        }
-
-        function updateMosquitoes(delta) {
-            const target = new THREE.Vector3(0, 1.8, 0); // গোপালের মাথা/ঘাড় টার্গেট
-
-            for (let i = mosquitoes.length - 1; i >= 0; i--) {
-                const m = mosquitoes[i];
-                
-                if (m.userData.isDead) {
-                    m.position.y -= 3 * delta; // দ্রুত নিচে পড়বে
-                    m.rotation.x += 5 * delta;
-                    if (m.position.y < 0) {
-                        scene.remove(m);
-                        mosquitoes.splice(i, 1);
-                    }
-                } else {
-                    const dist = m.position.distanceTo(target);
-                    
-                    // বাস্তবসম্মত উড়া (একটু আঁকাবাঁকা/ Buzzing effect)
-                    const time = clock.getElapsedTime();
-                    m.position.x += Math.sin(time * 10 + m.userData.buzzOffset) * 0.01;
-                    m.position.y += Math.cos(time * 15 + m.userData.buzzOffset) * 0.005;
-
-                    if (dist > 0.7) {
-                        const direction = new THREE.Vector3().subVectors(target, m.position).normalize();
-                        m.position.add(direction.multiplyScalar(mosquitoSpeed));
-                    } else {
-                        // রক্ত খাওয়া শুরু
-                        blood -= (0.15 * delta * 60); // ফ্রেমরেট ইন্ডিপেন্ডেন্ট রক্ত কমা
-                        updateBloodBar();
-                    }
+            
+            // Add notification if liked
+            if (post.isLiked && post.userId !== (appState.currentUser ? appState.currentUser.id : 1)) {
+                const user = appState.users.find(u => u.id === post.userId);
+                if (user) {
+                    const newNotification = {
+                        id: appState.notifications.length + 1,
+                        userId: appState.currentUser ? appState.currentUser.id : 1,
+                        type: 'like',
+                        text: 'liked your post',
+                        time: 'Just now',
+                        isRead: false
+                    };
+                    appState.notifications.unshift(newNotification);
+                    updateUI();
                 }
             }
         }
 
-        function updateBloodBar() {
-            const bar = document.getElementById('blood-bar');
-            bar.style.width = Math.max(0, blood) + '%';
-             // রক্ত কমে গেলে বার এর রঙ পরিবর্তন হবে
-             if(blood < 30) {
-                bar.style.background = 'linear-gradient(to right, #c0392b, #800000)';
+        // Toggle Save Post
+        function toggleSavePost(postId) {
+            const post = appState.posts.find(p => p.id === postId);
+            if (!post) return;
+            
+            post.isSaved = !post.isSaved;
+            
+            // Update UI
+            const saveBtn = document.querySelector(`.save-btn[data-post-id="${postId}"]`);
+            if (saveBtn) {
+                saveBtn.classList.toggle('saved');
+                saveBtn.innerHTML = `<i class="fas fa-bookmark"></i>`;
+            }
+            
+            showNotification(post.isSaved ? 'Post saved' : 'Post removed from saved', 'success');
+        }
+
+        // Save Profile
+        function saveProfile() {
+            const name = document.getElementById('editName').value.trim();
+            const username = document.getElementById('editUsername').value.trim();
+            const bio = document.getElementById('editBio').value.trim();
+            const isPrivate = document.getElementById('editPrivateAccount').checked;
+            const hasRequestedVerification = document.getElementById('editVerifiedRequest').checked;
+            
+            if (!name || !username) {
+                showNotification('Name and username are required', 'error');
+                return;
+            }
+            
+            // Update current user
+            if (appState.currentUser) {
+                appState.currentUser.name = name;
+                appState.currentUser.username = username;
+                appState.currentUser.bio = bio;
+                appState.currentUser.isPrivate = isPrivate;
+                appState.currentUser.hasRequestedVerification = hasRequestedVerification;
+                
+                // If verification was requested
+                if (hasRequestedVerification && !appState.currentUser.isVerified) {
+                    showNotification('Verification request submitted. Our team will review it.', 'success');
+                }
+            }
+            
+            // Update UI
+            updateUI();
+            
+            // Close modal
+            elements.editProfileModal.classList.remove('active');
+            
+            // Show success message
+            showNotification('Profile updated successfully', 'success');
+        }
+
+        // Open Story Viewer
+        function openStoryViewer(storyId) {
+            const story = appState.stories.find(s => s.id === storyId);
+            if (!story) return;
+            
+            const user = appState.users.find(u => u.id === story.userId);
+            if (!user) return;
+            
+            // Set story viewer content
+            elements.storyViewerAvatar.src = user.avatar;
+            elements.storyViewerAvatar.alt = user.name;
+            elements.storyViewerUsername.textContent = user.name;
+            elements.storyViewerTime.textContent = story.time;
+            elements.storyViewerImage.src = story.image;
+            elements.storyViewerImage.alt = 'Story';
+            
+            // Create progress bars
+            elements.storyProgress.innerHTML = '';
+            // In a real app, there would be multiple stories
+            const progressBar = document.createElement('div');
+            progressBar.className = 'story-progress-bar';
+            progressBar.innerHTML = '<div class="story-progress-fill" style="width: 0%"></div>';
+            elements.storyProgress.appendChild(progressBar);
+            
+            // Start progress animation
+            const progressFill = progressBar.querySelector('.story-progress-fill');
+            progressFill.style.transition = 'width 5s linear';
+            setTimeout(() => {
+                progressFill.style.width = '100%';
+            }, 100);
+            
+            // Auto-close after 5 seconds
+            const autoCloseTimer = setTimeout(() => {
+                elements.storyViewer.classList.remove('active');
+            }, 5000);
+            
+            // Show story viewer
+            elements.storyViewer.classList.add('active');
+            
+            // Reset progress and clear timer when closing
+            elements.closeStoryViewer.addEventListener('click', () => {
+                clearTimeout(autoCloseTimer);
+                progressFill.style.width = '0%';
+            }, { once: true });
+        }
+
+        // Show Notifications Modal
+        function showNotificationsModal() {
+            // Mark all notifications as read
+            appState.notifications.forEach(notification => {
+                notification.isRead = true;
+            });
+            
+            // Update UI
+            updateUI();
+            
+            // Render notifications
+            renderNotifications();
+            
+            // Show modal
+            elements.notificationsModal.classList.add('active');
+        }
+
+        // Open Chat
+        function openChat(chatId) {
+            const chat = appState.chats.find(c => c.id === chatId);
+            if (!chat) return;
+            
+            const user = appState.users.find(u => u.id === chat.userId);
+            if (!user) return;
+            
+            // Set current chat
+            appState.currentChat = chat;
+            
+            // Update chat header
+            elements.chatWithUser.textContent = user.name;
+            elements.chatUserStatus.textContent = chat.isOnline ? 'Online' : 'Offline';
+            elements.chatUserStatus.className = `chat-header-status ${chat.isOnline ? 'online' : ''}`;
+            
+            // Show verified badge if user is verified
+            if (user.isVerified) {
+                elements.chatVerifiedBadge.classList.remove('hidden');
+            } else {
+                elements.chatVerifiedBadge.classList.add('hidden');
+            }
+            
+            // Render messages
+            renderChatMessages(chatId);
+            
+            // Mark chat as read
+            chat.unread = 0;
+            
+            // Switch to chat window
+            elements.chatList.classList.add('hidden');
+            elements.chatWindow.classList.add('active');
+            
+            // Update UI
+            updateUI();
+        }
+
+        function renderChatMessages(chatId) {
+            if (!elements.chatMessages) return;
+            
+            // Sample messages for each chat
+            const sampleMessages = {
+                1: [
+                    { id: 1, text: "Hey! Did you see the new design I posted?", time: "10:25 AM", isSent: false },
+                    { id: 2, text: "Yes, it looks amazing! Love the color palette you used.", time: "10:28 AM", isSent: true },
+                    { id: 3, text: "Thanks! I was experimenting with gradients and I think it turned out well.", time: "10:30 AM", isSent: false },
+                    { id: 4, text: "Definitely! The gradient effect is subtle but adds so much depth.", time: "10:32 AM", isSent: true }
+                ],
+                2: [
+                    { id: 1, text: "The mountains were incredible! You should come next time", time: "Yesterday", isSent: false },
+                    { id: 2, text: "I would love to! Where exactly did you go?", time: "Yesterday", isSent: true },
+                    { id: 3, text: "We hiked the Cascade Range. The views were absolutely breathtaking.", time: "Yesterday", isSent: false }
+                ],
+                3: [
+                    { id: 1, text: "Thanks for the feedback on my latest post! 😊", time: "2 days ago", isSent: false },
+                    { id: 2, text: "Of course! Your fashion sense is always on point.", time: "2 days ago", isSent: true },
+                    { id: 3, text: "That means a lot coming from you! Let's collaborate on something soon.", time: "2 days ago", isSent: false },
+                    { id: 4, text: "Definitely! I'll message you with some ideas next week.", time: "2 days ago", isSent: true }
+                ]
+            };
+            
+            const messages = sampleMessages[chatId] || [];
+            
+            elements.chatMessages.innerHTML = '';
+            
+            messages.forEach(message => {
+                const messageElement = document.createElement('div');
+                messageElement.className = `message ${message.isSent ? 'message-sent' : 'message-received'}`;
+                messageElement.innerHTML = `
+                    <div>${message.text}</div>
+                    <div class="message-time">${message.time}</div>
+                    ${message.isSent ? '<div class="message-seen"><i class="fas fa-check-double"></i> Seen</div>' : ''}
+                `;
+                
+                elements.chatMessages.appendChild(messageElement);
+            });
+            
+            // Scroll to bottom
+            elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
+        }
+
+        // Send Message
+        function sendMessage() {
+            const messageText = elements.chatInput.value.trim();
+            
+            if (!messageText || !appState.currentChat) return;
+            
+            // Create message element
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message message-sent';
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            messageElement.innerHTML = `
+                <div>${messageText}</div>
+                <div class="message-time">${timeString}</div>
+                <div class="message-seen"><i class="fas fa-check"></i> Sent</div>
+            `;
+            
+            elements.chatMessages.appendChild(messageElement);
+            
+            // Clear input
+            elements.chatInput.value = '';
+            
+            // Reset textarea height
+            elements.chatInput.style.height = 'auto';
+            
+            // Scroll to bottom
+            elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
+            
+            // Simulate response after delay
+            setTimeout(() => {
+                simulateResponse();
+            }, 1000 + Math.random() * 2000);
+        }
+
+        // Simulate Typing Indicator
+        function showTypingIndicator() {
+            if (!appState.currentChat) return;
+            
+            const user = appState.users.find(u => u.id === appState.currentChat.userId);
+            if (!user) return;
+            
+            elements.typingUser.textContent = user.name.split(' ')[0];
+            elements.typingIndicator.classList.remove('hidden');
+            
+            // Hide after 2 seconds
+            setTimeout(() => {
+                elements.typingIndicator.classList.add('hidden');
+            }, 2000);
+        }
+
+        // Simulate Response
+        function simulateResponse() {
+            if (!appState.currentChat) return;
+            
+            const responses = [
+                "That's interesting!",
+                "I agree with you.",
+                "Thanks for sharing!",
+                "Let me think about that...",
+                "What are your thoughts on this?",
+                "😊",
+                "I'll get back to you on that.",
+                "Sounds good to me!"
+            ];
+            
+            const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+            const user = appState.users.find(u => u.id === appState.currentChat.userId);
+            
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message message-received';
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            messageElement.innerHTML = `
+                <div>${randomResponse}</div>
+                <div class="message-time">${timeString}</div>
+            `;
+            
+            elements.chatMessages.appendChild(messageElement);
+            
+            // Scroll to bottom
+            elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
+        }
+
+        // Authentication Functions
+        function handleLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            
+            if (!email || !password) {
+                showNotification('Please fill in all fields', 'error');
+                return;
+            }
+            
+            // Simulate login
+            appState.isAuthenticated = true;
+            appState.currentUser = appState.sampleUsers[0];
+            
+            // Save login state
+            localStorage.setItem('arPixelgramLoggedIn', 'true');
+            
+            // Close auth modal
+            elements.authModal.classList.remove('active');
+            
+            // Show welcome message
+            showNotification('Welcome to AR Pixelgram!', 'success');
+            
+            // Update UI
+            updateUI();
+            renderProfilePosts();
+        }
+
+        function handleRegister() {
+            const name = document.getElementById('registerName').value.trim();
+            const email = document.getElementById('registerEmail').value.trim();
+            const username = document.getElementById('registerUsername').value.trim();
+            const password = document.getElementById('registerPassword').value.trim();
+            const dob = document.getElementById('registerDob').value;
+            
+            if (!name || !email || !username || !password || !dob) {
+                showNotification('Please fill in all fields', 'error');
+                return;
+            }
+            
+            // Check if user is at least 13 years old
+            const birthDate = new Date(dob);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            
+            if (age < 13) {
+                showNotification('You must be at least 13 years old to register', 'error');
+                return;
+            }
+            
+            // Simulate registration
+            appState.isAuthenticated = true;
+            
+            // Create new user
+            const newUser = {
+                id: appState.users.length + 1,
+                name: name,
+                username: `@${username.toLowerCase()}`,
+                bio: "New AR Pixelgram user",
+                avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+                isPrivate: false,
+                isVerified: false,
+                hasRequestedVerification: false,
+                followers: 0,
+                following: 0,
+                posts: 0
+            };
+            
+            appState.currentUser = newUser;
+            appState.users.push(newUser);
+            
+            // Save login state
+            localStorage.setItem('arPixelgramLoggedIn', 'true');
+            
+            // Close auth modal
+            elements.authModal.classList.remove('active');
+            
+            // Show welcome message
+            showNotification(`Welcome to AR Pixelgram, ${name}!`, 'success');
+            
+            // Update UI
+            updateUI();
+            renderProfilePosts();
+        }
+
+        // Utility Functions
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            }
+            return num.toString();
+        }
+
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification-toast ${type}`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                left: 20px;
+                max-width: 600px;
+                margin: 0 auto;
+                background: ${type === 'error' ? 'var(--danger)' : type === 'success' ? 'var(--success)' : 'var(--primary)'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: var(--radius);
+                box-shadow: var(--shadow-strong);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s;
+                animation-fill-mode: forwards;
+            `;
+            
+            notification.innerHTML = `
+                <div>${message}</div>
+                <button class="notification-close" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Add close button functionality
+            notification.querySelector('.notification-close').addEventListener('click', () => {
+                notification.remove();
+            });
+            
+            // Auto-remove after 3 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 3000);
+            
+            // Add CSS for animations
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateY(-20px); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
+                }
+                @keyframes fadeOut {
+                    from { opacity: 1; }
+                    to { opacity: 0; }
+                }
+            `;
+            
+            if (!document.querySelector('#notification-animations')) {
+                style.id = 'notification-animations';
+                document.head.appendChild(style);
             }
         }
 
-        function checkGameOver() {
-            if (blood <= 0) {
-                isGameOver = true;
-                document.getElementById('game-over').style.display = 'block';
-                document.getElementById('final-score').innerText = score;
-            }
+        // PWA Features
+        // Register service worker for PWA functionality
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(registration => {
+                    console.log('ServiceWorker registration successful');
+                }).catch(err => {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
         }
 
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
+        // Create manifest for PWA
+        const manifest = {
+            "name": "AR Pixelgram",
+            "short_name": "Pixelgram",
+            "description": "Premium social media platform for sharing moments",
+            "start_url": "/",
+            "display": "standalone",
+            "background_color": "#f8fafc",
+            "theme_color": "#4f46e5",
+            "icons": [
+                {
+                    "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22 fill=%22%234f46e5%22>📱</text></svg>",
+                    "sizes": "any",
+                    "type": "image/svg+xml"
+                }
+            ]
+        };
 
-        init();
+        // Set manifest
+        const manifestString = JSON.stringify(manifest);
+        const manifestBlob = new Blob([manifestString], {type: 'application/json'});
+        const manifestURL = URL.createObjectURL(manifestBlob);
+        document.getElementById('manifest').href = manifestURL;
     </script>
 </body>
-</html>
+    </html>
