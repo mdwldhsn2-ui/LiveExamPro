@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>গ্রাম সেবা - স্মার্ট লগইন</title>
+    <title>পারখালী ভিলেজ অ্যাপ</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Hind+Siliguri:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -11,435 +11,419 @@
 
     <style>
         :root {
-            --primary: #4e54c8;
-            --secondary: #8f94fb;
+            --primary: #2F80ED; /* ছবির মতো নীল রঙ */
+            --primary-dark: #1b5cb3;
+            --bg-color: #F7F9FC;
             --white: #ffffff;
-            --gray: #f4f6f9;
-            --text: #333;
+            --text-dark: #1F2937;
+            --text-gray: #9CA3AF;
+            --shadow: 0 4px 20px rgba(0,0,0,0.05);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', 'Hind Siliguri', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', 'Hind Siliguri', sans-serif; -webkit-tap-highlight-color: transparent; }
         
         body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background-color: var(--bg-color);
             height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: center;
-            overflow: hidden;
+            overflow: hidden; 
         }
 
-        /* --- ১. অথেন্টিকেশন কন্টেইনার --- */
-        .container {
-            background: var(--white);
-            border-radius: 20px;
-            box-shadow: 0 14px 28px rgba(0,0,0,0.1), 0 10px 10px rgba(0,0,0,0.1);
-            position: relative;
-            overflow: hidden;
-            width: 850px;
-            max-width: 100%;
-            min-height: 550px;
-            display: flex;
-        }
-
-        /* ফর্ম এরিয়া */
-        .form-container {
-            position: absolute;
-            top: 0;
-            height: 100%;
-            transition: all 0.6s ease-in-out;
-            width: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            padding: 0 50px;
-            text-align: center;
-        }
-
-        .sign-in-container { left: 0; z-index: 2; }
-        .sign-up-container { left: 0; opacity: 0; z-index: 1; }
-
-        /* অ্যানিমেশন ক্লাস */
-        .container.right-panel-active .sign-in-container { transform: translateX(100%); opacity: 0; }
-        .container.right-panel-active .sign-up-container { transform: translateX(100%); opacity: 1; z-index: 5; animation: show 0.6s; }
-
-        @keyframes show { 0%, 49.99% { opacity: 0; z-index: 1; } 50%, 100% { opacity: 1; z-index: 5; } }
-
-        /* ওভারলে (নীল অংশ) */
-        .overlay-container {
-            position: absolute;
-            top: 0;
-            left: 50%;
-            width: 50%;
-            height: 100%;
-            overflow: hidden;
-            transition: transform 0.6s ease-in-out;
-            z-index: 100;
-        }
-        .container.right-panel-active .overlay-container { transform: translateX(-100%); }
-
-        .overlay {
-            background: linear-gradient(to right, var(--secondary), var(--primary));
-            height: 100%;
-            width: 200%;
-            left: -100%;
-            position: relative;
-            transform: translateX(0);
-            transition: transform 0.6s ease-in-out;
-            color: var(--white);
-        }
-        .container.right-panel-active .overlay { transform: translateX(50%); }
-
-        .overlay-panel {
-            position: absolute;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            padding: 0 40px;
-            text-align: center;
-            top: 0;
-            height: 100%;
-            width: 50%;
-            transform: translateX(0);
-            transition: transform 0.6s ease-in-out;
-        }
-
-        .overlay-left { transform: translateX(-20%); }
-        .container.right-panel-active .overlay-left { transform: translateX(0); }
-        .overlay-right { right: 0; transform: translateX(0); }
-        .container.right-panel-active .overlay-right { transform: translateX(20%); }
-
-        /* ইনপুট ফিল্ড ও বাটন */
-        h1 { font-weight: bold; margin-bottom: 15px; }
-        span { font-size: 12px; margin-bottom: 15px; display: block;}
-        
-        .social-container { margin: 10px 0; }
-        .social-btn {
-            border: 1px solid #ddd;
-            border-radius: 50%;
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            margin: 0 5px;
-            height: 40px;
-            width: 40px;
-            cursor: pointer;
-            background: white;
-            transition: 0.3s;
-        }
-        .social-btn:hover { background: #eee; transform: scale(1.1); }
-
-        input {
-            background-color: #eee;
-            border: none;
-            padding: 12px 15px;
-            margin: 8px 0;
+        /* --- মোবাইল কন্টেইনার (ডেস্কটপেও মোবাইলের মতো দেখাবে) --- */
+        .app-container {
             width: 100%;
-            border-radius: 8px;
-            outline: none;
-        }
-
-        button {
-            border-radius: 20px;
-            border: 1px solid var(--primary);
-            background-color: var(--primary);
-            color: #ffffff;
-            font-size: 12px;
-            font-weight: bold;
-            padding: 12px 45px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            transition: transform 80ms ease-in;
-            margin-top: 15px;
-            cursor: pointer;
-        }
-        button:active { transform: scale(0.95); }
-        button.ghost { background-color: transparent; border-color: #ffffff; }
-
-        /* --- ২. প্রোফাইল সেটআপ পেজ (লুকানো) --- */
-        #profile-setup, #dashboard-view {
-            display: none;
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--gray);
-            z-index: 200;
+            max-width: 480px; /* মোবাইলের সাইজ */
+            height: 100%;
+            background: var(--white);
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
             flex-direction: column;
+        }
+
+        /* --- অথেন্টিকেশন ও প্রোফাইল পেজ স্টাইল --- */
+        #auth-view, #profile-setup {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--white); z-index: 100;
+            display: flex; flex-direction: column; justify-content: center; padding: 30px;
+        }
+        .auth-header h1 { color: var(--primary); font-size: 28px; margin-bottom: 10px; }
+        .input-box { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #eee; border-radius: 12px; background: #f9f9f9; outline: none; }
+        .btn-main { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 600; font-size: 16px; margin-top: 20px; cursor: pointer; transition: 0.2s; }
+        .btn-main:active { transform: scale(0.98); }
+        .google-btn { background: white; color: #333; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; }
+        
+        /* --- ড্যাশবোর্ড ডিজাইন (ছবির আদলে) --- */
+        #dashboard-view {
+            display: none; /* শুরুতে লুকানো */
+            flex-direction: column;
+            height: 100%;
+            background: var(--bg-color);
+        }
+
+        /* হেডার */
+        .top-bar {
+            padding: 20px 25px;
+            background: var(--white);
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
+            position: sticky; top: 0; z-index: 10;
+        }
+        .greeting span { color: var(--text-gray); font-size: 14px; }
+        .greeting h2 { color: var(--text-dark); font-size: 20px; font-weight: 700; }
+        .user-avatar { width: 45px; height: 45px; border-radius: 50%; background: #eee; overflow: hidden; border: 2px solid var(--primary); }
+        .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* স্ক্রলেবল কন্টেন্ট এরিয়া */
+        .content-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 25px 100px 25px; /* নিচে স্পেস যাতে নেভিগেশনে না ঢেকে যায় */
         }
 
-        .profile-card {
-            background: white;
-            padding: 40px;
+        /* হিরো ব্যানার */
+        .hero-banner {
+            margin-top: 10px;
+            background: linear-gradient(135deg, #2F80ED 0%, #56CCF2 100%);
+            padding: 25px;
             border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            width: 400px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(47, 128, 237, 0.3);
+        }
+        .hero-text h3 { font-size: 22px; margin-bottom: 5px; }
+        .hero-text p { font-size: 13px; opacity: 0.9; margin-bottom: 15px; }
+        .hero-btn { background: rgba(255,255,255,0.2); border: none; padding: 8px 15px; color: white; border-radius: 8px; font-size: 12px; cursor: pointer; }
+        .hero-img { position: absolute; right: -10px; bottom: -10px; font-size: 80px; opacity: 0.2; transform: rotate(-10deg); color: white; }
+
+        /* সার্ভিস গ্রিড (মেনু) */
+        .section-title { font-size: 16px; font-weight: 600; color: var(--text-dark); margin: 25px 0 15px 0; }
+        
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
             text-align: center;
-            animation: fadeIn 0.5s ease;
+        }
+        .service-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .icon-box {
+            width: 55px; height: 55px;
+            border-radius: 15px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; margin-bottom: 8px;
+            transition: 0.2s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+        }
+        .service-item span { font-size: 11px; color: var(--text-dark); font-weight: 500; }
+        .service-item:active .icon-box { transform: scale(0.9); }
+
+        /* আইকনের রঙ */
+        .bg-1 { background: #E3F2FD; color: #2196F3; } /* জরুরি */
+        .bg-2 { background: #FFEBEE; color: #F44336; } /* রক্ত */
+        .bg-3 { background: #E8F5E9; color: #4CAF50; } /* বাজার */
+        .bg-4 { background: #FFF3E0; color: #FF9800; } /* নোটিশ */
+        .bg-5 { background: #F3E5F5; color: #9C27B0; } /* শিক্ষা */
+        .bg-6 { background: #E0F7FA; color: #00BCD4; } /* ভ্রমণ */
+        .bg-7 { background: #ECEFF1; color: #607D8B; } /* সেটিংস */
+        .bg-8 { background: #FFF8E1; color: #FFC107; } /* অন্যান্য */
+
+        /* নিউজ কার্ড (স্লাইডার) */
+        .news-slider {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            scrollbar-width: none; /* Firefox */
+        }
+        .news-slider::-webkit-scrollbar { display: none; }
+        .news-card {
+            min-width: 200px;
+            background: var(--white);
+            border-radius: 15px;
+            padding: 10px;
+            box-shadow: var(--shadow);
+        }
+        .news-img { width: 100%; height: 100px; border-radius: 10px; background: #ddd; object-fit: cover; margin-bottom: 10px; }
+        .news-title { font-size: 13px; font-weight: 600; color: var(--text-dark); line-height: 1.4; }
+        .news-date { font-size: 10px; color: var(--text-gray); margin-top: 5px; display: block; }
+
+        /* বটম নেভিগেশন বার */
+        .bottom-nav {
+            position: absolute; bottom: 0; width: 100%;
+            background: var(--white);
+            padding: 10px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-top: 1px solid #f0f0f0;
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center;
+            color: #C4C4C4; font-size: 10px; gap: 5px; cursor: pointer;
+        }
+        .nav-item i { font-size: 20px; }
+        .nav-item.active { color: var(--primary); }
+        /* মাঝখানের গোল বাটন */
+        .nav-center-btn {
+            background: var(--primary); color: white;
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin-top: -30px;
+            box-shadow: 0 5px 15px rgba(47, 128, 237, 0.4);
+            border: 4px solid white;
         }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* --- ৩. ওয়েলকাম অ্যানিমেশন --- */
-        #welcome-screen {
-            display: none;
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: white; z-index: 500;
-            flex-direction: column;
-            align-items: center; justify-content: center;
-        }
-        .check-icon {
-            font-size: 80px; color: #2ed573;
-            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        @keyframes popIn { 0% { transform: scale(0); } 100% { transform: scale(1); } }
-
-        /* রেসপন্সিভ */
-        @media (max-width: 768px) {
-            .container { min-height: 800px; width: 100%; border-radius: 0; }
-            .form-container { width: 100%; height: auto; position: relative; padding: 30px; }
-            .sign-up-container { display: none; } 
-            .overlay-container { display: none; }
-            .container.right-panel-active .sign-up-container { display: flex; opacity: 1; z-index: 5; }
-            .container.right-panel-active .sign-in-container { display: none; }
-            
-            /* মোবাইল টগল টেক্সট */
-            .mobile-toggle { display: block; margin-top: 20px; color: var(--primary); cursor: pointer; font-weight: 600; text-decoration: underline; }
-        }
-        .mobile-toggle { display: none; }
     </style>
 </head>
 <body>
 
-    <div class="container" id="auth-container">
+<div class="app-container">
+    
+    <div id="auth-view">
+        <div class="auth-header" style="text-align: center;">
+            <h1>পারখালী গ্রাম</h1>
+            <p style="color: #888;">আপনার গ্রামের ডিজিটাল অ্যাপে স্বাগতম</p>
+        </div>
+        <div style="margin-top: 40px;">
+            <input type="email" id="email" class="input-box" placeholder="ইমেইল">
+            <input type="password" id="password" class="input-box" placeholder="পাসওয়ার্ড">
+            <button class="btn-main" onclick="handleLogin()">লগইন করুন</button>
+            <p style="text-align: center; margin: 15px; font-size: 12px; color: #aaa;">অথবা</p>
+            <button class="btn-main google-btn" onclick="googleLogin()">
+                <i class="fab fa-google"></i> Google দিয়ে লগইন
+            </button>
+        </div>
+        <p style="text-align: center; margin-top: 20px; font-size: 13px;">
+            নতুন? <span onclick="toggleAuth()" style="color: var(--primary); font-weight: 600; cursor: pointer;">অ্যাকাউন্ট খুলুন</span>
+        </p>
+    </div>
+
+    <div id="profile-setup" style="display: none;">
+        <h2 style="color: var(--primary); margin-bottom: 5px;">আপনার তথ্য দিন</h2>
+        <p style="color: #888; margin-bottom: 20px; font-size: 13px;">অ্যাপটি ব্যবহারের জন্য এই তথ্যগুলো প্রয়োজন</p>
         
-        <div class="form-container sign-up-container">
-            <form id="signup-form">
-                <h1>অ্যাকাউন্ট খুলুন</h1>
-                <div class="social-container">
-                    <div class="social-btn" onclick="googleLogin()"><i class="fab fa-google"></i></div>
-                </div>
-                <span>অথবা ইমেইল ব্যবহার করুন</span>
-                <input type="text" id="reg-email" placeholder="ইমেইল" required />
-                <input type="password" id="reg-password" placeholder="পাসওয়ার্ড" required />
-                <button type="submit">সাইন আপ</button>
-                <p class="mobile-toggle" onclick="togglePanel(false)">লগইন করুন</p>
-            </form>
-        </div>
-
-        <div class="form-container sign-in-container">
-            <form id="login-form">
-                <h1>লগইন করুন</h1>
-                <div class="social-container">
-                    <div class="social-btn" onclick="googleLogin()"><i class="fab fa-google"></i></div>
-                </div>
-                <span>আপনার অ্যাকাউন্ট ব্যবহার করুন</span>
-                <input type="email" id="login-email" placeholder="ইমেইল" required />
-                <input type="password" id="login-password" placeholder="পাসওয়ার্ড" required />
-                <a href="#" onclick="alert('আপনার পাসওয়ার্ড রিসেট লিংক পাঠানো হয়েছে!')" style="font-size:12px; color:#666; margin:10px 0;">পাসওয়ার্ড ভুলে গেছেন?</a>
-                <button type="submit">লগইন</button>
-                <p class="mobile-toggle" onclick="togglePanel(true)">নতুন অ্যাকাউন্ট খুলুন</p>
-            </form>
-        </div>
-
-        <div class="overlay-container">
-            <div class="overlay">
-                <div class="overlay-panel overlay-left">
-                    <h1>স্বাগতম!</h1>
-                    <p>আপনার অ্যাকাউন্টে প্রবেশ করতে লগইন করুন</p>
-                    <button class="ghost" onclick="togglePanel(false)">লগইন</button>
-                </div>
-                <div class="overlay-panel overlay-right">
-                    <h1>হ্যালো, বন্ধু!</h1>
-                    <p>আপনার বিস্তারিত তথ্য দিয়ে আমাদের সাথে যুক্ত হোন</p>
-                    <button class="ghost" onclick="togglePanel(true)">সাইন আপ</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="profile-setup">
-        <div class="profile-card">
-            <h2 style="color: var(--primary);">আপনার তথ্য দিন</h2>
-            <p style="font-size: 13px; color: #666; margin-bottom: 20px;">অ্যাপটি ব্যবহার করার জন্য এই তথ্যগুলো জরুরি।</p>
-            
-            <input type="text" id="full-name" placeholder="পুরো নাম" required>
-            <input type="tel" id="phone-number" placeholder="মোবাইল নম্বর" required>
-            <select id="blood-group" style="width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border:none; background:#eee;">
-                <option value="" disabled selected>রক্তের গ্রুপ নির্বাচন করুন</option>
-                <option value="A+">A+</option>
-                <option value="B+">B+</option>
-                <option value="O+">O+</option>
-                <option value="AB+">AB+</option>
-            </select>
-            <input type="text" id="address" placeholder="গ্রাম / পাড়ার নাম" required>
-            <button onclick="saveUserProfile()">তথ্য সেভ করুন</button>
-        </div>
-    </div>
-
-    <div id="welcome-screen">
-        <i class="fas fa-check-circle check-icon"></i>
-        <h2 style="margin-top: 20px; color: #333;">স্বাগতম!</h2>
-        <p>আপনার প্রোফাইল সফলভাবে তৈরি হয়েছে।</p>
+        <input type="text" id="full-name" class="input-box" placeholder="আপনার পুরো নাম">
+        <input type="tel" id="phone-number" class="input-box" placeholder="মোবাইল নম্বর">
+        <select id="blood-group" class="input-box">
+            <option value="" disabled selected>রক্তের গ্রুপ</option>
+            <option value="A+">A+</option>
+            <option value="B+">B+</option>
+            <option value="O+">O+</option>
+        </select>
+        <input type="text" id="address" class="input-box" placeholder="গ্রাম / পাড়া">
+        
+        <button class="btn-main" onclick="saveUserProfile()">তথ্য সেভ করুন</button>
     </div>
 
     <div id="dashboard-view">
-        <div style="text-align: center;">
-            <h1 style="color: var(--primary);">গ্রাম সেবা অ্যাপ</h1>
-            <p>আপনার ড্যাশবোর্ডে স্বাগতম</p>
-            <br>
-            <div class="profile-card" style="width: 100%;">
-                <h3>ব্যবহারকারী: <span id="dash-name">...</span></h3>
-                <p>মোবাইল: <span id="dash-phone">...</span></p>
-                <button onclick="logoutUser()" style="background: #ff4757; border: none;">লগ আউট</button>
+        
+        <div class="top-bar">
+            <div class="greeting">
+                <span id="welcome-msg">শুভ সকাল,</span>
+                <h2 id="dash-name">ব্যবহারকারী</h2>
+            </div>
+            <div class="user-avatar" onclick="Swal.fire('প্রোফাইল', 'শীঘ্রই আসছে!', 'info')">
+                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="User">
             </div>
         </div>
+
+        <div class="content-scroll">
+            
+            <div class="hero-banner">
+                <div class="hero-text">
+                    <h3>ডিজিটাল পারখালী</h3>
+                    <p>গ্রামের সকল সেবা এখন আপনার হাতের মুঠোয়।</p>
+                    <button class="hero-btn">আরও দেখুন</button>
+                </div>
+                <i class="fas fa-mosque hero-img"></i>
+            </div>
+
+            <h3 class="section-title">সেবাসমূহ</h3>
+            <div class="services-grid">
+                <div class="service-item" onclick="alert('জরুরি সেবা')">
+                    <div class="icon-box bg-1"><i class="fas fa-ambulance"></i></div>
+                    <span>জরুরি সেবা</span>
+                </div>
+                <div class="service-item" onclick="alert('রক্তদাতা')">
+                    <div class="icon-box bg-2"><i class="fas fa-tint"></i></div>
+                    <span>রক্তদাতা</span>
+                </div>
+                <div class="service-item" onclick="alert('বাজার দর')">
+                    <div class="icon-box bg-3"><i class="fas fa-shopping-basket"></i></div>
+                    <span>বাজার দর</span>
+                </div>
+                <div class="service-item" onclick="alert('নোটিশ')">
+                    <div class="icon-box bg-4"><i class="fas fa-bullhorn"></i></div>
+                    <span>নোটিশ</span>
+                </div>
+                <div class="service-item" onclick="alert('প্রশাসন')">
+                    <div class="icon-box bg-5"><i class="fas fa-user-tie"></i></div>
+                    <span>চেয়ারম্যান</span>
+                </div>
+                <div class="service-item" onclick="alert('ভ্রমণ')">
+                    <div class="icon-box bg-6"><i class="fas fa-map-marked-alt"></i></div>
+                    <span>ভ্রমণ</span>
+                </div>
+                <div class="service-item" onclick="alert('মসজিদ/মাদ্রাসা')">
+                    <div class="icon-box bg-7"><i class="fas fa-quran"></i></div>
+                    <span>মসজিদ</span>
+                </div>
+                <div class="service-item" onclick="alert('অন্যান্য')">
+                    <div class="icon-box bg-8"><i class="fas fa-th-large"></i></div>
+                    <span>অন্যান্য</span>
+                </div>
+            </div>
+
+            <h3 class="section-title">গ্রামের খবর</h3>
+            <div class="news-slider">
+                <div class="news-card">
+                    <img src="https://t4.ftcdn.net/jpg/04/09/27/98/360_F_409279897_0C1J10c12e2J2J2J.jpg" class="news-img">
+                    <div class="news-title">আজকের ফ্রি মেডিকেল ক্যাম্প</div>
+                    <span class="news-date">১২ ফেব, ২০২৬</span>
+                </div>
+                <div class="news-card">
+                    <img src="https://media.istockphoto.com/id/1320686310/photo/social-distancing-at-village-meeting.jpg?s=612x612&w=0&k=20&c=XU.jpg" class="news-img">
+                    <div class="news-title">ইউনিয়ন পরিষদে নতুন রাস্তা</div>
+                    <span class="news-date">১০ ফেব, ২০২৬</span>
+                </div>
+                <div class="news-card">
+                    <img src="https://thumbs.dreamstime.com/b/paddy-field-bangladesh-26367897.jpg" class="news-img">
+                    <div class="news-title">ধানে বাম্পার ফলন এবার</div>
+                    <span class="news-date">০৮ ফেব, ২০২৬</span>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="bottom-nav">
+            <div class="nav-item active">
+                <i class="fas fa-home"></i>
+                <span>হোম</span>
+            </div>
+            <div class="nav-item">
+                <i class="fas fa-file-alt"></i>
+                <span>আবেদন</span>
+            </div>
+            <div class="nav-center-btn" onclick="alert('স্ক্যান বা কুইক অ্যাকশন')">
+                <i class="fas fa-qrcode"></i>
+            </div>
+            <div class="nav-item">
+                <i class="fas fa-bell"></i>
+                <span>খবর</span>
+            </div>
+            <div class="nav-item">
+                <i class="fas fa-user"></i>
+                <span>প্রোফাইল</span>
+            </div>
+        </div>
+
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+</div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAuqcDRrtuQi2tdWXA2E_UWyq7pCrGpoy4",
-            authDomain: "parkhali-village.firebaseapp.com",
-            projectId: "parkhali-village",
-            storageBucket: "parkhali-village.firebasestorage.app",
-            messagingSenderId: "645968583344",
-            appId: "1:645968583344:web:89a049e6ffaba4af33b975",
-            measurementId: "G-WD2LSS97KC"
-        };
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const googleProvider = new GoogleAuthProvider();
+    const firebaseConfig = {
+        apiKey: "AIzaSyAuqcDRrtuQi2tdWXA2E_UWyq7pCrGpoy4",
+        authDomain: "parkhali-village.firebaseapp.com",
+        projectId: "parkhali-village",
+        storageBucket: "parkhali-village.firebasestorage.app",
+        messagingSenderId: "645968583344",
+        appId: "1:645968583344:web:89a049e6ffaba4af33b975",
+        measurementId: "G-WD2LSS97KC"
+    };
 
-        // UI কন্ট্রোল ফাংশন
-        window.togglePanel = (isSignUp) => {
-            const container = document.getElementById('auth-container');
-            if(isSignUp) container.classList.add("right-panel-active");
-            else container.classList.remove("right-panel-active");
-        };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const googleProvider = new GoogleAuthProvider();
 
-        // গুগল লগইন ফাংশন
-        window.googleLogin = async () => {
-            try {
-                const result = await signInWithPopup(auth, googleProvider);
-                // লগইন সফল হলে onAuthStateChanged বাকি কাজ করবে
-            } catch (error) {
-                console.error(error);
-                Swal.fire('ত্রুটি!', 'গুগল লগইনে সমস্যা: ' + error.message, 'error');
-            }
-        };
-
-        // ইমেইল পাসওয়ার্ড সাইন আপ
-        document.getElementById('signup-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('reg-email').value;
-            const pass = document.getElementById('reg-password').value;
-            try {
-                await createUserWithEmailAndPassword(auth, email, pass);
-                // একাউন্ট তৈরি শেষ, প্রোফাইল সেটআপে যাবে
-            } catch (error) {
-                Swal.fire('দুঃখিত', error.message, 'error');
-            }
-        });
-
-        // ইমেইল পাসওয়ার্ড লগইন
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-password').value;
-            try {
-                await signInWithEmailAndPassword(auth, email, pass);
-            } catch (error) {
-                Swal.fire('ভুল তথ্য', 'ইমেইল বা পাসওয়ার্ড সঠিক নয়', 'error');
-            }
-        });
-
-        // অথেন্টিকেশন স্টেট চেকার (মেইন লজিক)
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                // ইউজার লগইন আছে, এখন চেক করবো ডাটাবেসে তার ডিটেলস আছে কিনা
-                const userDoc = await getDoc(doc(db, "users", user.uid));
-                
-                if (userDoc.exists() && userDoc.data().phone) {
-                    // সব তথ্য আছে -> সরাসরি হোম পেজে
-                    loadDashboard(userDoc.data());
-                } else {
-                    // নতুন ইউজার বা তথ্য নেই -> প্রোফাইল সেটআপ পেজে
-                    document.getElementById('auth-container').style.display = 'none';
-                    document.getElementById('profile-setup').style.display = 'flex';
-                }
+    // অথেন্টিকেশন স্টেট
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            if (userDoc.exists() && userDoc.data().phone) {
+                // ডাটা থাকলে ড্যাশবোর্ড দেখাও
+                loadDashboard(userDoc.data());
             } else {
-                // লগইন নেই -> অথেন্টিকেশন পেজ দেখাও
-                document.getElementById('auth-container').style.display = 'flex';
-                document.getElementById('profile-setup').style.display = 'none';
-                document.getElementById('dashboard-view').style.display = 'none';
+                // ডাটা না থাকলে প্রোফাইল সেটআপ
+                document.getElementById('auth-view').style.display = 'none';
+                document.getElementById('profile-setup').style.display = 'flex';
             }
-        });
-
-        // ব্যবহারকারীর তথ্য সেভ করা
-        window.saveUserProfile = async () => {
-            const user = auth.currentUser;
-            const name = document.getElementById('full-name').value;
-            const phone = document.getElementById('phone-number').value;
-            const blood = document.getElementById('blood-group').value;
-            const address = document.getElementById('address').value;
-
-            if(!name || !phone || !blood) {
-                Swal.fire('সতর্কতা', 'সবগুলো ঘর পূরণ করুন', 'warning');
-                return;
-            }
-
-            try {
-                await setDoc(doc(db, "users", user.uid), {
-                    name: name,
-                    phone: phone,
-                    bloodGroup: blood,
-                    address: address,
-                    email: user.email,
-                    role: 'user',
-                    createdAt: new Date()
-                }, { merge: true });
-
-                // সফল অ্যানিমেশন দেখাও
-                document.getElementById('profile-setup').style.display = 'none';
-                const welcome = document.getElementById('welcome-screen');
-                welcome.style.display = 'flex';
-
-                // ২ সেকেন্ড পর ড্যাশবোর্ডে পাঠাও
-                setTimeout(() => {
-                    welcome.style.display = 'none';
-                    loadDashboard({ name, phone });
-                }, 2000);
-
-            } catch (error) {
-                Swal.fire('এরর', 'ডাটা সেভ করা যায়নি', 'error');
-            }
-        };
-
-        // ড্যাশবোর্ড লোড করা
-        function loadDashboard(data) {
-            document.getElementById('auth-container').style.display = 'none';
+        } else {
+            document.getElementById('auth-view').style.display = 'flex';
+            document.getElementById('dashboard-view').style.display = 'none';
             document.getElementById('profile-setup').style.display = 'none';
-            document.getElementById('dashboard-view').style.display = 'flex';
-            
-            document.getElementById('dash-name').innerText = data.name || "User";
-            document.getElementById('dash-phone').innerText = data.phone || "N/A";
         }
+    });
 
-        // লগআউট
-        window.logoutUser = () => {
-            signOut(auth).then(() => {
-                location.reload(); // পেজ রিলোড দিয়ে লগইন পেজে ফেরত
-            });
-        };
+    // ড্যাশবোর্ড লোড ফাংশন
+    function loadDashboard(data) {
+        document.getElementById('auth-view').style.display = 'none';
+        document.getElementById('profile-setup').style.display = 'none';
+        
+        // ফেড ইন অ্যানিমেশন দিয়ে ড্যাশবোর্ড আসবে
+        const dashboard = document.getElementById('dashboard-view');
+        dashboard.style.display = 'flex';
+        dashboard.style.animation = 'fadeIn 0.5s';
 
-    </script>
+        // নাম আপডেট
+        document.getElementById('dash-name').innerText = data.name || "ব্যবহারকারী";
+        
+        // সময়ের ওপর ভিত্তি করে গ্রিটিং
+        const hour = new Date().getHours();
+        let greetingText = "শুভ সকাল,";
+        if (hour >= 12 && hour < 17) greetingText = "শুভ দুপুর,";
+        else if (hour >= 17) greetingText = "শুভ সন্ধ্যা,";
+        document.getElementById('welcome-msg').innerText = greetingText;
+    }
+
+    // গ্লোবাল ফাংশনস
+    window.googleLogin = async () => {
+        try { await signInWithPopup(auth, googleProvider); } 
+        catch (e) { Swal.fire('Error', e.message, 'error'); }
+    }
+
+    window.saveUserProfile = async () => {
+        const user = auth.currentUser;
+        const name = document.getElementById('full-name').value;
+        const phone = document.getElementById('phone-number').value;
+        
+        if(!name || !phone) { Swal.fire('Wait!', 'নাম ও মোবাইল নম্বর দিন', 'warning'); return; }
+
+        await setDoc(doc(db, "users", user.uid), {
+            name: name, phone: phone, 
+            bloodGroup: document.getElementById('blood-group').value,
+            address: document.getElementById('address').value,
+            email: user.email
+        }, { merge: true });
+
+        // সুন্দর অ্যানিমেশন সহ মেসেজ
+        Swal.fire({
+            title: 'সফল!',
+            text: 'আপনার প্রোফাইল সেটআপ সম্পন্ন হয়েছে।',
+            icon: 'success',
+            timer: 1500,
+            showConfirmButton: false
+        }).then(() => {
+            loadDashboard({ name: name });
+        });
+    }
+
+    // CSS Animation Keyframes
+    const styleSheet = document.createElement("style");
+    styleSheet.innerText = `@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }`;
+    document.head.appendChild(styleSheet);
+
+</script>
+
 </body>
 </html>
