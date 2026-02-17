@@ -1,1290 +1,568 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study Mentor</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    animation: {
-                        'shake': 'shake 0.5s ease-in-out',
-                        'float': 'float 3s ease-in-out infinite',
-                        'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
-                    },
-                    keyframes: {
-                        shake: {
-                            '0%, 100%': { transform: 'translateX(0)' },
-                            '10%, 30%, 50%, 70%, 90%': { transform: 'translateX(-5px)' },
-                            '20%, 40%, 60%, 80%': { transform: 'translateX(5px)' },
-                        },
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-10px)' },
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <!-- React & Framer Motion -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/framer-motion@10.12.0/dist/framer-motion.js"></script>
-    <script src="https://unpkg.com/react-icons@4.11.0/dist/index.umd.js"></script>
+    <title>স্মার্ট ভিলেজ ড্যাশবোর্ড</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Hind+Siliguri:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
+        :root {
+            --primary: #4e54c8;
+            --secondary: #8f94fb;
+            --accent-red: #ff4757;
+            --accent-green: #2ed573;
+            --bg-light: #f1f2f6;
+            --white: #ffffff;
+            --text-dark: #2f3542;
+            --text-gray: #747d8c;
+            --shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', 'Hind Siliguri', sans-serif;
+        }
+
         body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            -webkit-tap-highlight-color: transparent;
+            background-color: var(--bg-light);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
         }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+
+        /* সাইডবার ডিজাইন */
+        .sidebar {
+            width: 250px;
+            background: var(--white);
+            height: 100%;
+            padding: 20px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
         }
-        .no-scrollbar::-webkit-scrollbar {
+
+        .brand {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            color: var(--text-gray);
+            text-decoration: none;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: 0.3s;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .menu-item:hover, .menu-item.active {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: var(--white);
+            box-shadow: 0 4px 10px rgba(78, 84, 200, 0.3);
+        }
+
+        .menu-item i {
+            width: 25px;
+            margin-right: 10px;
+        }
+
+        /* মেইন কন্টেন্ট এরিয়া */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background-color: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* সেকশন গুলো লুকিয়ে রাখা (JS দিয়ে টগল হবে) */
+        .content-section {
             display: none;
+            animation: fadeIn 0.4s ease;
         }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+
+        .content-section.active {
+            display: block;
         }
-        ::-webkit-scrollbar {
-            width: 6px;
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        ::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.1);
+
+        /* ১. জরুরি সেবা কার্ড ডিজাইন */
+        .emergency-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
         }
-        ::-webkit-scrollbar-thumb {
-            background: linear-gradient(to bottom, #667eea, #764ba2);
-            border-radius: 3px;
+
+        .e-card {
+            background: var(--white);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            border-bottom: 4px solid transparent;
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
         }
-        @keyframes letterReveal {
-            0% { opacity: 0; transform: translateY(20px); }
-            100% { opacity: 1; transform: translateY(0); }
+
+        .e-card:hover {
+            transform: translateY(-5px);
         }
-        @keyframes birdFly {
-            0% { transform: translateX(-100px) translateY(-100px) rotate(-15deg); }
-            100% { transform: translateX(300px) translateY(0) rotate(0deg); }
+
+        .e-card.police { border-color: #0c2461; }
+        .e-card.fire { border-color: #eb3b5a; }
+        .e-card.hospital { border-color: #20bf6b; }
+        .e-card.power { border-color: #f7b731; }
+
+        .e-icon {
+            font-size: 30px;
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .btn-call {
+            margin-top: 15px;
+            background: var(--text-dark);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+        }
+        
+        .e-card.fire .btn-call { background: #eb3b5a; }
+        .e-card.police .btn-call { background: #0c2461; }
+
+        /* ২. রক্তদাতা সার্চ ডিজাইন */
+        .blood-header {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .search-box, .filter-box {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+            flex: 1;
+        }
+
+        .donor-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .donor-card {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow);
+        }
+
+        .blood-group {
+            width: 50px;
+            height: 50px;
+            background: #ffebed;
+            color: var(--accent-red);
+            font-weight: bold;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .donor-info h4 { margin-bottom: 5px; }
+        .donor-info p { font-size: 13px; color: var(--text-gray); }
+
+        .action-btn {
+            padding: 8px 15px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+        .call-btn { background: #e1fcf0; color: #0fb9b1; }
+        .msg-btn { background: #f1f2f6; color: var(--primary); }
+
+        /* ৩. প্রোফাইল এডিট ডিজাইন */
+        .profile-container {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .profile-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary);
+            padding: 3px;
+        }
+
+        .edit-badge {
+            position: absolute;
+            bottom: 5px;
+            right: 42%;
+            background: var(--primary);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            color: var(--text-gray);
+            margin-bottom: 8px;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            background: #f9f9f9;
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        .form-group input:disabled, .form-group select:disabled {
+            background: transparent;
+            border: 1px solid transparent;
+            padding-left: 0;
+            color: var(--text-gray);
+        }
+
+        .save-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: none; /* প্রথমে লুকানো থাকবে */
+        }
+
+        .edit-mode-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: transparent;
+            border: 1px solid #ddd;
+            padding: 5px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        /* মোবাইল রেসপন্সিভ */
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { 
+                width: 100%; 
+                height: auto; 
+                flex-direction: row; 
+                justify-content: space-around;
+                padding: 10px;
+                position: fixed;
+                bottom: 0;
+                z-index: 100;
+                border-radius: 20px 20px 0 0;
+            }
+            .brand { display: none; }
+            .menu-item span { display: none; } /* শুধু আইকন দেখাবে */
+            .menu-item { margin-bottom: 0; padding: 10px; border-radius: 50%; }
+            .main-content { padding-bottom: 80px; }
+            .emergency-grid { grid-template-columns: 1fr 1fr; }
+            .donor-card { flex-direction: column; text-align: center; gap: 10px; }
+            .edit-badge { right: 35%; }
         }
     </style>
 </head>
-<body class="bg-gray-900">
-    <div id="root"></div>
+<body>
 
-<script type="module">
-const { useState, useEffect, useRef, createContext, useContext } = React;
-const { motion, AnimatePresence } = window.framerMotion;
-const { FaHome, FaBook, FaUser, FaStar, FaClock, FaEnvelope, FaLock, FaGoogle, FaCheckCircle, FaTimesCircle, FaBrain, FaWhatsapp, FaCog, FaUsers, FaPalette, FaKey, FaUpload, FaBell, FaChartLine, FaTarget } = window.ReactIcons;
+    <div class="sidebar">
+        <div class="brand">
+            <i class="fas fa-cube"></i> স্মার্ট গ্রাম
+        </div>
+        <a href="#" class="menu-item active" onclick="showSection('emergency', this)">
+            <i class="fas fa-ambulance"></i> <span>জরুরি সেবা</span>
+        </a>
+        <a href="#" class="menu-item" onclick="showSection('blood', this)">
+            <i class="fas fa-heartbeat"></i> <span>রক্তদাতা</span>
+        </a>
+        <a href="#" class="menu-item" onclick="showSection('profile', this)">
+            <i class="fas fa-user-circle"></i> <span>আমার প্রোফাইল</span>
+        </a>
+        <a href="#" class="menu-item">
+            <i class="fas fa-sign-out-alt"></i> <span>লগ আউট</span>
+        </a>
+    </div>
 
-// ========== FIREBASE CONFIGURATION ==========
-const firebaseConfig = {
-    apiKey: "AIzaSyCRWpnJC1Z3WCNUAyfjhw8KlKyJ03z3G2w",
-    authDomain: "mentor-ac742.firebaseapp.com",
-    projectId: "mentor-ac742",
-    storageBucket: "mentor-ac742.firebasestorage.app",
-    messagingSenderId: "271805714479",
-    appId: "1:271805714479:web:efc071e2021db4286db6da",
-    measurementId: "G-612FVVNZVK"
-};
-
-// Initialize Firebase
-const app = firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth(app);
-const db = firebase.firestore(app);
-
-// ========== STATE MANAGEMENT ==========
-const AppContext = createContext();
-
-const AppProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [userData, setUserData] = useState(null);
-    const [isAdmin, setIsAdmin] = useState(false);
-    const [loading, setLoading] = useState(true);
-    const [theme, setTheme] = useState({
-        primary: "#667eea",
-        secondary: "#764ba2",
-        gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        darkMode: true
-    });
-    const [broadcasts, setBroadcasts] = useState([]);
-    const [notifications, setNotifications] = useState([]);
-    const [studyProgress, setStudyProgress] = useState({});
-
-    useEffect(() => {
-        // Load user from localStorage
-        const savedUser = localStorage.getItem('study-mentor-user');
-        const savedData = localStorage.getItem('study-mentor-data');
-        const savedTheme = localStorage.getItem('study-mentor-theme');
+    <div class="main-content">
         
-        if (savedUser) setUser(JSON.parse(savedUser));
-        if (savedData) setUserData(JSON.parse(savedData));
-        if (savedTheme) setTheme(JSON.parse(savedTheme));
+        <div class="header">
+            <div>
+                <h2 id="page-title">জরুরি সেবা</h2>
+                <p style="color: var(--text-gray); font-size: 14px;">দ্রুত সাহায্য পাওয়ার জন্য এখানে ট্যাপ করুন</p>
+            </div>
+            <div class="user-info">
+                <i class="fas fa-bell" style="color: var(--text-gray); cursor: pointer;"></i>
+                <div class="user-avatar">RA</div>
+            </div>
+        </div>
 
-        // Mock data for demonstration
-        setBroadcasts([
-            { id: 1, title: "New Course Available", description: "Advanced Mathematics 2024", imageUrl: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
-            { id: 2, title: "Exam Schedule", description: "Final exams starting next week", imageUrl: "https://images.unsplash.com/photo-1501504905252-473c47e087f8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" }
-        ]);
+        <div id="emergency" class="content-section active">
+            <div class="emergency-grid">
+                <div class="e-card police">
+                    <div class="e-icon" style="background: #eaf0ff; color: #0c2461;">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <h3>গ্রাম পুলিশ</h3>
+                    <p style="font-size: 13px; color: #777;">রহিম শেখ (চৌকিদার)</p>
+                    <button class="btn-call"><i class="fas fa-phone"></i> কল করুন</button>
+                </div>
+                <div class="e-card fire">
+                    <div class="e-icon" style="background: #ffe3e3; color: #eb3b5a;">
+                        <i class="fas fa-fire-extinguisher"></i>
+                    </div>
+                    <h3>ফায়ার সার্ভিস</h3>
+                    <p style="font-size: 13px; color: #777;">সদর দপ্তর</p>
+                    <button class="btn-call"><i class="fas fa-phone"></i> কল করুন</button>
+                </div>
+                <div class="e-card hospital">
+                    <div class="e-icon" style="background: #e1fcf0; color: #20bf6b;">
+                        <i class="fas fa-clinic-medical"></i>
+                    </div>
+                    <h3>অ্যাম্বুলেন্স</h3>
+                    <p style="font-size: 13px; color: #777;">ড্রাইভার: করিম</p>
+                    <button class="btn-call" style="background: #20bf6b;"><i class="fas fa-phone"></i> কল করুন</button>
+                </div>
+                <div class="e-card power">
+                    <div class="e-icon" style="background: #fff5d9; color: #f7b731;">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3>পল্লী বিদ্যুৎ</h3>
+                    <p style="font-size: 13px; color: #777;">অভিযোগ কেন্দ্র</p>
+                    <button class="btn-call" style="background: #f7b731; color: black;"><i class="fas fa-phone"></i> কল করুন</button>
+                </div>
+            </div>
+        </div>
 
-        setNotifications([
-            { id: 1, message: "New assignment posted in Physics" },
-            { id: 2, message: "Study group meeting tomorrow at 3 PM" },
-            { id: 3, message: "Your progress is 85% complete" }
-        ]);
+        <div id="blood" class="content-section">
+            <div class="blood-header">
+                <select class="filter-box">
+                    <option>সকল গ্রুপ</option>
+                    <option>A+</option>
+                    <option>B+</option>
+                    <option>O+</option>
+                    <option>AB+</option>
+                </select>
+                <input type="text" class="search-box" placeholder="এলাকা বা নাম দিয়ে খুঁজুন...">
+            </div>
 
-        setTimeout(() => setLoading(false), 2000);
-    }, []);
+            <div class="donor-list">
+                <div class="donor-card">
+                    <div style="display: flex; gap: 15px; align-items: center;">
+                        <div class="blood-group">B+</div>
+                        <div class="donor-info">
+                            <h4>মোহাম্মদ আব্দুল্লাহ</h4>
+                            <p><i class="fas fa-map-marker-alt"></i> দক্ষিণ পাড়া, মসজিদ রোড</p>
+                            <span style="font-size: 12px; color: var(--accent-green);">শেষ রক্তদান: ৩ মাস আগে</span>
+                        </div>
+                    </div>
+                    <div>
+                        <a href="#" class="action-btn msg-btn"><i class="fas fa-comment"></i></a>
+                        <a href="tel:01700000000" class="action-btn call-btn"><i class="fas fa-phone-alt"></i> কল</a>
+                    </div>
+                </div>
 
-    const value = {
-        user, setUser, userData, setUserData, isAdmin, setIsAdmin,
-        loading, setLoading, theme, setTheme, broadcasts, notifications,
-        studyProgress, setStudyProgress
-    };
+                <div class="donor-card">
+                    <div style="display: flex; gap: 15px; align-items: center;">
+                        <div class="blood-group">O+</div>
+                        <div class="donor-info">
+                            <h4>সুমন আহমেদ</h4>
+                            <p><i class="fas fa-map-marker-alt"></i> স্কুল মোড়</p>
+                            <span style="font-size: 12px; color: var(--accent-red);">এখনই রক্ত দিতে পারবেন</span>
+                        </div>
+                    </div>
+                    <div>
+                        <a href="#" class="action-btn msg-btn"><i class="fas fa-comment"></i></a>
+                        <a href="tel:01700000000" class="action-btn call-btn"><i class="fas fa-phone-alt"></i> কল</a>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    return React.createElement(AppContext.Provider, { value }, children);
-};
-
-const useApp = () => useContext(AppContext);
-
-// ========== LOADING SCREEN ==========
-const LoadingScreen = () => {
-    const { theme } = useApp();
-    
-    return React.createElement(motion.div, {
-        className: "fixed inset-0 z-50 flex flex-col items-center justify-center",
-        style: { background: theme.gradient },
-        initial: { opacity: 1 },
-        exit: { opacity: 0 }
-    }, [
-        // Bird Animation
-        React.createElement(motion.div, {
-            key: "bird",
-            className: "relative mb-8",
-            animate: {
-                x: [0, 100, 150, 200, 250, 300],
-                y: [0, -50, 0, -30, 0, -10],
-                rotate: [0, 10, 0, -10, 0, 5]
-            },
-            transition: { duration: 2, ease: "easeInOut" }
-        }, [
-            React.createElement('svg', {
-                width: 60,
-                height: 60,
-                viewBox: "0 0 100 100",
-                className: "text-white"
-            }, [
-                React.createElement(motion.path, {
-                    d: "M20,50 Q40,30 60,50 Q80,70 100,50",
-                    fill: "none",
-                    stroke: "currentColor",
-                    strokeWidth: 3,
-                    initial: { pathLength: 0 },
-                    animate: { pathLength: 1 },
-                    transition: { duration: 2 }
-                }),
-                React.createElement(motion.circle, {
-                    cx: 40,
-                    cy: 45,
-                    r: 10,
-                    fill: "currentColor",
-                    initial: { scale: 0 },
-                    animate: { scale: 1 },
-                    transition: { delay: 0.5 }
-                }),
-                React.createElement(motion.circle, {
-                    cx: 55,
-                    cy: 45,
-                    r: 8,
-                    fill: "currentColor",
-                    initial: { scale: 0 },
-                    animate: { scale: 1 },
-                    transition: { delay: 0.6 }
-                })
-            ])
-        ]),
-
-        // MENTOR Text
-        React.createElement('div', {
-            key: "text",
-            className: "flex"
-        }, 
-        "MENTOR".split('').map((letter, index) => 
-            React.createElement(motion.span, {
-                key: index,
-                className: "text-6xl font-bold text-white tracking-wider mx-1",
-                initial: { opacity: 0, y: 20 },
-                animate: { opacity: 1, y: 0 },
-                transition: { delay: index * 0.1 }
-            }, letter)
-        ))
-    ]);
-};
-
-// ========== AUTHENTICATION CARD ==========
-const AuthCard = () => {
-    const { setUser, setUserData, theme } = useApp();
-    const [isLogin, setIsLogin] = useState(true);
-    const [shake, setShake] = useState(false);
-    const [formData, setFormData] = useState({ name: '', email: '', password: '' });
-    const [showWelcome, setShowWelcome] = useState(false);
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        
-        if (!formData.email || !formData.password) {
-            setShake(true);
-            setTimeout(() => setShake(false), 500);
-            return;
-        }
-
-        // Mock authentication
-        const mockUser = {
-            uid: 'user_' + Date.now(),
-            email: formData.email,
-            displayName: formData.name || 'Student'
-        };
-
-        const mockUserData = {
-            id: mockUser.uid,
-            name: formData.name || 'Student',
-            email: formData.email,
-            role: 'student',
-            progress: {}
-        };
-
-        // Save to localStorage
-        localStorage.setItem('study-mentor-user', JSON.stringify(mockUser));
-        localStorage.setItem('study-mentor-data', JSON.stringify(mockUserData));
-
-        setUser(mockUser);
-        setUserData(mockUserData);
-        setShowWelcome(true);
-    };
-
-    const handleGoogleAuth = () => {
-        const mockUser = {
-            uid: 'google_user_' + Date.now(),
-            email: 'student@gmail.com',
-            displayName: 'Google Student'
-        };
-
-        const mockUserData = {
-            id: mockUser.uid,
-            name: 'Google Student',
-            email: 'student@gmail.com',
-            role: 'student',
-            progress: {}
-        };
-
-        localStorage.setItem('study-mentor-user', JSON.stringify(mockUser));
-        localStorage.setItem('study-mentor-data', JSON.stringify(mockUserData));
-
-        setUser(mockUser);
-        setUserData(mockUserData);
-        setShowWelcome(true);
-    };
-
-    return React.createElement(React.Fragment, null, [
-        React.createElement('div', {
-            key: "auth",
-            className: "min-h-screen flex items-center justify-center p-4"
-        }, [
-            React.createElement(motion.div, {
-                className: "w-full max-w-md",
-                initial: { opacity: 0, y: 20 },
-                animate: { opacity: 1, y: 0 }
-            }, [
-                React.createElement(AnimatePresence, { mode: "wait" }, [
-                    React.createElement(motion.div, {
-                        key: isLogin ? 'login' : 'register',
-                        className: `glass-card rounded-2xl p-8 shadow-2xl ${shake ? 'animate-shake' : ''}`,
-                        initial: { x: isLogin ? -100 : 100, opacity: 0 },
-                        animate: { x: 0, opacity: 1 },
-                        exit: { x: isLogin ? 100 : -100, opacity: 0 },
-                        transition: { type: 'spring', damping: 25 }
-                    }, [
-                        // Header
-                        React.createElement('div', { className: "text-center mb-8" }, [
-                            React.createElement('h2', { className: "text-3xl font-bold text-white mb-2" },
-                                isLogin ? 'Welcome Back' : 'Create Account'
-                            ),
-                            React.createElement('p', { className: "text-white/70" },
-                                isLogin ? 'Sign in to continue' : 'Start your learning journey'
-                            )
-                        ]),
-
-                        // Form
-                        React.createElement('form', { onSubmit: handleSubmit, className: "space-y-6" }, [
-                            !isLogin && React.createElement('div', { className: "relative" }, [
-                                React.createElement(FaUser, { className: "absolute left-4 top-1/2 transform -translate-y-1/2 text-white/60" }),
-                                React.createElement('input', {
-                                    type: "text",
-                                    placeholder: "Full Name",
-                                    className: "w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/50 focus:outline-none focus:border-white/30 transition",
-                                    value: formData.name,
-                                    onChange: (e) => setFormData({...formData, name: e.target.value})
-                                })
-                            ]),
-
-                            React.createElement('div', { className: "relative" }, [
-                                React.createElement(FaEnvelope, { className: "absolute left-4 top-1/2 transform -translate-y-1/2 text-white/60" }),
-                                React.createElement('input', {
-                                    type: "email",
-                                    placeholder: "Email Address",
-                                    className: "w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/50 focus:outline-none focus:border-white/30 transition",
-                                    value: formData.email,
-                                    onChange: (e) => setFormData({...formData, email: e.target.value})
-                                })
-                            ]),
-
-                            React.createElement('div', { className: "relative" }, [
-                                React.createElement(FaLock, { className: "absolute left-4 top-1/2 transform -translate-y-1/2 text-white/60" }),
-                                React.createElement('input', {
-                                    type: "password",
-                                    placeholder: "Password",
-                                    className: "w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/50 focus:outline-none focus:border-white/30 transition",
-                                    value: formData.password,
-                                    onChange: (e) => setFormData({...formData, password: e.target.value})
-                                })
-                            ]),
-
-                            React.createElement('button', {
-                                type: "submit",
-                                className: "w-full py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl hover:opacity-90 transition transform hover:scale-[1.02]"
-                            }, isLogin ? 'Sign In' : 'Create Account')
-                        ]),
-
-                        // Divider
-                        React.createElement('div', { className: "relative my-6" }, [
-                            React.createElement('div', { className: "absolute inset-0 flex items-center" }, [
-                                React.createElement('div', { className: "w-full border-t border-white/10" })
-                            ]),
-                            React.createElement('div', { className: "relative flex justify-center text-sm" }, [
-                                React.createElement('span', { className: "px-4 bg-transparent text-white/50" }, "Or continue with")
-                            ])
-                        ]),
-
-                        // Google Button
-                        React.createElement('button', {
-                            onClick: handleGoogleAuth,
-                            className: "w-full flex items-center justify-center gap-3 py-3 bg-white text-gray-800 font-semibold rounded-xl hover:bg-gray-100 transition"
-                        }, [
-                            React.createElement(FaGoogle, { size: 20 }),
-                            "Sign in with Google"
-                        ]),
-
-                        // Toggle
-                        React.createElement('div', { className: "text-center mt-6" }, [
-                            React.createElement('button', {
-                                type: "button",
-                                onClick: () => setIsLogin(!isLogin),
-                                className: "text-white/70 hover:text-white transition"
-                            }, isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in")
-                        ])
-                    ])
-                ])
-            ])
-        ]),
-
-        // Welcome Modal
-        showWelcome && React.createElement(WelcomeModal, {
-            key: "welcome",
-            userName: formData.name || 'Student',
-            onClose: () => setShowWelcome(false)
-        })
-    ]);
-};
-
-// ========== WELCOME MODAL ==========
-const WelcomeModal = ({ userName, onClose }) => {
-    const [showConfetti, setShowConfetti] = useState(true);
-
-    useEffect(() => {
-        const timer = setTimeout(() => setShowConfetti(false), 3000);
-        return () => clearTimeout(timer);
-    }, []);
-
-    return React.createElement(motion.div, {
-        className: "fixed inset-0 z-50 flex items-center justify-center p-4",
-        initial: { opacity: 0 },
-        animate: { opacity: 1 }
-    }, [
-        // Confetti Effect
-        showConfetti && React.createElement(motion.div, {
-            className: "absolute inset-0 pointer-events-none",
-            initial: { opacity: 1 },
-            animate: { opacity: 0 },
-            transition: { delay: 2 }
-        }, Array.from({ length: 50 }).map((_, i) => 
-            React.createElement(motion.div, {
-                key: i,
-                className: "absolute w-2 h-2 rounded-full",
-                style: {
-                    background: `hsl(${Math.random() * 360}, 100%, 60%)`,
-                    left: `${Math.random() * 100}%`,
-                    top: `${Math.random() * 100}%`
-                },
-                initial: { y: -100, opacity: 1 },
-                animate: { 
-                    y: window.innerHeight,
-                    x: Math.random() * 100 - 50,
-                    rotate: 360
-                },
-                transition: { 
-                    duration: 2,
-                    delay: Math.random() * 0.5 
-                }
-            })
-        )),
-
-        // Modal Content
-        React.createElement(motion.div, {
-            className: "glass-card rounded-3xl p-8 max-w-md w-full shadow-2xl",
-            initial: { scale: 0.8 },
-            animate: { scale: 1 }
-        }, [
-            React.createElement('div', { className: "text-center mb-6" }, [
-                React.createElement('div', { className: "w-24 h-24 rounded-full bg-gradient-to-r from-green-400 to-blue-500 mx-auto flex items-center justify-center mb-4" }, [
-                    React.createElement(FaCheckCircle, { size: 48, className: "text-white" })
-                ]),
-                React.createElement('h2', { className: "text-3xl font-bold text-white mb-2" }, `Welcome ${userName}!`),
-                React.createElement('p', { className: "text-white/70" }, "Your learning journey begins now!")
-            ]),
-
-            React.createElement('button', {
-                onClick: onClose,
-                className: "w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-xl hover:opacity-90 transition"
-            }, "Start Learning")
-        ])
-    ]);
-};
-
-// ========== STUDENT HOME PAGE ==========
-const HomePage = () => {
-    const { userData, theme, broadcasts, notifications } = useApp();
-    const [activeTab, setActiveTab] = useState('home');
-    const [showStudy, setShowStudy] = useState(false);
-    const [showAI, setShowAI] = useState(false);
-    const [showSupport, setShowSupport] = useState(false);
-
-    const NavButton = ({ icon: Icon, label, active, onClick }) => 
-        React.createElement(motion.button, {
-            whileHover: { scale: 1.05 },
-            whileTap: { scale: 0.95 },
-            className: `flex flex-col items-center p-2 rounded-xl transition-all ${active ? 'text-white bg-white/20' : 'text-white/70 hover:text-white hover:bg-white/10'}`,
-            onClick
-        }, [
-            React.createElement(Icon, { size: 24 }),
-            React.createElement('span', { className: "text-xs mt-1" }, label)
-        ]);
-
-    return React.createElement('div', {
-        className: "min-h-screen pb-20",
-        style: { background: theme.gradient }
-    }, [
-        // Top Broadcast Slider
-        React.createElement('div', {
-            className: "relative h-40 overflow-hidden rounded-b-3xl bg-black/10"
-        }, [
-            React.createElement(motion.div, {
-                className: "flex h-full",
-                animate: { x: [0, -800] },
-                transition: { repeat: Infinity, duration: 20, ease: "linear" }
-            }, broadcasts.map((broadcast, index) =>
-                React.createElement('div', {
-                    key: index,
-                    className: "w-full flex-shrink-0 relative"
-                }, [
-                    React.createElement('div', {
-                        className: "absolute inset-0 bg-gradient-to-r from-purple-600/50 to-blue-600/50"
-                    }),
-                    React.createElement('div', {
-                        className: "absolute bottom-0 left-0 right-0 p-4"
-                    }, [
-                        React.createElement('h3', { className: "text-white font-bold text-lg" }, broadcast.title),
-                        React.createElement('p', { className: "text-white/80 text-sm" }, broadcast.description)
-                    ])
-                ])
-            ))
-        ]),
-
-        // Main Content
-        React.createElement('div', { className: "p-6" }, [
-            // Welcome Header
-            React.createElement(motion.div, {
-                className: "mb-8",
-                initial: { opacity: 0, y: 20 },
-                animate: { opacity: 1, y: 0 }
-            }, [
-                React.createElement('h1', { className: "text-3xl font-bold text-white" }, [
-                    "Welcome back, ",
-                    React.createElement('span', { className: "text-yellow-300" }, userData?.name || "Student"),
-                    "!"
-                ]),
-                React.createElement('p', { className: "text-white/70 mt-2" }, "Continue your learning journey")
-            ]),
-
-            // Core Options
-            React.createElement('div', { className: "grid grid-cols-3 gap-4 mb-8" }, [
-                { icon: FaClock, label: 'Routine', color: 'from-blue-500 to-cyan-400' },
-                { icon: FaTarget, label: 'Study', color: 'from-purple-500 to-pink-500' },
-                { icon: FaChartLine, label: 'Rank', color: 'from-orange-500 to-red-500' }
-            ].map((item, index) =>
-                React.createElement(motion.div, {
-                    key: index,
-                    className: "glass-card rounded-2xl p-6 text-center border border-white/20 cursor-pointer hover:bg-white/15 transition",
-                    initial: { opacity: 0, scale: 0.8 },
-                    animate: { opacity: 1, scale: 1 },
-                    transition: { delay: index * 0.1 },
-                    whileHover: { y: -5 },
-                    onClick: () => item.label === 'Study' && setShowStudy(true)
-                }, [
-                    React.createElement('div', {
-                        className: `w-16 h-16 rounded-full bg-gradient-to-br ${item.color} mx-auto flex items-center justify-center mb-4`
-                    }, React.createElement(item.icon, { size: 28, className: "text-white" })),
-                    React.createElement('h3', { className: "text-white font-semibold" }, item.label)
-                ])
-            )),
-
-            // Notification Marquee
-            React.createElement('div', {
-                className: "bg-black/20 rounded-xl p-3 mb-6 overflow-hidden"
-            }, [
-                React.createElement(motion.div, {
-                    className: "flex space-x-8 whitespace-nowrap",
-                    animate: { x: [0, -1000] },
-                    transition: { repeat: Infinity, duration: 30, ease: "linear" }
-                }, notifications.map((notif, i) =>
-                    React.createElement('span', {
-                        key: i,
-                        className: "text-white/90 text-sm"
-                    }, `📢 ${notif.message}`)
-                ))
-            ]),
-
-            // Flashcard Section
-            React.createElement('div', { className: "mb-6" }, [
-                React.createElement('h3', { className: "text-white font-bold text-lg mb-4" }, "Memorizing Cards"),
-                React.createElement('div', { className: "grid grid-cols-5 gap-2" }, 
-                    ['Math', 'Physics', 'Chemistry', 'Biology', 'History'].map((subject, i) =>
-                        React.createElement(motion.div, {
-                            key: i,
-                            className: "glass-card rounded-xl p-4 text-center",
-                            whileHover: { scale: 1.05 }
-                        }, [
-                            React.createElement('div', { className: "w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 mx-auto mb-2 flex items-center justify-center" }, [
-                                React.createElement(FaBook, { className: "text-white" })
-                            ]),
-                            React.createElement('p', { className: "text-white text-sm font-medium" }, subject),
-                            React.createElement('div', { className: "w-8 h-8 rounded-full border-2 border-green-500 border-t-transparent mx-auto mt-2" })
-                        ])
-                    )
-                )
-            ]),
-
-            // AI & Support
-            React.createElement('div', { className: "grid grid-cols-2 gap-4" }, [
-                React.createElement('div', {
-                    className: "bg-gradient-to-br from-blue-500/20 to-cyan-400/20 rounded-2xl p-4 border border-white/20 cursor-pointer",
-                    onClick: () => setShowAI(true)
-                }, [
-                    React.createElement('div', { className: "flex items-center gap-3" }, [
-                        React.createElement(FaBrain, { className: "text-white" }),
-                        React.createElement('span', { className: "text-white font-semibold" }, "AI Assistant")
-                    ])
-                ]),
-                React.createElement('div', {
-                    className: "bg-gradient-to-br from-green-500/20 to-emerald-400/20 rounded-2xl p-4 border border-white/20 cursor-pointer",
-                    onClick: () => setShowSupport(true)
-                }, [
-                    React.createElement('div', { className: "flex items-center gap-3" }, [
-                        React.createElement(FaWhatsapp, { className: "text-white" }),
-                        React.createElement('span', { className: "text-white font-semibold" }, "Support")
-                    ])
-                ])
-            ])
-        ]),
-
-        // Bottom Navigation
-        React.createElement('div', {
-            className: "fixed bottom-0 left-0 right-0 bg-black/30 backdrop-blur-lg border-t border-white/10 px-4 py-3"
-        }, [
-            React.createElement('div', { className: "flex justify-around items-center" }, [
-                React.createElement(NavButton, {
-                    icon: FaHome,
-                    label: "Home",
-                    active: activeTab === 'home',
-                    onClick: () => setActiveTab('home')
-                }),
-                React.createElement(NavButton, {
-                    icon: FaBook,
-                    label: "Book",
-                    active: activeTab === 'book',
-                    onClick: () => setActiveTab('book')
-                }),
+        <div id="profile" class="content-section">
+            <div class="profile-container">
+                <button class="edit-mode-btn" onclick="toggleEditMode()">
+                    <i class="fas fa-pen"></i> এডিট
+                </button>
                 
-                // Central Exam Button
-                React.createElement(motion.button, {
-                    className: "w-16 h-16 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 -mt-8 shadow-xl flex items-center justify-center",
-                    whileHover: { scale: 1.1 },
-                    whileTap: { scale: 0.9 }
-                }, React.createElement(FaClock, { size: 24, className: "text-white" })),
+                <div class="profile-header">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Profile" class="profile-img">
+                    <div class="edit-badge"><i class="fas fa-camera"></i></div>
+                    <h3 style="margin-top: 10px;">রাহিমুল ইসলাম</h3>
+                    <p style="color: var(--text-gray); font-size: 13px;">সাধারণ সদস্য | ওয়ার্ড নং ৩</p>
+                </div>
 
-                React.createElement(NavButton, {
-                    icon: FaStar,
-                    label: "Review",
-                    active: activeTab === 'review',
-                    onClick: () => setActiveTab('review')
-                }),
-                React.createElement(NavButton, {
-                    icon: FaUser,
-                    label: "Profile",
-                    active: activeTab === 'profile',
-                    onClick: () => setActiveTab('profile')
-                })
-            ])
-        ]),
+                <form id="profileForm">
+                    <div class="form-group">
+                        <label>পুরো নাম</label>
+                        <input type="text" value="রাহিমুল ইসলাম" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label>মোবাইল নম্বর</label>
+                        <input type="tel" value="০১৭০০-১২৩৪৫৬" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label>রক্তের গ্রুপ</label>
+                        <select disabled>
+                            <option selected>B+</option>
+                            <option>A+</option>
+                            <option>O+</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>ঠিকানা</label>
+                        <input type="text" value="মোল্লা বাড়ি, দক্ষিণ গ্রাম" disabled>
+                    </div>
+                    
+                    <button type="button" class="save-btn" id="saveBtn" onclick="saveProfile()">
+                        পরিবর্তন সেভ করুন
+                    </button>
+                </form>
+            </div>
+        </div>
 
-        // Study Mode Modal
-        showStudy && React.createElement(StudyMode, {
-            onClose: () => setShowStudy(false)
-        }),
+    </div>
 
-        // AI Chat Modal
-        showAI && React.createElement(AIChat, {
-            onClose: () => setShowAI(false)
-        }),
+    <script>
+        // সেকশন পরিবর্তনের লজিক
+        function showSection(sectionId, element) {
+            // সব মেনু থেকে active ক্লাস সরান
+            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+            // যেটাতে ক্লিক হয়েছে সেটাতে active যোগ করুন
+            element.classList.add('active');
 
-        // Support Modal
-        showSupport && React.createElement(SupportGrid, {
-            onClose: () => setShowSupport(false)
-        })
-    ]);
-};
+            // সব কন্টেন্ট লুকিয়ে ফেলুন
+            document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
+            // নির্দিষ্ট কন্টেন্ট দেখান
+            document.getElementById(sectionId).classList.add('active');
 
-// ========== STUDY MODE ==========
-const StudyMode = ({ onClose }) => {
-    const { studyProgress, setStudyProgress } = useApp();
-    const [currentDay, setCurrentDay] = useState(1);
-    const [progress, setProgress] = useState(0);
-    const [timeLeft, setTimeLeft] = useState(1500);
-    const [showMCQ, setShowMCQ] = useState(false);
-    const [score, setScore] = useState(null);
-    const [level, setLevel] = useState('beginner');
-
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setTimeLeft(prev => {
-                if (prev <= 1) {
-                    clearInterval(timer);
-                    return 0;
-                }
-                return prev - 1;
-            });
-        }, 1000);
-        return () => clearInterval(timer);
-    }, []);
-
-    const formatTime = (seconds) => {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    };
-
-    const handlePractice = () => {
-        setShowMCQ(true);
-    };
-
-    const handleMCQSubmit = (answers) => {
-        const calculatedScore = Math.floor(Math.random() * 20) + 70; // Mock score 70-90
-        setScore(calculatedScore);
-        
-        if (calculatedScore >= 80) {
-            setCurrentDay(prev => prev + 1);
-            setStudyProgress({ ...studyProgress, [`day${currentDay}`]: calculatedScore });
+            // টাইটেল আপডেট
+            let titles = {
+                'emergency': 'জরুরি সেবা',
+                'blood': 'রক্তদাতা খুঁজুন',
+                'profile': 'আমার প্রোফাইল'
+            };
+            document.getElementById('page-title').innerText = titles[sectionId];
         }
-    };
 
-    return React.createElement(motion.div, {
-        className: "fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4",
-        initial: { opacity: 0 },
-        animate: { opacity: 1 },
-        exit: { opacity: 0 }
-    }, [
-        React.createElement(motion.div, {
-            className: "bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-2xl",
-            initial: { scale: 0.9, y: 20 },
-            animate: { scale: 1, y: 0 }
-        }, [
-            // Header
-            React.createElement('div', { className: "p-6 border-b border-white/10" }, [
-                React.createElement('div', { className: "flex justify-between items-center" }, [
-                    React.createElement('div', null, [
-                        React.createElement('h2', { className: "text-2xl font-bold text-white" }, "Study Mode"),
-                        React.createElement('p', { className: "text-white/70" }, `Day ${currentDay} • ${level.charAt(0).toUpperCase() + level.slice(1)}`)
-                    ]),
-                    React.createElement('button', {
-                        onClick: onClose,
-                        className: "p-2 hover:bg-white/10 rounded-xl transition"
-                    }, React.createElement(FaTimesCircle, { className: "text-white", size: 24 }))
-                ]),
+        // প্রোফাইল এডিট লজিক
+        function toggleEditMode() {
+            let inputs = document.querySelectorAll('#profileForm input, #profileForm select');
+            let saveBtn = document.getElementById('saveBtn');
+            let isDisabled = inputs[0].disabled;
 
-                // Progress & Timer
-                React.createElement('div', { className: "flex items-center gap-6 mt-6" }, [
-                    React.createElement('div', { className: "flex-1" }, [
-                        React.createElement('div', { className: "flex justify-between text-sm text-white/70 mb-1" }, [
-                            React.createElement('span', null, "Daily Progress"),
-                            React.createElement('span', null, `${progress}%`)
-                        ]),
-                        React.createElement('div', { className: "h-2 bg-white/10 rounded-full overflow-hidden" }, [
-                            React.createElement(motion.div, {
-                                className: "h-full bg-gradient-to-r from-green-400 to-blue-500",
-                                initial: { width: 0 },
-                                animate: { width: `${progress}%` },
-                                transition: { duration: 1 }
-                            })
-                        ])
-                    ]),
-                    
-                    React.createElement('div', { className: "flex items-center gap-2 bg-white/5 px-4 py-2 rounded-xl" }, [
-                        React.createElement(FaClock, { className: "text-white/70", size: 20 }),
-                        React.createElement('span', { className: "text-white font-mono text-lg" }, formatTime(timeLeft))
-                    ])
-                ]),
+            inputs.forEach(input => {
+                input.disabled = !isDisabled;
+            });
 
-                // Level Selector
-                React.createElement('div', { className: "mt-4" }, [
-                    React.createElement('select', {
-                        value: level,
-                        onChange: (e) => setLevel(e.target.value),
-                        className: "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-white/30"
-                    }, [
-                        React.createElement('option', { value: "beginner" }, "Beginner"),
-                        React.createElement('option', { value: "intermediate" }, "Intermediate"),
-                        React.createElement('option', { value: "advanced" }, "Advanced")
-                    ])
-                ])
-            ]),
+            if (isDisabled) {
+                saveBtn.style.display = 'block';
+                saveBtn.style.animation = 'fadeIn 0.3s';
+                inputs[0].focus(); // প্রথম ফিল্ডে ফোকাস করবে
+            } else {
+                saveBtn.style.display = 'none';
+            }
+        }
 
-            // Content
-            React.createElement('div', { className: "p-6 overflow-y-auto", style: { maxHeight: 'calc(90vh - 200px)' } }, [
-                React.createElement('div', { className: "glass-card rounded-2xl p-6 mb-6" }, [
-                    React.createElement('h3', { className: "text-xl font-bold text-white mb-4" }, `Day ${currentDay}: Introduction to React`),
-                    React.createElement('div', { className: "space-y-4 text-white/80" }, [
-                        React.createElement('p', null, "Today we'll learn about React components and JSX syntax..."),
-                        React.createElement('p', null, "Components let you split the UI into independent, reusable pieces."),
-                        React.createElement('p', null, "JSX is a syntax extension that allows you to write HTML in JavaScript.")
-                    ])
-                ]),
-
-                React.createElement('div', { className: "flex gap-4" }, [
-                    React.createElement('button', {
-                        onClick: () => setProgress(Math.min(100, progress + 20)),
-                        className: "flex-1 flex items-center justify-center gap-2 glass-card hover:bg-white/20 text-white py-3 rounded-xl transition"
-                    }, [
-                        React.createElement(FaBook, { size: 20 }),
-                        "Mark as Read"
-                    ]),
-                    
-                    React.createElement('button', {
-                        onClick: handlePractice,
-                        className: "flex-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-xl font-semibold hover:opacity-90 transition"
-                    }, "Practice Now")
-                ])
-            ])
-        ]),
-
-        // MCQ Modal
-        showMCQ && React.createElement(MCQModal, {
-            onSubmit: handleMCQSubmit,
-            onClose: () => setShowMCQ(false),
-            score: score,
-            setScore: setScore
-        })
-    ]);
-};
-
-const MCQModal = ({ onSubmit, onClose, score, setScore }) => {
-    const [answers, setAnswers] = useState({});
-
-    const handleSubmit = () => {
-        const calculatedScore = Math.floor(Math.random() * 20) + 70;
-        setScore(calculatedScore);
-    };
-
-    return React.createElement(motion.div, {
-        className: "fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4",
-        initial: { opacity: 0 },
-        animate: { opacity: 1 },
-        exit: { opacity: 0 }
-    }, [
-        React.createElement(motion.div, {
-            className: "bg-gray-900 rounded-3xl w-full max-w-lg p-6 border border-white/10",
-            initial: { scale: 0.9 },
-            animate: { scale: 1 }
-        }, 
-        score === null ? [
-            React.createElement('h3', { key: "title", className: "text-2xl font-bold text-white mb-6" }, "Practice Questions"),
-            
-            // MCQ Questions
-            React.createElement('div', { key: "questions", className: "space-y-4" }, [
-                [1, 2, 3, 4].map(i => 
-                    React.createElement('div', { key: i, className: "glass-card rounded-xl p-4" }, [
-                        React.createElement('p', { className: "text-white mb-3" }, `Question ${i}: What is the correct answer?`),
-                        React.createElement('div', { className: "space-y-2" }, 
-                            ['A', 'B', 'C', 'D'].map(opt =>
-                                React.createElement('label', {
-                                    key: opt,
-                                    className: "flex items-center gap-3 text-white/80 hover:text-white cursor-pointer"
-                                }, [
-                                    React.createElement('input', {
-                                        type: "radio",
-                                        name: `q${i}`,
-                                        className: "w-4 h-4"
-                                    }),
-                                    React.createElement('span', null, `Option ${opt}`)
-                                ])
-                            )
-                        )
-                    ])
-                )
-            ]),
-
-            React.createElement('button', {
-                key: "submit",
-                onClick: handleSubmit,
-                className: "w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 rounded-xl font-semibold hover:opacity-90 transition mt-6"
-            }, "Submit Answers")
-        ] : [
-            React.createElement('div', { key: "result", className: "text-center py-8" }, 
-                score >= 80 ? [
-                    React.createElement(motion.div, {
-                        key: "success",
-                        initial: { scale: 0 },
-                        animate: { scale: 1 },
-                        className: "mb-6"
-                    }, [
-                        React.createElement(FaCheckCircle, { className: "w-24 h-24 text-green-400 mx-auto" }),
-                        React.createElement('h3', { className: "text-2xl font-bold text-white mt-4" }, "Excellent! 🎉"),
-                        React.createElement('p', { className: "text-white/70 mt-2" }, `You scored ${score}%`)
-                    ])
-                ] : [
-                    React.createElement('div', { key: "fail" }, [
-                        React.createElement(FaTimesCircle, { className: "w-24 h-24 text-yellow-400 mx-auto" }),
-                        React.createElement('h3', { className: "text-2xl font-bold text-white mt-4" }, "Read Again 📚"),
-                        React.createElement('p', { className: "text-white/70 mt-2" }, `Score: ${score}% - Need 80% to proceed`)
-                    ])
-                ]),
-            React.createElement('button', {
-                key: "close",
-                onClick: onClose,
-                className: "mt-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-xl font-semibold hover:opacity-90 transition"
-            }, score >= 80 ? 'Continue Next Day' : 'Review Material')
-        ])
-    ]);
-};
-
-// ========== AI CHAT ==========
-const AIChat = ({ onClose }) => {
-    const [messages, setMessages] = useState([
-        { id: 1, text: "Hello! I'm your AI study assistant. How can I help you today?", isAI: true }
-    ]);
-    const [input, setInput] = useState('');
-
-    const handleSend = () => {
-        if (!input.trim()) return;
-        
-        setMessages(prev => [...prev, 
-            { id: Date.now(), text: input, isAI: false },
-            { id: Date.now() + 1, text: "I understand your question. Let me help you with that...", isAI: true }
-        ]);
-        setInput('');
-    };
-
-    return React.createElement(motion.div, {
-        className: "fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4",
-        initial: { opacity: 0 },
-        animate: { opacity: 1 }
-    }, [
-        React.createElement(motion.div, {
-            className: "bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl w-full max-w-lg h-[80vh] flex flex-col shadow-2xl",
-            initial: { scale: 0.9 },
-            animate: { scale: 1 }
-        }, [
-            // Header
-            React.createElement('div', { className: "p-6 border-b border-white/10 flex justify-between items-center" }, [
-                React.createElement('div', { className: "flex items-center gap-3" }, [
-                    React.createElement('div', { className: "w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 flex items-center justify-center" }, [
-                        React.createElement(FaBrain, { className: "text-white" })
-                    ]),
-                    React.createElement('div', null, [
-                        React.createElement('h2', { className: "text-xl font-bold text-white" }, "AI Assistant"),
-                        React.createElement('p', { className: "text-white/70 text-sm" }, "24/7 Study Support")
-                    ])
-                ]),
-                React.createElement('button', {
-                    onClick: onClose,
-                    className: "p-2 hover:bg-white/10 rounded-xl transition"
-                }, React.createElement(FaTimesCircle, { className: "text-white", size: 20 }))
-            ]),
-
-            // Messages
-            React.createElement('div', { className: "flex-1 overflow-y-auto p-6 space-y-4" }, 
-                messages.map(msg =>
-                    React.createElement(motion.div, {
-                        key: msg.id,
-                        className: `flex ${msg.isAI ? 'justify-start' : 'justify-end'}`,
-                        initial: { opacity: 0, y: 10 },
-                        animate: { opacity: 1, y: 0 }
-                    }, [
-                        React.createElement('div', {
-                            className: `max-w-[80%] rounded-2xl p-4 ${msg.isAI ? 'glass-card' : 'bg-gradient-to-r from-blue-500 to-purple-500'}`
-                        }, [
-                            React.createElement('p', { className: "text-white" }, msg.text)
-                        ])
-                    ])
-                )
-            ),
-
-            // Input
-            React.createElement('div', { className: "p-6 border-t border-white/10" }, [
-                React.createElement('div', { className: "flex gap-2" }, [
-                    React.createElement('input', {
-                        type: "text",
-                        value: input,
-                        onChange: (e) => setInput(e.target.value),
-                        onKeyPress: (e) => e.key === 'Enter' && handleSend(),
-                        placeholder: "Ask your study question...",
-                        className: "flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:border-white/30"
-                    }),
-                    React.createElement('button', {
-                        onClick: handleSend,
-                        className: "bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition"
-                    }, "Send")
-                ])
-            ])
-        ])
-    ]);
-};
-
-// ========== SUPPORT GRID ==========
-const SupportGrid = ({ onClose }) => {
-    const supportChannels = [
-        { icon: FaWhatsapp, name: "WhatsApp", color: "from-green-500 to-emerald-600", contact: "+1 234 567 890" },
-        { icon: FaEnvelope, name: "Email", color: "from-blue-500 to-cyan-400", contact: "support@mentor.com" },
-        { icon: FaBell, name: "Live Chat", color: "from-purple-500 to-pink-500", contact: "Available 24/7" }
-    ];
-
-    return React.createElement(motion.div, {
-        className: "fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4",
-        initial: { opacity: 0 },
-        animate: { opacity: 1 }
-    }, [
-        React.createElement(motion.div, {
-            className: "bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl w-full max-w-2xl p-6 shadow-2xl",
-            initial: { scale: 0.9 },
-            animate: { scale: 1 }
-        }, [
-            // Header
-            React.createElement('div', { className: "flex justify-between items-center mb-8" }, [
-                React.createElement('div', null, [
-                    React.createElement('h2', { className: "text-2xl font-bold text-white" }, "Support Channels"),
-                    React.createElement('p', { className: "text-white/70" }, "Get help anytime, anywhere")
-                ]),
-                React.createElement('button', {
-                    onClick: onClose,
-                    className: "p-2 hover:bg-white/10 rounded-xl transition"
-                }, React.createElement(FaTimesCircle, { className: "text-white", size: 24 }))
-            ]),
-
-            // Support Cards
-            React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-3 gap-6" }, 
-                supportChannels.map((channel, index) =>
-                    React.createElement(motion.div, {
-                        key: index,
-                        className: "glass-card rounded-2xl p-6 text-center",
-                        whileHover: { y: -5 }
-                    }, [
-                        React.createElement('div', {
-                            className: `w-16 h-16 rounded-full bg-gradient-to-br ${channel.color} mx-auto mb-4 flex items-center justify-center`
-                        }, React.createElement(channel.icon, { className: "text-white", size: 28 })),
-                        React.createElement('h3', { className: "text-white font-bold text-lg mb-2" }, channel.name),
-                        React.createElement('p', { className: "text-white/70" }, channel.contact),
-                        React.createElement('button', {
-                            className: "mt-4 w-full py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl transition"
-                        }, "Contact Now")
-                    ])
-                )
-            ),
-
-            // Additional Help
-            React.createElement('div', { className: "mt-8 p-4 bg-blue-500/10 rounded-xl" }, [
-                React.createElement('p', { className: "text-white text-center" }, "📞 Emergency Support: +1 800 123 4567")
-            ])
-        ])
-    ]);
-};
-
-// ========== ADMIN PANEL ==========
-const AdminDashboard = () => {
-    const { theme, setTheme } = useApp();
-    const [activeTab, setActiveTab] = useState('dashboard');
-    const [newTheme, setNewTheme] = useState({ ...theme });
-    const [aiApiKey, setAiApiKey] = useState('');
-    const [students] = useState([
-        { id: 1, name: "John Doe", email: "john@example.com", progress: 75 },
-        { id: 2, name: "Jane Smith", email: "jane@example.com", progress: 90 },
-        { id: 3, name: "Bob Johnson", email: "bob@example.com", progress: 60 }
-    ]);
-
-    const updateTheme = () => {
-        setTheme(newTheme);
-        localStorage.setItem('study-mentor-theme', JSON.stringify(newTheme));
-        alert('Theme updated successfully!');
-    };
-
-    const AdminCard = ({ icon: Icon, title, description, color, onClick }) =>
-        React.createElement(motion.div, {
-            className: "bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 cursor-pointer hover:bg-white/15 transition",
-            whileHover: { y: -5 },
-            onClick
-        }, [
-            React.createElement('div', {
-                className: `w-12 h-12 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center mb-4`
-            }, React.createElement(Icon, { className: "text-white", size: 24 })),
-            React.createElement('h3', { className: "text-white font-bold text-lg" }, title),
-            React.createElement('p', { className: "text-white/70 text-sm mt-1" }, description)
-        ]);
-
-    return React.createElement('div', { className: "min-h-screen bg-gray-900 flex" }, [
-        // Sidebar
-        React.createElement('div', { className: "w-64 bg-gray-800 border-r border-gray-700 p-6" }, [
-            React.createElement('h2', { className: "text-2xl font-bold text-white mb-8" }, "Admin Panel"),
-            React.createElement('nav', { className: "space-y-2" }, [
-                { id: 'dashboard', icon: FaChartLine, label: 'Dashboard' },
-                { id: 'students', icon: FaUsers, label: 'Student Management' },
-                { id: 'theme', icon: FaPalette, label: 'Theme Control' },
-                { id: 'settings', icon: FaCog, label: 'Settings' }
-            ].map(item =>
-                React.createElement('button', {
-                    key: item.id,
-                    onClick: () => setActiveTab(item.id),
-                    className: `w-full flex items-center gap-3 px-4 py-3 rounded-xl transition ${activeTab === item.id ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white' : 'text-gray-300 hover:bg-gray-700'}`
-                }, [
-                    React.createElement(item.icon, { size: 20 }),
-                    React.createElement('span', null, item.label)
-                ])
-            ))
-        ]),
-
-        // Main Content
-        React.createElement('div', { className: "flex-1 p-8" }, [
-            React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-3 gap-6 mb-8" }, [
-                React.createElement(AdminCard, {
-                    key: "students",
-                    icon: FaUsers,
-                    title: "Student Management",
-                    description: "Manage all registered students",
-                    color: "from-blue-500 to-cyan-400",
-                    onClick: () => setActiveTab('students')
-                }),
-                React.createElement(AdminCard, {
-                    key: "theme",
-                    icon: FaPalette,
-                    title: "Theme Control",
-                    description: "Customize app appearance",
-                    color: "from-purple-500 to-pink-500",
-                    onClick: () => setActiveTab('theme')
-                }),
-                React.createElement(AdminCard, {
-                    key: "api",
-                    icon: FaKey,
-                    title: "API Management",
-                    description: "Update AI API keys",
-                    color: "from-green-500 to-emerald-400",
-                    onClick: () => setActiveTab('settings')
-                })
-            ]),
-
-            // Active Tab Content
-            React.createElement('div', { className: "bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 border border-gray-700" }, 
-                activeTab === 'theme' ? [
-                    React.createElement('div', { key: "theme" }, [
-                        React.createElement('h3', { className: "text-xl font-bold text-white mb-6" }, "Theme Customization"),
-                        React.createElement('div', { className: "grid grid-cols-2 gap-4 mb-6" }, [
-                            React.createElement('div', null, [
-                                React.createElement('label', { className: "block text-white mb-2" }, "Primary Color"),
-                                React.createElement('input', {
-                                    type: "color",
-                                    value: newTheme.primary,
-                                    onChange: (e) => setNewTheme({...newTheme, primary: e.target.value}),
-                                    className: "w-full h-12 rounded-xl cursor-pointer"
-                                })
-                            ]),
-                            React.createElement('div', null, [
-                                React.createElement('label', { className: "block text-white mb-2" }, "Secondary Color"),
-                                React.createElement('input', {
-                                    type: "color",
-                                    value: newTheme.secondary,
-                                    onChange: (e) => setNewTheme({...newTheme, secondary: e.target.value}),
-                                    className: "w-full h-12 rounded-xl cursor-pointer"
-                                })
-                            ])
-                        ]),
-                        React.createElement('button', {
-                            onClick: updateTheme,
-                            className: "bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition"
-                        }, "Update Theme")
-                    ])
-                ] : activeTab === 'students' ? [
-                    React.createElement('div', { key: "students" }, [
-                        React.createElement('h3', { className: "text-xl font-bold text-white mb-6" }, "Student Management"),
-                        React.createElement('div', { className: "overflow-x-auto" }, [
-                            React.createElement('table', { className: "w-full" }, [
-                                React.createElement('thead', null, [
-                                    React.createElement('tr', { className: "text-left text-gray-300 border-b border-gray-700" }, [
-                                        React.createElement('th', { className: "pb-3" }, "Name"),
-                                        React.createElement('th', { className: "pb-3" }, "Email"),
-                                        React.createElement('th', { className: "pb-3" }, "Progress"),
-                                        React.createElement('th', { className: "pb-3" }, "Actions")
-                                    ])
-                                ]),
-                                React.createElement('tbody', null, 
-                                    students.map(student =>
-                                        React.createElement('tr', {
-                                            key: student.id,
-                                            className: "border-b border-gray-700/50"
-                                        }, [
-                                            React.createElement('td', { className: "py-4 text-white" }, student.name),
-                                            React.createElement('td', { className: "py-4 text-gray-300" }, student.email),
-                                            React.createElement('td', { className: "py-4" }, [
-                                                React.createElement('div', { className: "w-32 h-2 bg-gray-700 rounded-full overflow-hidden" }, [
-                                                    React.createElement('div', {
-                                                        className: "h-full bg-gradient-to-r from-green-400 to-blue-500",
-                                                        style: { width: `${student.progress}%` }
-                                                    })
-                                                ])
-                                            ]),
-                                            React.createElement('td', { className: "py-4" }, [
-                                                React.createElement('button', {
-                                                    className: "text-blue-400 hover:text-blue-300 mr-4"
-                                                }, "Edit"),
-                                                React.createElement('button', {
-                                                    className: "text-red-400 hover:text-red-300"
-                                                }, "Delete")
-                                            ])
-                                        ])
-                                    )
-                                )
-                            ])
-                        ])
-                    ])
-                ] : activeTab === 'settings' ? [
-                    React.createElement('div', { key: "settings" }, [
-                        React.createElement('h3', { className: "text-xl font-bold text-white mb-6" }, "API Settings"),
-                        React.createElement('div', { className: "space-y-4" }, [
-                            React.createElement('div', null, [
-                                React.createElement('label', { className: "block text-gray-300 mb-2" }, "AI API Key"),
-                                React.createElement('input', {
-                                    type: "password",
-                                    value: aiApiKey,
-                                    onChange: (e) => setAiApiKey(e.target.value),
-                                    className: "w-full max-w-md bg-gray-700 border border-gray-600 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500",
-                                    placeholder: "Enter your AI API key"
-                                })
-                            ]),
-                            React.createElement('button', {
-                                onClick: () => alert('API Key saved!'),
-                                className: "bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition"
-                            }, "Save API Key")
-                        ])
-                    ])
-                ] : [
-                    React.createElement('div', { key: "dashboard" }, [
-                        React.createElement('h3', { className: "text-xl font-bold text-white mb-6" }, "Admin Dashboard"),
-                        React.createElement('div', { className: "grid grid-cols-2 gap-6" }, [
-                            React.createElement('div', { className: "glass-card rounded-2xl p-6" }, [
-                                React.createElement('h4', { className: "text-white font-bold mb-2" }, "Total Students"),
-                                React.createElement('p', { className: "text-3xl text-blue-400" }, "1,234")
-                            ]),
-                            React.createElement('div', { className: "glass-card rounded-2xl p-6" }, [
-                                React.createElement('h4', { className: "text-white font-bold mb-2" }, "Average Progress"),
-                                React.createElement('p', { className: "text-3xl text-green-400" }, "78%")
-                            ])
-                        ])
-                    ])
-                ]
-            )
-        ])
-    ]);
-};
-
-// ========== MAIN APP COMPONENT ==========
-const App = () => {
-    const { user, isAdmin, loading } = useApp();
-
-    if (loading) {
-        return React.createElement(LoadingScreen);
-    }
-
-    if (!user) {
-        return React.createElement(AuthCard);
-    }
-
-    if (isAdmin) {
-        return React.createElement(AdminDashboard);
-    }
-
-    return React.createElement(HomePage);
-};
-
-// ========== RENDER APP ==========
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-    React.createElement(AppProvider, null,
-        React.createElement(App)
-    )
-);
-
-// Initialize PWA features
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').catch(console.error);
-    });
-}
-
-// Add to homescreen prompt
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    // Show install button
-    const installBtn = document.createElement('button');
-    installBtn.textContent = 'Install App';
-    installBtn.className = 'fixed bottom-24 right-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-xl shadow-lg z-50';
-    installBtn.onclick = () => {
-        installBtn.style.display = 'none';
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then(() => {
-            deferredPrompt = null;
-        });
-    };
-    document.body.appendChild(installBtn);
-});
-
-// Detect if app is installed
-window.addEventListener('appinstalled', () => {
-    console.log('App installed successfully');
-});
-
-</script>
+        function saveProfile() {
+            alert("আপনার প্রোফাইল সফলভাবে আপডেট হয়েছে!");
+            toggleEditMode(); // আবার ভিউ মোডে ফিরে যাবে
+        }
+    </script>
 </body>
 </html>
