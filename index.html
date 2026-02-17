@@ -3,565 +3,300 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>স্মার্ট ভিলেজ ড্যাশবোর্ড</title>
+    <title>পারখালি ভিলেজ অ্যাপ</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Hind+Siliguri:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+    
     <style>
+        /* --- CSS স্টাইল --- */
         :root {
             --primary: #4e54c8;
             --secondary: #8f94fb;
-            --accent-red: #ff4757;
-            --accent-green: #2ed573;
-            --bg-light: #f1f2f6;
             --white: #ffffff;
-            --text-dark: #2f3542;
-            --text-gray: #747d8c;
-            --shadow: 0 4px 15px rgba(0,0,0,0.08);
+            --bg-light: #f4f6f9;
+            --text-dark: #2d3436;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', 'Hind Siliguri', sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-light);
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* সাইডবার ডিজাইন */
-        .sidebar {
-            width: 250px;
-            background: var(--white);
-            height: 100%;
-            padding: 20px;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            transition: all 0.3s ease;
-        }
-
-        .brand {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 40px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .menu-item {
-            display: flex;
-            align-items: center;
-            padding: 15px;
-            color: var(--text-gray);
-            text-decoration: none;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            transition: 0.3s;
-            cursor: pointer;
-            font-weight: 500;
-        }
-
-        .menu-item:hover, .menu-item.active {
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            color: var(--white);
-            box-shadow: 0 4px 10px rgba(78, 84, 200, 0.3);
-        }
-
-        .menu-item i {
-            width: 25px;
-            margin-right: 10px;
-        }
-
-        /* মেইন কন্টেন্ট এরিয়া */
-        .main-content {
-            flex: 1;
-            padding: 30px;
-            overflow-y: auto;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .user-avatar {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            background-color: var(--secondary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-        }
-
-        /* সেকশন গুলো লুকিয়ে রাখা (JS দিয়ে টগল হবে) */
-        .content-section {
-            display: none;
-            animation: fadeIn 0.4s ease;
-        }
-
-        .content-section.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* ১. জরুরি সেবা কার্ড ডিজাইন */
-        .emergency-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-
-        .e-card {
-            background: var(--white);
-            padding: 25px;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: var(--shadow);
-            border-bottom: 4px solid transparent;
-            transition: 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .e-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .e-card.police { border-color: #0c2461; }
-        .e-card.fire { border-color: #eb3b5a; }
-        .e-card.hospital { border-color: #20bf6b; }
-        .e-card.power { border-color: #f7b731; }
-
-        .e-icon {
-            font-size: 30px;
-            margin-bottom: 15px;
-            padding: 15px;
-            border-radius: 50%;
-            display: inline-block;
-        }
-
-        .btn-call {
-            margin-top: 15px;
-            background: var(--text-dark);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 20px;
-            cursor: pointer;
-            width: 100%;
-            font-weight: 600;
-        }
+        body { margin: 0; font-family: 'Poppins', 'Hind Siliguri', sans-serif; background: var(--bg-light); height: 100vh; overflow: hidden; }
         
-        .e-card.fire .btn-call { background: #eb3b5a; }
-        .e-card.police .btn-call { background: #0c2461; }
-
-        /* ২. রক্তদাতা সার্চ ডিজাইন */
-        .blood-header {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: var(--shadow);
-            margin-bottom: 20px;
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
+        /* লোডার */
+        #loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 9999; display: flex; justify-content: center; align-items: center;
         }
+        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .search-box, .filter-box {
-            padding: 10px 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            outline: none;
-            flex: 1;
-        }
-
-        .donor-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .donor-card {
-            background: white;
-            padding: 15px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: var(--shadow);
-        }
-
-        .blood-group {
-            width: 50px;
-            height: 50px;
-            background: #ffebed;
-            color: var(--accent-red);
-            font-weight: bold;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-        }
-
-        .donor-info h4 { margin-bottom: 5px; }
-        .donor-info p { font-size: 13px; color: var(--text-gray); }
-
-        .action-btn {
-            padding: 8px 15px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 600;
-            margin-left: 5px;
-        }
-        .call-btn { background: #e1fcf0; color: #0fb9b1; }
-        .msg-btn { background: #f1f2f6; color: var(--primary); }
-
-        /* ৩. প্রোফাইল এডিট ডিজাইন */
-        .profile-container {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: var(--shadow);
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .profile-header {
-            text-align: center;
-            margin-bottom: 30px;
-            position: relative;
-        }
-
-        .profile-img {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid var(--primary);
-            padding: 3px;
-        }
-
-        .edit-badge {
-            position: absolute;
-            bottom: 5px;
-            right: 42%;
-            background: var(--primary);
-            color: white;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 14px;
-            color: var(--text-gray);
-            margin-bottom: 8px;
-        }
-
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #eee;
-            border-radius: 8px;
-            background: #f9f9f9;
-            color: var(--text-dark);
-            font-weight: 500;
-        }
-
-        .form-group input:disabled, .form-group select:disabled {
-            background: transparent;
-            border: 1px solid transparent;
-            padding-left: 0;
-            color: var(--text-gray);
-        }
-
-        .save-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            width: 100%;
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            display: none; /* প্রথমে লুকানো থাকবে */
-        }
-
-        .edit-mode-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: transparent;
-            border: 1px solid #ddd;
-            padding: 5px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        /* মোবাইল রেসপন্সিভ */
-        @media (max-width: 768px) {
-            body { flex-direction: column; }
-            .sidebar { 
-                width: 100%; 
-                height: auto; 
-                flex-direction: row; 
-                justify-content: space-around;
-                padding: 10px;
-                position: fixed;
-                bottom: 0;
-                z-index: 100;
-                border-radius: 20px 20px 0 0;
-            }
-            .brand { display: none; }
-            .menu-item span { display: none; } /* শুধু আইকন দেখাবে */
-            .menu-item { margin-bottom: 0; padding: 10px; border-radius: 50%; }
-            .main-content { padding-bottom: 80px; }
-            .emergency-grid { grid-template-columns: 1fr 1fr; }
-            .donor-card { flex-direction: column; text-align: center; gap: 10px; }
-            .edit-badge { right: 35%; }
-        }
+        /* অথেন্টিকেশন (লগইন) পেজ */
+        #auth-view { display: flex; justify-content: center; align-items: center; height: 100vh; background: linear-gradient(135deg, var(--primary), var(--secondary)); }
+        .auth-card { background: white; padding: 40px; border-radius: 15px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .auth-card h2 { color: var(--text-dark); margin-bottom: 20px; }
+        .input-group { margin-bottom: 15px; text-align: left; }
+        .input-group label { font-size: 13px; color: #666; }
+        .input-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-top: 5px; box-sizing: border-box; }
+        .btn-primary { width: 100%; padding: 12px; border: none; background: var(--primary); color: white; border-radius: 8px; cursor: pointer; font-weight: 600; margin-top: 10px; transition: 0.3s; }
+        .btn-primary:hover { background: #373b8e; }
+        .btn-google { background: #fff; color: #333; border: 1px solid #ddd; margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-google:hover { background: #f1f1f1; }
+        .toggle-link { margin-top: 15px; font-size: 13px; cursor: pointer; color: var(--primary); display: block; }
+        
+        /* ড্যাশবোর্ড */
+        #dashboard-view { display: none; height: 100vh; flex-direction: column; }
+        .navbar { background: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .user-profile { display: flex; align-items: center; gap: 10px; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--secondary); display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; }
+        .content { padding: 20px; flex: 1; overflow-y: auto; }
+        
+        /* প্রোফাইল ফর্ম */
+        .profile-card { background: white; padding: 25px; border-radius: 15px; max-width: 600px; margin: 0 auto; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .status-msg { margin-top: 10px; font-size: 13px; text-align: center; }
+        .success { color: green; }
+        .error { color: red; }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="brand">
-            <i class="fas fa-cube"></i> স্মার্ট গ্রাম
+    <div id="loader"><div class="spinner"></div></div>
+
+    <div id="auth-view">
+        <div class="auth-card">
+            <h2 id="auth-title">লগইন করুন</h2>
+            <form id="auth-form">
+                <div class="input-group">
+                    <label>ইমেইল</label>
+                    <input type="email" id="email" required placeholder="example@gmail.com">
+                </div>
+                <div class="input-group">
+                    <label>পাসওয়ার্ড</label>
+                    <input type="password" id="password" required placeholder="******">
+                </div>
+                <button type="submit" class="btn-primary" id="auth-btn">লগইন</button>
+            </form>
+            
+            <button class="btn-primary btn-google" id="google-btn">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20"> Google দিয়ে লগইন
+            </button>
+
+            <span class="toggle-link" id="toggle-auth">অ্যাকাউন্ট নেই? রেজিস্ট্রেশন করুন</span>
         </div>
-        <a href="#" class="menu-item active" onclick="showSection('emergency', this)">
-            <i class="fas fa-ambulance"></i> <span>জরুরি সেবা</span>
-        </a>
-        <a href="#" class="menu-item" onclick="showSection('blood', this)">
-            <i class="fas fa-heartbeat"></i> <span>রক্তদাতা</span>
-        </a>
-        <a href="#" class="menu-item" onclick="showSection('profile', this)">
-            <i class="fas fa-user-circle"></i> <span>আমার প্রোফাইল</span>
-        </a>
-        <a href="#" class="menu-item">
-            <i class="fas fa-sign-out-alt"></i> <span>লগ আউট</span>
-        </a>
     </div>
 
-    <div class="main-content">
-        
-        <div class="header">
-            <div>
-                <h2 id="page-title">জরুরি সেবা</h2>
-                <p style="color: var(--text-gray); font-size: 14px;">দ্রুত সাহায্য পাওয়ার জন্য এখানে ট্যাপ করুন</p>
-            </div>
-            <div class="user-info">
-                <i class="fas fa-bell" style="color: var(--text-gray); cursor: pointer;"></i>
-                <div class="user-avatar">RA</div>
-            </div>
-        </div>
-
-        <div id="emergency" class="content-section active">
-            <div class="emergency-grid">
-                <div class="e-card police">
-                    <div class="e-icon" style="background: #eaf0ff; color: #0c2461;">
-                        <i class="fas fa-user-shield"></i>
-                    </div>
-                    <h3>গ্রাম পুলিশ</h3>
-                    <p style="font-size: 13px; color: #777;">রহিম শেখ (চৌকিদার)</p>
-                    <button class="btn-call"><i class="fas fa-phone"></i> কল করুন</button>
-                </div>
-                <div class="e-card fire">
-                    <div class="e-icon" style="background: #ffe3e3; color: #eb3b5a;">
-                        <i class="fas fa-fire-extinguisher"></i>
-                    </div>
-                    <h3>ফায়ার সার্ভিস</h3>
-                    <p style="font-size: 13px; color: #777;">সদর দপ্তর</p>
-                    <button class="btn-call"><i class="fas fa-phone"></i> কল করুন</button>
-                </div>
-                <div class="e-card hospital">
-                    <div class="e-icon" style="background: #e1fcf0; color: #20bf6b;">
-                        <i class="fas fa-clinic-medical"></i>
-                    </div>
-                    <h3>অ্যাম্বুলেন্স</h3>
-                    <p style="font-size: 13px; color: #777;">ড্রাইভার: করিম</p>
-                    <button class="btn-call" style="background: #20bf6b;"><i class="fas fa-phone"></i> কল করুন</button>
-                </div>
-                <div class="e-card power">
-                    <div class="e-icon" style="background: #fff5d9; color: #f7b731;">
-                        <i class="fas fa-bolt"></i>
-                    </div>
-                    <h3>পল্লী বিদ্যুৎ</h3>
-                    <p style="font-size: 13px; color: #777;">অভিযোগ কেন্দ্র</p>
-                    <button class="btn-call" style="background: #f7b731; color: black;"><i class="fas fa-phone"></i> কল করুন</button>
+    <div id="dashboard-view">
+        <div class="navbar">
+            <h3 style="color: var(--primary);">পারখালি অ্যাপ</h3>
+            <div class="user-profile">
+                <div class="avatar" id="nav-avatar">U</div>
+                <div>
+                    <span id="nav-name" style="font-size: 14px; font-weight: 600;">User</span>
+                    <br>
+                    <small onclick="logout()" style="color: red; cursor: pointer; font-size: 12px;">লগ আউট</small>
                 </div>
             </div>
         </div>
 
-        <div id="blood" class="content-section">
-            <div class="blood-header">
-                <select class="filter-box">
-                    <option>সকল গ্রুপ</option>
-                    <option>A+</option>
-                    <option>B+</option>
-                    <option>O+</option>
-                    <option>AB+</option>
-                </select>
-                <input type="text" class="search-box" placeholder="এলাকা বা নাম দিয়ে খুঁজুন...">
-            </div>
-
-            <div class="donor-list">
-                <div class="donor-card">
-                    <div style="display: flex; gap: 15px; align-items: center;">
-                        <div class="blood-group">B+</div>
-                        <div class="donor-info">
-                            <h4>মোহাম্মদ আব্দুল্লাহ</h4>
-                            <p><i class="fas fa-map-marker-alt"></i> দক্ষিণ পাড়া, মসজিদ রোড</p>
-                            <span style="font-size: 12px; color: var(--accent-green);">শেষ রক্তদান: ৩ মাস আগে</span>
-                        </div>
-                    </div>
-                    <div>
-                        <a href="#" class="action-btn msg-btn"><i class="fas fa-comment"></i></a>
-                        <a href="tel:01700000000" class="action-btn call-btn"><i class="fas fa-phone-alt"></i> কল</a>
-                    </div>
-                </div>
-
-                <div class="donor-card">
-                    <div style="display: flex; gap: 15px; align-items: center;">
-                        <div class="blood-group">O+</div>
-                        <div class="donor-info">
-                            <h4>সুমন আহমেদ</h4>
-                            <p><i class="fas fa-map-marker-alt"></i> স্কুল মোড়</p>
-                            <span style="font-size: 12px; color: var(--accent-red);">এখনই রক্ত দিতে পারবেন</span>
-                        </div>
-                    </div>
-                    <div>
-                        <a href="#" class="action-btn msg-btn"><i class="fas fa-comment"></i></a>
-                        <a href="tel:01700000000" class="action-btn call-btn"><i class="fas fa-phone-alt"></i> কল</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="profile" class="content-section">
-            <div class="profile-container">
-                <button class="edit-mode-btn" onclick="toggleEditMode()">
-                    <i class="fas fa-pen"></i> এডিট
-                </button>
+        <div class="content">
+            <div class="profile-card">
+                <h3><i class="fas fa-user-edit"></i> আপনার তথ্য আপডেট করুন</h3>
+                <p style="font-size: 13px; color: #666; margin-bottom: 20px;">এই তথ্য রক্তদাতা এবং জরুরি সেবায় দেখানো হবে।</p>
                 
-                <div class="profile-header">
-                    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Profile" class="profile-img">
-                    <div class="edit-badge"><i class="fas fa-camera"></i></div>
-                    <h3 style="margin-top: 10px;">রাহিমুল ইসলাম</h3>
-                    <p style="color: var(--text-gray); font-size: 13px;">সাধারণ সদস্য | ওয়ার্ড নং ৩</p>
+                <div class="input-group">
+                    <label>পুরো নাম</label>
+                    <input type="text" id="p-name">
                 </div>
-
-                <form id="profileForm">
-                    <div class="form-group">
-                        <label>পুরো নাম</label>
-                        <input type="text" value="রাহিমুল ইসলাম" disabled>
-                    </div>
-                    <div class="form-group">
-                        <label>মোবাইল নম্বর</label>
-                        <input type="tel" value="০১৭০০-১২৩৪৫৬" disabled>
-                    </div>
-                    <div class="form-group">
-                        <label>রক্তের গ্রুপ</label>
-                        <select disabled>
-                            <option selected>B+</option>
-                            <option>A+</option>
-                            <option>O+</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>ঠিকানা</label>
-                        <input type="text" value="মোল্লা বাড়ি, দক্ষিণ গ্রাম" disabled>
-                    </div>
-                    
-                    <button type="button" class="save-btn" id="saveBtn" onclick="saveProfile()">
-                        পরিবর্তন সেভ করুন
-                    </button>
-                </form>
+                <div class="input-group">
+                    <label>মোবাইল নম্বর</label>
+                    <input type="tel" id="p-phone">
+                </div>
+                <div class="input-group">
+                    <label>রক্তের গ্রুপ</label>
+                    <input type="text" id="p-blood" placeholder="যেমন: B+">
+                </div>
+                <div class="input-group">
+                    <label>ঠিকানা (গ্রাম/পাড়া)</label>
+                    <input type="text" id="p-address">
+                </div>
+                <button onclick="saveProfile()" class="btn-primary">তথ্য সেভ করুন</button>
+                <p id="status-msg" class="status-msg"></p>
             </div>
         </div>
-
     </div>
 
-    <script>
-        // সেকশন পরিবর্তনের লজিক
-        function showSection(sectionId, element) {
-            // সব মেনু থেকে active ক্লাস সরান
-            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
-            // যেটাতে ক্লিক হয়েছে সেটাতে active যোগ করুন
-            element.classList.add('active');
+    <script type="module">
+        // Firebase মডিউল ইম্পোর্ট
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } 
+        from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } 
+        from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-            // সব কন্টেন্ট লুকিয়ে ফেলুন
-            document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
-            // নির্দিষ্ট কন্টেন্ট দেখান
-            document.getElementById(sectionId).classList.add('active');
+        // ১. কনফিগারেশন
+        const firebaseConfig = {
+            apiKey: "AIzaSyAuqcDRrtuQi2tdWXA2E_UWyq7pCrGpoy4",
+            authDomain: "parkhali-village.firebaseapp.com",
+            projectId: "parkhali-village",
+            storageBucket: "parkhali-village.firebasestorage.app",
+            messagingSenderId: "645968583344",
+            appId: "1:645968583344:web:89a049e6ffaba4af33b975",
+            measurementId: "G-WD2LSS97KC"
+        };
 
-            // টাইটেল আপডেট
-            let titles = {
-                'emergency': 'জরুরি সেবা',
-                'blood': 'রক্তদাতা খুঁজুন',
-                'profile': 'আমার প্রোফাইল'
-            };
-            document.getElementById('page-title').innerText = titles[sectionId];
-        }
+        // অ্যাপ ইনিশিয়ালাইজেশন
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
-        // প্রোফাইল এডিট লজিক
-        function toggleEditMode() {
-            let inputs = document.querySelectorAll('#profileForm input, #profileForm select');
-            let saveBtn = document.getElementById('saveBtn');
-            let isDisabled = inputs[0].disabled;
+        // DOM Elements
+        const loader = document.getElementById('loader');
+        const authView = document.getElementById('auth-view');
+        const dashboardView = document.getElementById('dashboard-view');
+        const authTitle = document.getElementById('auth-title');
+        const authBtn = document.getElementById('auth-btn');
+        const toggleLink = document.getElementById('toggle-auth');
+        
+        let isLoginMode = true;
 
-            inputs.forEach(input => {
-                input.disabled = !isDisabled;
-            });
-
-            if (isDisabled) {
-                saveBtn.style.display = 'block';
-                saveBtn.style.animation = 'fadeIn 0.3s';
-                inputs[0].focus(); // প্রথম ফিল্ডে ফোকাস করবে
+        // ২. অথেন্টিকেশন স্টেট চেক (লগইন আছে কিনা দেখা)
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // ইউজার লগইন অবস্থায় আছে
+                console.log("Logged in:", user.email);
+                await loadUserData(user.uid);
+                showDashboard(user);
             } else {
-                saveBtn.style.display = 'none';
+                // ইউজার লগআউট অবস্থায় আছে
+                showAuth();
+            }
+            loader.style.display = 'none';
+        });
+
+        // ৩. লগইন / রেজিস্ট্রেশন টগল
+        toggleLink.addEventListener('click', () => {
+            isLoginMode = !isLoginMode;
+            if (isLoginMode) {
+                authTitle.innerText = "লগইন করুন";
+                authBtn.innerText = "লগইন";
+                toggleLink.innerText = "অ্যাকাউন্ট নেই? রেজিস্ট্রেশন করুন";
+            } else {
+                authTitle.innerText = "নতুন অ্যাকাউন্ট";
+                authBtn.innerText = "রেজিস্ট্রেশন";
+                toggleLink.innerText = "ইতিমধ্যে অ্যাকাউন্ট আছে? লগইন করুন";
+            }
+        });
+
+        // ৪. ইমেইল/পাসওয়ার্ড হ্যান্ডেলিং
+        document.getElementById('auth-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                loader.style.display = 'flex';
+                if (isLoginMode) {
+                    await signInWithEmailAndPassword(auth, email, password);
+                } else {
+                    const cred = await createUserWithEmailAndPassword(auth, email, password);
+                    // নতুন ইউজারের জন্য ডাটাবেস এন্ট্রি
+                    await setDoc(doc(db, "users", cred.user.uid), {
+                        email: email,
+                        role: "user",
+                        createdAt: new Date()
+                    });
+                }
+            } catch (error) {
+                alert("ত্রুটি: " + error.message);
+                loader.style.display = 'none';
+            }
+        });
+
+        // ৫. গুগল লগইন হ্যান্ডেলিং
+        document.getElementById('google-btn').addEventListener('click', async () => {
+            const provider = new GoogleAuthProvider();
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                
+                // গুগল দিয়ে প্রথমবার আসলে ডাটা চেক করা
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (!userDoc.exists()) {
+                    await setDoc(doc(db, "users", user.uid), {
+                        name: user.displayName,
+                        email: user.email,
+                        photo: user.photoURL,
+                        role: "user",
+                        createdAt: new Date()
+                    });
+                }
+            } catch (error) {
+                alert("গুগল লগইন সমস্যা: " + error.message);
+            }
+        });
+
+        // ৬. ডাটাবেস থেকে তথ্য আনা
+        async function loadUserData(uid) {
+            const docRef = doc(db, "users", uid);
+            const docSnap = await getDoc(docRef);
+            
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                document.getElementById('nav-name').innerText = data.name || "User";
+                if(data.name) document.getElementById('nav-avatar').innerText = data.name.charAt(0);
+                
+                // ইনপুট ফিল্ডে ডাটা বসানো
+                document.getElementById('p-name').value = data.name || "";
+                document.getElementById('p-phone').value = data.phone || "";
+                document.getElementById('p-blood').value = data.bloodGroup || "";
+                document.getElementById('p-address').value = data.address || "";
             }
         }
 
-        function saveProfile() {
-            alert("আপনার প্রোফাইল সফলভাবে আপডেট হয়েছে!");
-            toggleEditMode(); // আবার ভিউ মোডে ফিরে যাবে
+        // ৭. প্রোফাইল আপডেট (গ্লোবাল ফাংশন হিসেবে উইন্ডোতে সেট করা)
+        window.saveProfile = async function() {
+            const user = auth.currentUser;
+            if (user) {
+                const name = document.getElementById('p-name').value;
+                const phone = document.getElementById('p-phone').value;
+                const blood = document.getElementById('p-blood').value;
+                const address = document.getElementById('p-address').value;
+                const statusMsg = document.getElementById('status-msg');
+
+                try {
+                    statusMsg.innerText = "সেভ হচ্ছে...";
+                    await setDoc(doc(db, "users", user.uid), {
+                        name: name,
+                        phone: phone,
+                        bloodGroup: blood,
+                        address: address
+                    }, { merge: true }); // merge: true মানে আগের ডাটা মুছবে না, শুধু আপডেট হবে
+                    
+                    statusMsg.innerText = "সফলভাবে সেভ হয়েছে!";
+                    statusMsg.className = "status-msg success";
+                    
+                    // নেভিগেশন বার আপডেট
+                    document.getElementById('nav-name').innerText = name;
+                    
+                } catch (error) {
+                    statusMsg.innerText = "সমস্যা হয়েছে!";
+                    statusMsg.className = "status-msg error";
+                    console.error(error);
+                }
+            }
+        }
+
+        // ৮. লগআউট
+        window.logout = function() {
+            signOut(auth).then(() => {
+                alert("লগ আউট সফল হয়েছে");
+            });
+        }
+
+        // ভিউ কন্ট্রোল
+        function showDashboard(user) {
+            authView.style.display = 'none';
+            dashboardView.style.display = 'flex';
+        }
+
+        function showAuth() {
+            authView.style.display = 'flex';
+            dashboardView.style.display = 'none';
         }
     </script>
 </body>
